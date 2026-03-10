@@ -1789,344 +1789,115 @@
             font-size: 15px; line-height: 1.8; color: var(--text); white-space: pre-wrap;
         }
 
-        /* ══════════════════════════════════════════
-           CIFRADO MODULE — PRO
-        ══════════════════════════════════════════ */
-
-        /* Layout */
+        :root { --clf:15px; --caf:13px; }
         .cif-wrap { display:flex; flex-direction:column; height:100%; overflow:hidden; }
-
-        /* Top toolbar */
-        .cif-top-bar {
-            display:flex; align-items:center; gap:8px; padding:10px 14px;
-            border-bottom:1px solid var(--border); background:var(--panel); flex-shrink:0; flex-wrap:wrap;
-        }
-        .cif-song-sel {
-            flex:1; min-width:160px; background:var(--panel2); border:1px solid var(--border2);
-            border-radius:8px; color:var(--text); font-size:13px; padding:7px 12px;
-            font-family:'DM Sans',sans-serif; cursor:pointer;
-        }
-        .cif-tbtn {
-            background:var(--panel2); border:1px solid var(--border2); color:var(--text);
-            border-radius:8px; padding:7px 13px; font-size:12px; cursor:pointer;
-            font-family:'Syne',sans-serif; font-weight:600; white-space:nowrap;
-            transition:all .15s; display:flex; align-items:center; gap:5px;
-        }
+        .cif-top-bar { display:flex; align-items:center; gap:8px; padding:8px 14px; border-bottom:1px solid var(--border); background:var(--panel); flex-shrink:0; flex-wrap:wrap; }
+        .cif-song-sel { flex:1; min-width:160px; background:var(--panel2); border:1px solid var(--border2); border-radius:8px; color:var(--text); font-size:13px; padding:7px 12px; font-family:'DM Sans',sans-serif; }
+        .cif-tbtn { background:var(--panel2); border:1px solid var(--border2); color:var(--text); border-radius:8px; padding:7px 12px; font-size:12px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:600; white-space:nowrap; transition:all .15s; }
         .cif-tbtn:hover { border-color:var(--accent); color:var(--accent); }
-        .cif-tbtn.save  { background:var(--accent); border-color:var(--accent); color:#fff; }
-        .cif-tbtn.save:hover { background:var(--accent2); }
-        .cif-tbtn.active{ background:rgba(232,87,42,.12); border-color:rgba(232,87,42,.4); color:var(--accent); }
-        .cif-tbtn.undo-btn2 { padding:7px 10px; }
+        .cif-tbtn.save { background:var(--accent); border-color:var(--accent); color:#fff; }
+        .cif-tbtn.save:hover { filter:brightness(1.12); }
         .cif-tbtn:disabled { opacity:.3; cursor:not-allowed; }
-
-        /* Two-column body */
+        .cif-size-ctrl { display:flex; align-items:center; gap:2px; background:var(--panel2); border:1px solid var(--border2); border-radius:8px; padding:2px 4px; }
+        .cif-size-btn { background:none; border:none; color:var(--dim); cursor:pointer; font-size:15px; font-weight:800; padding:1px 7px; border-radius:4px; line-height:1; transition:color .1s; font-family:'Syne',sans-serif; }
+        .cif-size-btn:hover { color:var(--accent); }
+        .cif-size-lbl { font-size:11px; color:var(--dim); font-family:'Syne',sans-serif; min-width:26px; text-align:center; }
         .cif-body { display:flex; flex:1; min-height:0; overflow:hidden; }
-
-        /* Left: editor */
-        .cif-editor {
-            flex:1; min-width:0; overflow-y:auto; padding:14px 16px;
-            display:flex; flex-direction:column; gap:10px;
-        }
-
-        /* Right: live preview */
-        .cif-preview {
-            width:320px; flex-shrink:0; border-left:1px solid var(--border);
-            background:var(--panel); overflow-y:auto; display:flex; flex-direction:column;
-        }
-        .cif-preview-hdr {
-            padding:10px 14px; border-bottom:1px solid var(--border); flex-shrink:0;
-            font-family:'Syne',sans-serif; font-size:10px; font-weight:700;
-            color:var(--dim); text-transform:uppercase; letter-spacing:.8px;
-            display:flex; align-items:center; justify-content:space-between;
-        }
-        .cif-preview-body { padding:14px; flex:1; }
-
-        /* Paste box */
-        .cif-paste-box {
-            background:var(--panel); border:2px dashed var(--border2); border-radius:12px;
-            padding:20px; cursor:pointer; transition:border-color .15s;
-            display:flex; flex-direction:column; gap:10px;
-        }
-        .cif-paste-box:hover, .cif-paste-box:focus { border-color:var(--accent); outline:none; }
-        .cif-paste-box-hint {
-            text-align:center; color:var(--dim); font-size:13px;
-        }
-        .cif-paste-box-hint span { font-size:28px; display:block; margin-bottom:6px; opacity:.5; }
-        .cif-paste-textarea {
-            width:100%; min-height:120px; background:var(--panel2);
-            border:1px solid var(--border2); border-radius:8px; color:var(--text);
-            font-size:13px; font-family:'DM Sans',sans-serif; padding:10px 12px;
-            resize:vertical; outline:none; line-height:1.6;
-        }
-        .cif-paste-textarea:focus { border-color:var(--accent); }
-        .cif-paste-actions { display:flex; gap:8px; }
-
-        /* Add-section bar */
-        .cif-add-bar {
-            display:flex; gap:6px; flex-wrap:wrap; align-items:center;
-            padding:8px 0 4px;
-        }
-        .cif-add-bar-lbl {
-            font-size:10px; color:var(--dim); font-family:'Syne',sans-serif;
-            font-weight:700; text-transform:uppercase; letter-spacing:.6px;
-        }
-        .cif-add-chip {
-            background:var(--panel2); border:1px dashed var(--border2);
-            color:var(--dim); border-radius:20px; padding:4px 12px;
-            font-size:11px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:700;
-            transition:all .15s;
-        }
+        .cif-editor { flex:1; min-width:0; overflow-y:auto; padding:14px 18px; display:flex; flex-direction:column; gap:10px; }
+        .cif-preview { width:300px; flex-shrink:0; border-left:1px solid var(--border); background:var(--panel); overflow-y:auto; display:flex; flex-direction:column; }
+        .cif-prev-hdr { padding:10px 14px; border-bottom:1px solid var(--border); flex-shrink:0; font-family:'Syne',sans-serif; font-size:10px; font-weight:700; color:var(--dim); text-transform:uppercase; letter-spacing:.8px; }
+        .cif-prev-body { padding:14px 16px; flex:1; }
+        .cif-add-bar { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+        .cif-add-bar-lbl { font-size:10px; color:var(--dim); font-family:'Syne',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.6px; white-space:nowrap; }
+        .cif-add-chip { background:var(--panel2); border:1px dashed var(--border2); color:var(--dim); border-radius:20px; padding:4px 12px; font-size:11px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:700; transition:all .15s; }
         .cif-add-chip:hover { border-color:var(--accent); color:var(--accent); background:rgba(232,87,42,.06); }
-
-        /* Section card */
-        .cif-sec-card {
-            background:var(--panel); border:1px solid var(--border);
-            border-radius:10px; overflow:hidden; transition:border-color .15s;
-        }
-        .cif-sec-card:focus-within { border-color:rgba(232,87,42,.3); }
-
-        .cif-sec-hdr {
-            display:flex; align-items:center; gap:8px; padding:7px 10px;
-            background:var(--panel2); border-bottom:1px solid var(--border);
-            user-select:none;
-        }
-        .cif-sec-badge {
-            font-family:'Syne',sans-serif; font-size:9px; font-weight:700;
-            padding:3px 9px; border-radius:20px; text-transform:uppercase; letter-spacing:.5px;
-            flex-shrink:0;
-        }
-        .cs-intro     { background:rgba(78,205,196,.18); color:#4ecdc4; }
-        .cs-verse     { background:rgba(77,158,255,.18); color:#4d9eff; }
-        .cs-prechorus { background:rgba(167,139,250,.18);color:#a78bfa; }
-        .cs-chorus    { background:rgba(232,87,42,.18);  color:var(--accent); }
-        .cs-bridge    { background:rgba(240,192,64,.18); color:var(--yellow); }
-        .cs-outro     { background:rgba(62,207,142,.18); color:var(--green); }
-        .cs-tag       { background:rgba(120,120,120,.18);color:var(--dim); }
-
-        .cif-sec-name-in {
-            flex:1; background:transparent; border:none; color:var(--text);
-            font-size:12px; font-family:'DM Sans',sans-serif; outline:none;
-        }
+        .cif-sec-card { background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+        .cif-sec-hdr { display:flex; align-items:center; gap:8px; padding:7px 12px; background:var(--panel2); border-bottom:1px solid var(--border); }
+        .cif-sec-badge { font-family:'Syne',sans-serif; font-size:9px; font-weight:700; padding:3px 9px; border-radius:20px; text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; }
+        .cs-intro { background:rgba(78,205,196,.18); color:#4ecdc4; }
+        .cs-verse { background:rgba(77,158,255,.18); color:#4d9eff; }
+        .cs-prechorus { background:rgba(167,139,250,.18); color:#a78bfa; }
+        .cs-chorus { background:rgba(232,87,42,.18); color:var(--accent); }
+        .cs-bridge { background:rgba(240,192,64,.18); color:var(--yellow); }
+        .cs-outro { background:rgba(62,207,142,.18); color:var(--green); }
+        .cs-tag { background:rgba(120,120,120,.18); color:var(--dim); }
+        .cs-instrumental { background:rgba(255,200,100,.18); color:#ffb84d; }
+        .cif-sec-name-in { flex:1; background:transparent; border:none; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; font-weight:600; outline:none; min-width:60px; }
         .cif-sec-ctrl { display:flex; gap:2px; margin-left:auto; }
-        .cif-sec-ctrl button {
-            background:none; border:none; color:var(--dim2); cursor:pointer;
-            font-size:13px; padding:2px 5px; border-radius:4px; transition:color .1s;
-        }
+        .cif-sec-ctrl button { background:none; border:none; color:var(--dim2); cursor:pointer; font-size:13px; padding:3px 6px; border-radius:4px; transition:color .1s; }
         .cif-sec-ctrl button:hover { color:var(--text); }
         .cif-sec-ctrl .del-sec:hover { color:#ff6060; }
-
-        /* Lines — syllable-based editor */
-        .cif-sec-body { padding:6px 12px 10px; display:flex; flex-direction:column; gap:0; }
-
-        /* One line = chord row + lyric row stacked */
-        .cif-line-wrap {
-            display:flex; align-items:flex-start; gap:6px;
-            padding:2px 0; border-radius:6px; transition:background .1s;
-            position:relative;
-        }
-        .cif-line-wrap:hover { background:rgba(255,255,255,.02); }
-
+        .cif-sec-body { padding:10px 14px 12px; display:flex; flex-direction:column; gap:0; }
+        .cif-co-line { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; padding:4px 0; min-height:34px; }
+        .cif-co-chip { font-family:'Syne',sans-serif; font-size:var(--caf); font-weight:800; color:var(--accent); background:rgba(232,87,42,.1); border:1px solid rgba(232,87,42,.25); border-radius:6px; padding:3px 10px; cursor:pointer; transition:all .12s; }
+        .cif-co-chip:hover { background:rgba(232,87,42,.25); }
+        .cif-co-add { background:none; border:1px dashed rgba(232,87,42,.3); color:var(--dim); border-radius:6px; padding:3px 10px; font-size:11px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:600; transition:all .12s; }
+        .cif-co-add:hover { border-color:var(--accent); color:var(--accent); }
+        .cif-line-wrap { display:flex; align-items:flex-start; gap:0; padding:2px 0; border-radius:4px; transition:background .1s; position:relative; }
+        .cif-line-wrap:hover { background:rgba(255,255,255,.025); }
+        .cif-line-wrap:hover .cif-del-line { opacity:.7; }
         .cif-line-main { flex:1; min-width:0; }
-
-        /* Chord row: one chip per syllable token */
-        .cif-chord-row {
-            display:flex; flex-wrap:wrap; min-height:20px;
-            align-items:flex-end; gap:0; margin-bottom:1px;
-        }
-
-        /* Each token = syllable unit with chord above + text below */
-        .cif-token {
-            display:inline-flex; flex-direction:column; align-items:flex-start;
-            cursor:pointer; padding:0 1px; border-radius:3px;
-            transition:background .12s; position:relative;
-        }
-        .cif-token:hover { background:rgba(232,87,42,.1); }
-        .cif-token:hover .cif-token-chord { opacity:1; }
-
-        .cif-token-chord {
-            font-family:'Syne',sans-serif; font-size:12px; font-weight:800;
-            color:var(--accent); white-space:nowrap; line-height:1.3;
-            min-height:16px; display:block; padding:0 2px;
-            border-radius:3px; transition:background .1s;
-        }
-        .cif-token-chord.has-chord {
-            background:rgba(232,87,42,.12); border:1px solid rgba(232,87,42,.2);
-            cursor:pointer;
-        }
-        .cif-token-chord.has-chord:hover { background:rgba(232,87,42,.25); }
-        .cif-token-chord.empty { opacity:0; font-size:10px; color:var(--dim2); }
-        .cif-token:hover .cif-token-chord.empty {
-            opacity:.4; content:'+';
-        }
-
-        .cif-token-text {
-            font-size:14px; color:var(--text); font-family:'DM Sans',sans-serif;
-            white-space:pre; line-height:1.5; user-select:none;
-        }
-        .cif-token.space .cif-token-text { color:transparent; }
-        .cif-token.space { min-width:8px; }
-
-        /* Editable lyric input (hidden, activated on double-click) */
-        .cif-lyric-edit-row {
-            display:none; align-items:center; gap:6px; margin-top:2px;
-        }
-        .cif-lyric-edit-row.active { display:flex; }
-        .cif-lyric-in {
-            flex:1; background:var(--panel2); border:1px solid var(--accent);
-            border-radius:6px; color:var(--text); font-size:14px;
-            font-family:'DM Sans',sans-serif; outline:none; padding:4px 8px;
-            line-height:1.5;
-        }
-        .cif-lyric-ok {
-            background:var(--accent); border:none; color:#fff; border-radius:6px;
-            padding:4px 10px; font-size:12px; cursor:pointer; font-family:'Syne',sans-serif;
-            font-weight:700; white-space:nowrap;
-        }
-
-        /* Hint: shown when hovering section */
-        .cif-line-hint {
-            font-size:10px; color:var(--dim2); position:absolute; right:0; top:4px;
-            opacity:0; transition:opacity .15s; pointer-events:none;
-            font-family:'Syne',sans-serif;
-        }
-        .cif-line-wrap:hover .cif-line-hint { opacity:1; }
-
-        .cif-del-line {
-            background:none; border:none; color:var(--dim2); cursor:pointer;
-            font-size:12px; padding:2px 5px; border-radius:3px; opacity:0;
-            transition:opacity .15s; flex-shrink:0; margin-top:18px;
-        }
-        .cif-line-wrap:hover .cif-del-line { opacity:.6; }
+        .cif-token-row { display:flex; flex-wrap:wrap; align-items:flex-end; }
+        .cif-wt { display:inline-flex; flex-direction:column; align-items:flex-start; cursor:pointer; position:relative; border-radius:3px; transition:background .1s; }
+        .cif-wt:not(.sp):hover { background:rgba(232,87,42,.09); }
+        .cif-wt-chord { font-family:'Syne',sans-serif; font-size:var(--caf); font-weight:800; color:var(--accent); white-space:nowrap; line-height:1.35; min-height:18px; padding:1px 2px; border-radius:3px; display:block; }
+        .cif-wt-chord.has { background:rgba(232,87,42,.12); border:1px solid rgba(232,87,42,.25); cursor:pointer; }
+        .cif-wt-chord.has:hover { background:rgba(232,87,42,.28); }
+        .cif-wt-chord.empty { opacity:0; pointer-events:none; }
+        .cif-wt:not(.sp):hover .cif-wt-chord.empty { opacity:.2; }
+        .cif-wt-text { font-size:var(--clf); color:var(--text); font-family:'DM Sans',sans-serif; white-space:pre; line-height:1.55; display:block; padding:0 1px; }
+        .cif-wt.sp { pointer-events:none; cursor:default; }
+        .cif-wt.sp .cif-wt-chord { display:none; }
+        .cif-edit-row { display:none; align-items:center; gap:6px; margin-top:3px; }
+        .cif-edit-row.on { display:flex; }
+        .cif-lyric-in { flex:1; background:var(--panel2); border:1px solid var(--accent); border-radius:6px; color:var(--text); font-size:var(--clf); font-family:'DM Sans',sans-serif; outline:none; padding:4px 9px; line-height:1.5; }
+        .cif-edit-ok { background:var(--accent); border:none; color:#fff; border-radius:6px; padding:5px 12px; font-size:12px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:700; white-space:nowrap; }
+        .cif-del-line { background:none; border:none; color:var(--dim2); cursor:pointer; font-size:11px; padding:2px 5px; opacity:0; transition:opacity .15s; margin-top:20px; flex-shrink:0; }
         .cif-del-line:hover { color:#ff6060; opacity:1 !important; }
-
-        .cif-add-line {
-            background:none; border:1px dashed transparent; border-radius:6px;
-            color:var(--dim2); font-size:11px; cursor:pointer; padding:3px 8px;
-            margin-top:4px; transition:all .15s; display:inline-block;
-        }
-        .cif-add-line:hover { border-color:var(--accent); color:var(--accent); background:rgba(232,87,42,.04); }
-
-        /* Section paste modal */
-        .cif-sec-paste-modal {
-            position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.7);
-            display:flex; align-items:center; justify-content:center;
-        }
-        .cif-sec-paste-box {
-            background:var(--panel); border:1px solid var(--border2); border-radius:14px;
-            padding:24px; width:480px; max-width:95vw; display:flex; flex-direction:column; gap:14px;
-            box-shadow:0 20px 60px rgba(0,0,0,.8);
-        }
-        .cif-sec-paste-title {
-            font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:var(--text);
-        }
-        .cif-sec-type-row {
-            display:flex; gap:6px; flex-wrap:wrap;
-        }
-        .cif-sec-type-btn {
-            background:var(--panel2); border:1px solid var(--border2);
-            color:var(--dim); border-radius:20px; padding:5px 14px;
-            font-size:11px; font-family:'Syne',sans-serif; font-weight:700;
-            cursor:pointer; transition:all .15s;
-        }
+        .cif-add-line { background:none; border:1px dashed transparent; border-radius:6px; color:var(--dim2); font-size:11px; cursor:pointer; padding:3px 8px; margin-top:4px; display:inline-block; transition:all .15s; }
+        .cif-add-line:hover { border-color:var(--accent); color:var(--accent); }
+        .cif-hint-row { font-size:10px; color:var(--dim2); font-family:'Syne',sans-serif; padding:4px 8px; background:rgba(232,87,42,.04); border-radius:6px; border:1px dashed rgba(232,87,42,.1); line-height:1.6; }
+        .cif-sec-paste-modal { position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.78); display:flex; align-items:center; justify-content:center; }
+        .cif-sec-paste-box { background:var(--panel); border:1px solid var(--border2); border-radius:14px; padding:24px; width:500px; max-width:95vw; display:flex; flex-direction:column; gap:14px; box-shadow:0 20px 60px rgba(0,0,0,.8); }
+        .cif-sec-paste-title { font-family:'Syne',sans-serif; font-size:15px; font-weight:800; color:var(--text); }
+        .cif-sec-type-row { display:flex; gap:6px; flex-wrap:wrap; }
+        .cif-sec-type-btn { background:var(--panel2); border:1px solid var(--border2); color:var(--dim); border-radius:20px; padding:5px 14px; font-size:11px; font-family:'Syne',sans-serif; font-weight:700; cursor:pointer; transition:all .15s; }
         .cif-sec-type-btn.selected { border-color:var(--accent); color:var(--accent); background:rgba(232,87,42,.1); }
-        .cif-sec-paste-ta {
-            width:100%; min-height:140px; background:var(--panel2);
-            border:1px solid var(--border2); border-radius:8px; color:var(--text);
-            font-size:13px; font-family:'DM Sans',sans-serif; padding:10px 12px;
-            resize:vertical; outline:none; line-height:1.7;
-        }
+        .cif-sec-paste-ta { width:100%; min-height:130px; background:var(--panel2); border:1px solid var(--border2); border-radius:8px; color:var(--text); font-size:13px; font-family:'DM Sans',sans-serif; padding:10px 12px; resize:vertical; outline:none; line-height:1.75; box-sizing:border-box; }
         .cif-sec-paste-ta:focus { border-color:var(--accent); }
         .cif-sec-paste-actions { display:flex; gap:8px; }
-
-        .cif-click-hint {
-            font-size:10px; color:var(--dim2); font-family:'Syne',sans-serif;
-            padding:4px 10px; background:rgba(232,87,42,.04);
-            border-radius:6px; margin-bottom:6px; border:1px dashed rgba(232,87,42,.1);
-            line-height:1.5;
-        }
-
-        /* Chord popup */
-        .cif-chord-popup {
-            position:fixed; z-index:9999; background:var(--panel);
-            border:1px solid var(--border2); border-radius:12px; padding:12px;
-            box-shadow:0 10px 40px rgba(0,0,0,.7); min-width:230px; max-width:280px;
-        }
-        .cif-cp-input {
-            width:100%; background:var(--panel2); border:1px solid var(--border2);
-            border-radius:7px; color:var(--text); font-size:14px;
-            padding:8px 12px; outline:none; margin-bottom:10px;
-            font-family:'Syne',sans-serif; font-weight:700; letter-spacing:.5px;
-        }
-        .cif-cp-input:focus { border-color:var(--accent); }
-        .cif-cp-grid { display:flex; flex-wrap:wrap; gap:4px; margin-bottom:10px; }
-        .cif-cp-chip {
-            background:var(--panel2); border:1px solid var(--border2); color:var(--text);
-            border-radius:6px; padding:4px 9px; font-size:11px; cursor:pointer;
-            font-family:'Syne',sans-serif; font-weight:700; transition:all .1s;
-        }
-        .cif-cp-chip:hover { background:var(--accent); border-color:var(--accent); color:#fff; }
-        .cif-cp-actions { display:flex; gap:6px; }
-        .cif-cp-ok  { flex:1; background:var(--accent); border:none; color:#fff; border-radius:7px; padding:7px; font-size:12px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:700; }
-        .cif-cp-del { background:none; border:1px solid rgba(255,80,80,.3); color:#ff6060; border-radius:7px; padding:7px 12px; font-size:12px; cursor:pointer; }
-        .cif-cp-ok:hover { background:var(--accent2); }
-
-        /* Preview */
-        .cprev-sec { margin-bottom:18px; }
-        .cprev-lbl {
-            font-family:'Syne',sans-serif; font-size:9px; font-weight:700;
-            text-transform:uppercase; letter-spacing:.6px;
-            padding:2px 8px; border-radius:20px; display:inline-block; margin-bottom:6px;
-        }
-        .cprev-line { margin-bottom:1px; }
-        .cprev-chords { display:flex; flex-wrap:wrap; min-height:16px; }
-        .cprev-chord {
-            font-family:'Syne',sans-serif; font-size:12px; font-weight:800;
-            color:var(--accent); white-space:nowrap;
-        }
-        .cprev-lyric { font-size:13px; color:var(--text); line-height:1.5; }
-
-        /* Presentation */
-        .cif-present {
-            position:fixed; inset:0; background:#050505; z-index:12000;
-            display:none; flex-direction:column;
-        }
+        .cprev-sec { margin-bottom:20px; }
+        .cprev-lbl { font-family:'Syne',sans-serif; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; padding:2px 8px; border-radius:20px; display:inline-block; margin-bottom:8px; }
+        .cprev-line { display:flex; flex-wrap:wrap; align-items:flex-end; margin-bottom:2px; }
+        .cprev-wt { display:inline-flex; flex-direction:column; align-items:flex-start; }
+        .cprev-chord { font-family:'Syne',sans-serif; font-size:11px; font-weight:800; color:var(--accent); white-space:nowrap; min-height:15px; line-height:1.3; }
+        .cprev-chord.empty { opacity:0; }
+        .cprev-text { font-size:12px; color:var(--text); white-space:pre; line-height:1.55; }
+        .cprev-co { display:flex; flex-wrap:wrap; gap:8px; padding:3px 0; }
+        .cprev-co-chip { font-family:'Syne',sans-serif; font-size:11px; font-weight:800; color:var(--accent); }
+        .cif-present { position:fixed; inset:0; background:#060606; z-index:12000; display:none; flex-direction:column; }
         .cif-present.open { display:flex; }
-        .cif-present-hdr {
-            display:flex; align-items:center; justify-content:space-between;
-            padding:12px 24px; border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0;
-        }
-        .cif-present-song { font-family:'Syne',sans-serif; font-size:17px; font-weight:800; color:#fff; }
+        .cif-present-hdr { display:flex; align-items:center; justify-content:space-between; padding:12px 24px; border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0; }
+        .cif-present-song { font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:#fff; }
         .cif-present-ctrl { display:flex; gap:8px; align-items:center; }
-        .cif-pctrl-btn {
-            background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12);
-            color:#fff; border-radius:7px; padding:6px 14px; cursor:pointer; font-size:13px;
-            font-family:'Syne',sans-serif; font-weight:600; transition:background .15s;
-        }
+        .cif-pctrl-btn { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:#fff; border-radius:7px; padding:6px 14px; cursor:pointer; font-size:13px; font-family:'Syne',sans-serif; font-weight:600; transition:background .15s; }
         .cif-pctrl-btn:hover { background:rgba(255,255,255,.16); }
         .cif-pctrl-lbl { color:rgba(255,255,255,.5); font-size:12px; min-width:40px; text-align:center; }
-        .cif-present-body { flex:1; overflow-y:auto; padding:32px 48px; }
-        .cpres-sec { margin-bottom:28px; }
-        .cpres-badge {
-            font-family:'Syne',sans-serif; font-weight:700; text-transform:uppercase;
-            letter-spacing:.8px; padding:3px 12px; border-radius:20px;
-            display:inline-block; margin-bottom:12px;
-        }
-        .cpres-line { margin-bottom:6px; }
-        .cpres-chords { display:flex; flex-wrap:wrap; }
-        .cpres-chord { font-family:'Syne',sans-serif; font-weight:800; color:var(--accent); }
-        .cpres-lyric  { font-family:'DM Sans',sans-serif; color:#f0ebe3; line-height:1.4; }
+        .cif-present-body { flex:1; overflow-y:auto; padding:36px 56px; }
+        .cpres-sec { margin-bottom:32px; }
+        .cpres-badge { font-family:'Syne',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.8px; padding:3px 12px; border-radius:20px; display:inline-block; margin-bottom:12px; }
+        .cpres-line { display:flex; flex-wrap:wrap; align-items:flex-end; margin-bottom:4px; }
+        .cpres-wt { display:inline-flex; flex-direction:column; align-items:flex-start; }
+        .cpres-chord { font-family:'Syne',sans-serif; font-weight:800; color:var(--accent); white-space:nowrap; line-height:1.3; }
+        .cpres-chord.empty { opacity:0; }
+        .cpres-text { font-family:'DM Sans',sans-serif; color:#f0ebe3; white-space:pre; line-height:1.45; }
+        .cpres-co { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:6px; }
+        .cpres-co-chip { font-family:'Syne',sans-serif; font-weight:800; color:var(--accent); }
+        .cif-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:200px; gap:12px; padding:40px; text-align:center; }
+        .cif-empty-ico { font-size:42px; opacity:.3; }
+        .cif-empty-txt { color:var(--dim); font-size:13px; line-height:1.7; max-width:280px; }
+        @media (max-width:768px) { .cif-preview { display:none !important; } }
 
-        /* Empty state */
-        .cif-empty {
-            display:flex; flex-direction:column; align-items:center;
-            justify-content:center; height:100%; gap:14px; padding:40px; text-align:center;
-        }
-        .cif-empty-ico { font-size:44px; opacity:.35; }
-        .cif-empty-txt { color:var(--dim); font-size:13px; line-height:1.7; max-width:260px; }
-
-        @media (max-width:768px) {
-            .cif-preview { display:none !important; }
-        }
 
 
     </style>
@@ -5752,19 +5523,36 @@ window.handleUpload = function(files) {
 
 // ── State ──
 let cifSongId   = null;
-let cifSections = [];      // [{id,type,label,lines:[{id,chords:[],lyric:''}]}]
+let cifSections = [];      // [{id,type,label,lines:[{id,chordMap:[],lyric:''}]}]
 let cifUndoStack = [];
 let cifRedoStack = [];
 let cifPresentFs = 18;
+let cifLyricSize = 15;
+let cifChordSize = 13;
+
+function cifAdjSize(which, delta) {
+    if (which === 'lyric') {
+        cifLyricSize = Math.max(10, Math.min(26, cifLyricSize + delta));
+        document.documentElement.style.setProperty('--clf', cifLyricSize + 'px');
+        const lbl = document.getElementById('cif-lyric-size-lbl');
+        if (lbl) lbl.textContent = cifLyricSize;
+    } else {
+        cifChordSize = Math.max(9, Math.min(22, cifChordSize + delta));
+        document.documentElement.style.setProperty('--caf', cifChordSize + 'px');
+        const lbl = document.getElementById('cif-chord-size-lbl');
+        if (lbl) lbl.textContent = cifChordSize;
+    }
+}
 
 const CIF_TYPES = [
-    {key:'intro',     label:'Intro',    cls:'cs-intro'},
-    {key:'verse',     label:'Verso',    cls:'cs-verse'},
-    {key:'prechorus', label:'Pre-Coro', cls:'cs-prechorus'},
-    {key:'chorus',    label:'Coro',     cls:'cs-chorus'},
-    {key:'bridge',    label:'Puente',   cls:'cs-bridge'},
-    {key:'outro',     label:'Outro',    cls:'cs-outro'},
-    {key:'tag',       label:'Tag',      cls:'cs-tag'},
+    {key:'intro',        label:'Intro',        cls:'cs-intro',        chordsOnly:true},
+    {key:'verse',        label:'Verso',        cls:'cs-verse',        chordsOnly:false},
+    {key:'prechorus',    label:'Pre-Coro',     cls:'cs-prechorus',    chordsOnly:false},
+    {key:'chorus',       label:'Coro',         cls:'cs-chorus',       chordsOnly:false},
+    {key:'bridge',       label:'Puente',       cls:'cs-bridge',       chordsOnly:false},
+    {key:'instrumental', label:'Instrumental', cls:'cs-instrumental', chordsOnly:true},
+    {key:'outro',        label:'Outro',        cls:'cs-outro',        chordsOnly:false},
+    {key:'tag',          label:'Tag',          cls:'cs-tag',          chordsOnly:false},
 ];
 const CHORDS_LIST = [
     'C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#','Bb','B',
@@ -5953,17 +5741,33 @@ function cifDeleteChord() { cifApplyChord(''); }
 function cifApplyChord(val) {
     const {secId,lineId,wordIdx,isPosMode} = _cp;
     if (!secId) return;
-    const sec  = cifSections.find(s=>s.id===secId);
-    const line = sec?.lines.find(l=>l.id===lineId);
-    if (!line) return;
+    const sec = cifSections.find(s=>s.id===secId);
+    if (!sec) return;
     cifSnapshot();
 
+    if (lineId === '__co__') {
+        // Chord-only section
+        if (!sec.coChords) sec.coChords = [];
+        if (!val) {
+            sec.coChords.splice(wordIdx, 1);
+        } else {
+            if (wordIdx >= sec.coChords.length) sec.coChords.push(val);
+            else sec.coChords[wordIdx] = val;
+        }
+        cifCloseChordPopup();
+        // Rebuild just this co-line
+        if (sec._rebuildCoLine) sec._rebuildCoLine();
+        cifRenderPreview();
+        return;
+    }
+
+    const line = sec?.lines.find(l=>l.id===lineId);
+    if (!line) return;
+
     if (isPosMode) {
-        // Position-based: chordMap [{pos, chord}]
         if (!line.chordMap) line.chordMap = [];
         const existing = line.chordMap.findIndex(e=>e.pos===wordIdx);
         if (!val) {
-            // Delete
             if (existing>=0) line.chordMap.splice(existing,1);
         } else {
             if (existing>=0) line.chordMap[existing].chord = val;
@@ -5971,7 +5775,6 @@ function cifApplyChord(val) {
             line.chordMap.sort((a,b)=>a.pos-b.pos);
         }
     } else {
-        // Legacy word-based
         while ((line.chords||[]).length<=wordIdx) (line.chords=line.chords||[]).push('');
         line.chords[wordIdx] = val;
     }
@@ -6037,6 +5840,29 @@ function renderCifrado(display) {
         btnPres.onclick=cifOpenPresent; tb.appendChild(btnPres);
     }
 
+    // Font size controls
+    const sizeCtrl = document.createElement('div');
+    sizeCtrl.className = 'cif-size-ctrl';
+    sizeCtrl.title = 'Tamaño de letra';
+    sizeCtrl.innerHTML = `
+        <span class="cif-size-lbl" style="font-size:9px;letter-spacing:.4px;opacity:.7">LETRA</span>
+        <button class="cif-size-btn" onclick="cifAdjSize('lyric',-1)">−</button>
+        <span class="cif-size-lbl" id="cif-lyric-size-lbl">15</span>
+        <button class="cif-size-btn" onclick="cifAdjSize('lyric',1)">+</button>
+    `;
+    tb.appendChild(sizeCtrl);
+
+    const sizeCtrl2 = document.createElement('div');
+    sizeCtrl2.className = 'cif-size-ctrl';
+    sizeCtrl2.title = 'Tamaño de acordes';
+    sizeCtrl2.innerHTML = `
+        <span class="cif-size-lbl" style="font-size:9px;letter-spacing:.4px;opacity:.7;color:var(--accent)">ACORDE</span>
+        <button class="cif-size-btn" onclick="cifAdjSize('chord',-1)">−</button>
+        <span class="cif-size-lbl" id="cif-chord-size-lbl">13</span>
+        <button class="cif-size-btn" onclick="cifAdjSize('chord',1)">+</button>
+    `;
+    tb.appendChild(sizeCtrl2);
+
     wrap.appendChild(tb);
 
     // Body
@@ -6058,7 +5884,7 @@ function renderCifrado(display) {
     // Preview panel
     const prevPanel = document.createElement('div');
     prevPanel.className = 'cif-preview';
-    prevPanel.innerHTML = `<div class="cif-preview-hdr"><span>Vista previa</span></div><div class="cif-preview-body" id="cif-prev-body"></div>`;
+    prevPanel.innerHTML = `<div class="cif-prev-hdr"><span>Vista previa</span></div><div class="cif-prev-body" id="cif-prev-body"></div>`;
     body.appendChild(prevPanel);
 
     wrap.appendChild(body);
@@ -6095,10 +5921,10 @@ function buildCifEditor(panel) {
 
     if (cifSections.length === 0) return;
 
-    // Hint
+    // Usage hint
     const hint = document.createElement('div');
-    hint.className = 'cif-click-hint';
-    hint.innerHTML = '🎵 <b>Clic</b> en cualquier sílaba/palabra para poner acorde · <b>Clic en acorde naranja</b> para editar/quitar · <b>Doble clic en línea</b> para editar texto';
+    hint.className = 'cif-hint-row';
+    hint.innerHTML = '🎵 <b>Clic en palabra</b> → poner acorde · <b>Clic en acorde naranja</b> → editar/quitar · <b>Doble clic en línea</b> → editar texto';
     panel.appendChild(hint);
 
     // ── Render sections ──
@@ -6144,19 +5970,56 @@ function buildCifEditor(panel) {
         hdr.appendChild(ctrl);
         card.appendChild(hdr);
 
-        // Body: syllable-based lines
+        // Body: chord-only or lyric lines
         const secBody = document.createElement('div');
         secBody.className = 'cif-sec-body';
 
-        sec.lines.forEach((line, li) => {
-            secBody.appendChild(buildCifLineEl(sec, line, li));
-        });
+        const info2 = cifTI(sec.type);
+        const isChordOnly = info2.chordsOnly || sec.chordsOnly;
 
-        const addLineBtn = document.createElement('button');
-        addLineBtn.className = 'cif-add-line';
-        addLineBtn.textContent = '+ Añadir línea';
-        addLineBtn.onclick = () => cifAddLine(sec.id);
-        secBody.appendChild(addLineBtn);
+        if (isChordOnly) {
+            // Chord-only section (Intro, Instrumental)
+            // sec.chords = ['C#m','G#m','A','B'] or stored in lines[0].chordMap as pos=index
+            // We store as sec.coChords = ['C#m','G#m',...]
+            if (!sec.coChords) sec.coChords = [];
+            const coLine = document.createElement('div');
+            coLine.className = 'cif-co-line';
+            coLine.id = 'co-line-' + sec.id;
+
+            function rebuildCoLine() {
+                coLine.innerHTML = '';
+                (sec.coChords||[]).forEach((ch,ci) => {
+                    const chip = document.createElement('span');
+                    chip.className='cif-co-chip'; chip.textContent=ch;
+                    chip.onclick = e => {
+                        e.stopPropagation();
+                        cifOpenChordPopup(sec.id, '__co__', ci, ch, chip, false);
+                    };
+                    coLine.appendChild(chip);
+                });
+                const addBtn=document.createElement('button');
+                addBtn.className='cif-co-add'; addBtn.textContent='+ Acorde';
+                addBtn.onclick=()=>{
+                    cifSnapshot(); sec.coChords.push('');
+                    cifOpenChordPopup(sec.id,'__co__',sec.coChords.length-1,'',addBtn,false);
+                };
+                coLine.appendChild(addBtn);
+            }
+            rebuildCoLine();
+            secBody.appendChild(coLine);
+
+            // Store rebuildCoLine so applyChord can call it
+            sec._rebuildCoLine = rebuildCoLine;
+        } else {
+            // Normal lyric lines
+            sec.lines.forEach((line, li) => {
+                secBody.appendChild(buildCifLineEl(sec, line, li));
+            });
+            const addLineBtn = document.createElement('button');
+            addLineBtn.className = 'cif-add-line'; addLineBtn.textContent = '+ Añadir línea';
+            addLineBtn.onclick = () => cifAddLine(sec.id);
+            secBody.appendChild(addLineBtn);
+        }
 
         card.appendChild(secBody);
         panel.appendChild(card);
@@ -6197,6 +6060,7 @@ function cifOpenSectionPaste(typeKey, existingSec) {
             selectedType = t.key;
             typeRow.querySelectorAll('.cif-sec-type-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
+            updateTypeUI();
         };
         typeRow.appendChild(btn);
     });
@@ -6220,7 +6084,14 @@ function cifOpenSectionPaste(typeKey, existingSec) {
     ta.className = 'cif-sec-paste-ta';
     ta.placeholder = 'Pega o escribe la letra de esta sección...\nCada línea = una línea de la canción';
     if (isEdit) ta.value = existingSec.lines.map(l => l.lyric).join('\n');
-    box.appendChild(ta);
+    // Update textarea based on selected type
+    function updateTypeUI() {
+        const isCO = cifTI(selectedType).chordsOnly;
+        ta.placeholder = isCO
+            ? 'Esta sección es de SOLO ACORDES.\nLos acordes se agregan desde el editor (clic en "+ Acorde").\nDeja esto vacío o escribe una nota opcional.'
+            : 'Pega o escribe la letra de esta sección...\nCada línea = una línea de la canción';
+    }
+    updateTypeUI();
 
     // Actions
     const actions = document.createElement('div');
@@ -6234,8 +6105,8 @@ function cifOpenSectionPaste(typeKey, existingSec) {
         const text = ta.value.trim();
         if (!text) { ta.style.borderColor='#ff6060'; ta.focus(); return; }
         cifSnapshot();
-        const lines = text.split('\n').map(l => {
-            // Preserve existing chordMap if editing and line matches
+        const isChordOnlyType = cifTI(selectedType).chordsOnly;
+        const lines = isChordOnlyType ? [] : text.split('\n').map(l => {
             if (isEdit) {
                 const existing = existingSec.lines.find(el => el.lyric === l);
                 if (existing) return {...existing};
@@ -6291,127 +6162,114 @@ function buildCifLineEl(sec, line, li) {
     const main = document.createElement('div');
     main.className = 'cif-line-main';
 
-    // ── Tokenize lyric into characters ──
-    // Each character is a clickable token; spaces get special treatment
     const lyric = line.lyric || '';
-
-    // Build token row — group by "word chars" and "spaces"
-    // Each word = sequence of non-space chars → one token per char within word
-    // Each space → one space token
     const tokenRow = document.createElement('div');
-    tokenRow.className = 'cif-chord-row';
+    tokenRow.className = 'cif-token-row';
 
-    if (!lyric) {
-        // Empty line placeholder
+    if (!lyric.trim()) {
+        // Empty line — click to edit
         const ph = document.createElement('span');
-        ph.style.cssText = 'color:var(--dim2);font-size:12px;font-family:\'DM Sans\',sans-serif;padding:2px 4px;font-style:italic';
-        ph.textContent = 'línea vacía — doble clic para editar';
+        ph.style.cssText = 'color:var(--dim2);font-size:12px;font-family:\'DM Sans\',sans-serif;padding:1px 4px;font-style:italic;opacity:.5';
+        ph.textContent = '(línea vacía)';
         tokenRow.appendChild(ph);
     } else {
-        for (let ci = 0; ci < lyric.length; ci++) {
-            const ch = lyric[ci];
-            const isSpace = ch === ' ';
-
-            const token = document.createElement('div');
-            token.className = 'cif-token' + (isSpace ? ' space' : '');
-            token.dataset.pos = ci;
-
-            // Find chord at this exact position
-            const chordEntry = (line.chordMap || []).find(e => e.pos === ci);
-
-            // Chord chip (top)
-            const chordSpan = document.createElement('span');
-            chordSpan.className = 'cif-token-chord' + (chordEntry ? ' has-chord' : ' empty');
-            chordSpan.textContent = chordEntry ? chordEntry.chord : '';
-            if (!isSpace) {
-                chordSpan.onclick = (e) => {
-                    e.stopPropagation();
-                    cifOpenChordPopup(sec.id, line.id, ci, chordEntry?.chord || '', chordSpan, true);
-                };
+        // Split lyric into WORDS and SPACES, preserving them all
+        // token = {type:'word'|'space', text:string, startIdx:number}
+        const tokens = [];
+        let i = 0;
+        while (i < lyric.length) {
+            if (lyric[i] === ' ') {
+                let j = i;
+                while (j < lyric.length && lyric[j] === ' ') j++;
+                tokens.push({type:'space', text:lyric.slice(i,j), startIdx:i});
+                i = j;
+            } else {
+                let j = i;
+                while (j < lyric.length && lyric[j] !== ' ') j++;
+                tokens.push({type:'word', text:lyric.slice(i,j), startIdx:i});
+                i = j;
             }
-
-            // Text (bottom)
-            const textSpan = document.createElement('span');
-            textSpan.className = 'cif-token-text';
-            textSpan.textContent = isSpace ? ' ' : ch;
-
-            token.appendChild(chordSpan);
-            token.appendChild(textSpan);
-
-            if (!isSpace) {
-                token.title = `Clic → acorde sobre "${ch}"`;
-                token.onclick = (e) => {
-                    e.stopPropagation();
-                    cifOpenChordPopup(sec.id, line.id, ci, chordEntry?.chord || '', chordSpan, true);
-                };
-            }
-
-            tokenRow.appendChild(token);
         }
+
+        tokens.forEach(tok => {
+            const wt = document.createElement('div');
+            wt.className = 'cif-wt' + (tok.type==='space' ? ' sp' : '');
+
+            // Find chord at this word start position
+            const entry = (line.chordMap||[]).find(e=>e.pos===tok.startIdx);
+
+            // Chord span
+            const chord = document.createElement('span');
+            chord.className = 'cif-wt-chord ' + (entry ? 'has' : 'empty');
+            chord.textContent = entry ? entry.chord : '';
+            wt.appendChild(chord);
+
+            // Text span
+            const text = document.createElement('span');
+            text.className = 'cif-wt-text';
+            text.textContent = tok.text;
+            wt.appendChild(text);
+
+            if (tok.type === 'word') {
+                wt.title = `Clic → acorde sobre "${tok.text}"`;
+                wt.onclick = (e) => {
+                    e.stopPropagation();
+                    cifOpenChordPopup(sec.id, line.id, tok.startIdx, entry?.chord||'', chord, true);
+                };
+                chord.onclick = (e) => {
+                    e.stopPropagation();
+                    cifOpenChordPopup(sec.id, line.id, tok.startIdx, entry?.chord||'', chord, true);
+                };
+            }
+            tokenRow.appendChild(wt);
+        });
     }
 
     main.appendChild(tokenRow);
 
-    // ── Edit row (shown on double click) ──
+    // Double-click → show edit input
     const editRow = document.createElement('div');
-    editRow.className = 'cif-lyric-edit-row';
-
+    editRow.className = 'cif-edit-row';
     const editInp = document.createElement('input');
-    editInp.className = 'cif-lyric-in';
-    editInp.type = 'text';
-    editInp.value = lyric;
-    editInp.placeholder = 'Texto de la línea…';
-
+    editInp.className = 'cif-lyric-in'; editInp.type='text'; editInp.value=lyric;
+    editInp.placeholder='Texto de esta línea…';
     const editOk = document.createElement('button');
-    editOk.className = 'cif-lyric-ok';
-    editOk.textContent = '✓';
-    editOk.title = 'Confirmar (Enter)';
+    editOk.className='cif-edit-ok'; editOk.textContent='✓ OK';
 
     function confirmEdit() {
-        const newLyric = editInp.value;
-        if (newLyric !== line.lyric) {
+        const nv = editInp.value;
+        if (nv !== line.lyric) {
             cifSnapshot();
-            // Remap chords: keep chords whose position still exists
-            line.chordMap = (line.chordMap||[]).filter(e => e.pos < newLyric.length);
-            line.lyric = newLyric;
+            // keep chords whose word-start position still exists (approx)
+            line.chordMap = (line.chordMap||[]).filter(e=>e.pos < nv.length);
+            line.lyric = nv;
         }
-        editRow.classList.remove('active');
+        editRow.classList.remove('on');
         const newEl = buildCifLineEl(sec, line, li);
         wrap.replaceWith(newEl);
         cifRenderPreview();
     }
-
     editOk.onclick = confirmEdit;
-    editInp.onkeydown = (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); confirmEdit(); }
-        if (e.key === 'Escape') { editRow.classList.remove('active'); }
+    editInp.onkeydown = e => {
+        if (e.key==='Enter') { e.preventDefault(); confirmEdit(); }
+        if (e.key==='Escape') editRow.classList.remove('on');
     };
-
-    editRow.appendChild(editInp);
-    editRow.appendChild(editOk);
+    editRow.appendChild(editInp); editRow.appendChild(editOk);
     main.appendChild(editRow);
 
-    // Double click on token row → open edit
-    tokenRow.ondblclick = (e) => {
+    tokenRow.ondblclick = e => {
         e.stopPropagation();
-        editRow.classList.add('active');
-        editInp.focus();
-        editInp.select();
+        editRow.classList.add('on');
+        editInp.focus(); editInp.select();
     };
 
     wrap.appendChild(main);
-
-    // Delete line button
-    const delBtn = document.createElement('button');
-    delBtn.className = 'cif-del-line';
-    delBtn.textContent = '✕';
-    delBtn.title = 'Eliminar línea';
-    delBtn.onclick = () => cifDelLine(sec.id, line.id);
+    const delBtn=document.createElement('button');
+    delBtn.className='cif-del-line'; delBtn.textContent='✕'; delBtn.title='Eliminar línea';
+    delBtn.onclick=()=>cifDelLine(sec.id,line.id);
     wrap.appendChild(delBtn);
-
     return wrap;
 }
-
 function cifImportPaste() { /* replaced by cifOpenSectionPaste */ }
 
 function renderCifradoEditor() {
@@ -6427,105 +6285,147 @@ function renderCifradoEditor() {
 
 // ── Preview ──
 function cifRenderPreview() {
-    const body=document.getElementById('cif-prev-body');
+    const body = document.getElementById('cif-prev-body');
     if (!body) return;
-    body.innerHTML='';
+    body.innerHTML = '';
     if (!cifSections.length) {
-        body.innerHTML='<div style="color:var(--dim2);font-size:12px">El cifrado aparecerá aquí…</div>';
+        body.innerHTML = '<div style="color:var(--dim2);font-size:12px;padding:8px">El cifrado aparecerá aquí…</div>';
         return;
     }
-    cifSections.forEach(sec=>{
-        const info=cifTI(sec.type);
-        const sdiv=document.createElement('div'); sdiv.className='cprev-sec';
-        const lbl=document.createElement('span');
-        lbl.className=`cprev-lbl ${info.cls}`; lbl.textContent=sec.label||info.label;
+    cifSections.forEach(sec => {
+        const info = cifTI(sec.type);
+        const sdiv = document.createElement('div');
+        sdiv.className = 'cprev-sec';
+        const lbl = document.createElement('span');
+        lbl.className = `cprev-lbl ${info.cls}`;
+        lbl.textContent = sec.label || info.label;
         sdiv.appendChild(lbl);
-        sec.lines.forEach(line=>{
-            const map = line.chordMap || [];
-            const hasC = map.length > 0 || (line.chords||[]).some(c=>c);
-            if(!hasC&&!line.lyric) return;
-            const ldiv=document.createElement('div'); ldiv.className='cprev-line';
-            // Render inline chords + lyric
-            ldiv.appendChild(renderInlineChordLine(line, false));
-            sdiv.appendChild(ldiv);
-        });
+
+        const isChordOnly = info.chordsOnly || sec.chordsOnly;
+        if (isChordOnly) {
+            const co = document.createElement('div');
+            co.className = 'cprev-co';
+            (sec.coChords||[]).forEach(ch => {
+                const s = document.createElement('span');
+                s.className = 'cprev-co-chip'; s.textContent = ch;
+                co.appendChild(s);
+            });
+            sdiv.appendChild(co);
+        } else {
+            sec.lines.forEach(line => {
+                const map = (line.chordMap||[]).slice().sort((a,b)=>a.pos-b.pos);
+                if (!map.length && !line.lyric) return;
+                sdiv.appendChild(buildPreviewLine(line, map, 'cprev-wt','cprev-chord','cprev-text'));
+            });
+        }
         body.appendChild(sdiv);
     });
 }
 
-// Render a line as interleaved chord+lyric spans
-function renderInlineChordLine(line, big) {
-    const frag = document.createDocumentFragment();
-    const map = (line.chordMap||[]).slice().sort((a,b)=>a.pos-b.pos);
-    const lyric = line.lyric||'';
-    const fs = big ? null : '13px';
-    const cfs = big ? null : '12px';
+// Build a word-token line for preview/presentation (read-only)
+function buildPreviewLine(line, map, wtCls, chordCls, textCls) {
+    const row = document.createElement('div');
+    row.className = 'cprev-line';
+    const lyric = line.lyric || '';
+    if (!lyric.trim() && !map.length) return row;
 
-    if (!map.length) {
-        // Just lyric
-        const ly=document.createElement('div');
-        ly.className='cprev-lyric'; ly.textContent=lyric;
-        if(fs) ly.style.fontSize=fs;
-        frag.appendChild(ly);
-        return frag;
+    // Build word tokens same as editor
+    let i = 0;
+    while (i < lyric.length) {
+        if (lyric[i] === ' ') {
+            let j = i;
+            while (j < lyric.length && lyric[j] === ' ') j++;
+            const wt = document.createElement('span');
+            wt.className = wtCls;
+            const t = document.createElement('span'); t.className = textCls; t.textContent = lyric.slice(i,j);
+            wt.appendChild(t);
+            row.appendChild(wt);
+            i = j;
+        } else {
+            let j = i;
+            while (j < lyric.length && lyric[j] !== ' ') j++;
+            const wt = document.createElement('span');
+            wt.className = wtCls;
+            const entry = map.find(e=>e.pos===i);
+            const c = document.createElement('span');
+            c.className = chordCls + (entry ? '' : ' empty');
+            c.textContent = entry ? entry.chord : '\u00a0';
+            const t = document.createElement('span'); t.className = textCls; t.textContent = lyric.slice(i,j);
+            wt.appendChild(c); wt.appendChild(t);
+            row.appendChild(wt);
+            i = j;
+        }
     }
-
-    // Chord row above
-    const cr=document.createElement('div'); cr.className='cprev-chords';
-    cr.style.fontFamily="'Syne',sans-serif"; cr.style.fontSize=cfs||'12px';
-    cr.style.color='var(--accent)'; cr.style.fontWeight='800';
-    cr.style.letterSpacing='.3px'; cr.style.minHeight='16px';
-    cr.style.whiteSpace='pre';
-
-    // Build chord row: place chords at pixel-approximated positions using monospace-width estimate
-    // Use a proportional approach: estimate char width
-    const avgCharW = 8; // px per char at 14px DM Sans
-    let lastEnd = 0;
-    map.forEach(entry=>{
-        const spaces = Math.max(0, entry.pos - lastEnd);
-        cr.appendChild(document.createTextNode(' '.repeat(spaces)));
-        const cs=document.createElement('span');
-        cs.style.color='var(--accent)'; cs.style.fontFamily="'Syne',sans-serif";
-        cs.style.fontWeight='800'; cs.style.fontSize=cfs||'12px';
-        cs.textContent=entry.chord;
-        cr.appendChild(cs);
-        lastEnd = entry.pos + entry.chord.length;
-    });
-    frag.appendChild(cr);
-
-    const ly=document.createElement('div');
-    ly.className='cprev-lyric'; ly.textContent=lyric;
-    if(fs) ly.style.fontSize=fs;
-    frag.appendChild(ly);
-    return frag;
+    // Handle lines with chords but no lyric
+    if (!lyric.trim() && map.length) {
+        map.forEach(entry => {
+            const wt = document.createElement('span'); wt.className = wtCls;
+            const c = document.createElement('span'); c.className = chordCls; c.textContent = entry.chord;
+            wt.appendChild(c); row.appendChild(wt);
+        });
+    }
+    return row;
 }
 
-// ── Inspector ──
-function renderCifradoInspector(panel) {
-    panel.innerHTML='';
-    if (!cifSongId) {
-        panel.innerHTML='<div style="padding:20px;color:var(--dim2);font-size:12px">Selecciona una canción para ver detalles.</div>';
-        return;
-    }
+function cifOpenPresent() {
+    if (!cifSongId||!cifSections.length){toast('⚠ No hay cifrado para presentar');return;}
     const s=songs.find(x=>x.id===cifSongId);
-    if (!s) return;
-    panel.innerHTML=`
-        <div style="padding:14px">
-            <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Canción</div>
-            <div style="font-size:15px;font-weight:600;color:var(--text);margin-bottom:2px">${esc(s.name)}</div>
-            <div style="font-size:12px;color:var(--dim);margin-bottom:12px">${esc(s.author||'—')}</div>
-            ${s.key?`<span class="tag tag-key" style="margin-right:4px">${esc(s.key)}</span>`:''}
-            ${s.bpm?`<span class="tag tag-bpm">${s.bpm} BPM</span>`:''}
-            <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
-            <div style="font-family:'Syne',sans-serif;font-size:10px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">Estructura (${cifSections.length})</div>
-            ${cifSections.map(sec=>{const i=cifTI(sec.type);return`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span class="cif-sec-badge ${i.cls}">${sec.label||i.label}</span><span style="font-size:11px;color:var(--dim)">${sec.lines.length} línea${sec.lines.length!==1?'s':''}</span></div>`;}).join('')||'<div style="color:var(--dim2);font-size:12px">Sin secciones</div>'}
-            <hr style="border:none;border-top:1px solid var(--border);margin:14px 0">
-            <button class="btn btn-primary" style="width:100%;margin-bottom:8px" onclick="cifSave()">💾 Guardar</button>
-            <button class="btn btn-ghost" style="width:100%" onclick="cifOpenPresent()">▶ Presentar</button>
-        </div>`;
+    document.getElementById('cif-present-title').textContent=s?s.name:'Cifrado';
+    cifPresentFs=18;
+    cifBuildPresent();
+    document.getElementById('cif-present-overlay').classList.add('open');
 }
 
-// ── Presentation ──
+function cifClosePresent() {
+    document.getElementById('cif-present-overlay').classList.remove('open');
+}
+
+function cifPresentZoom(d) {
+    cifPresentFs=Math.max(10,Math.min(40,cifPresentFs+d));
+    document.getElementById('cif-present-zoom').textContent=Math.round(cifPresentFs/18*100)+'%';
+    cifBuildPresent();
+}
+
+function cifBuildPresent() {
+    const body = document.getElementById('cif-present-body');
+    body.innerHTML = '';
+    const fs = cifPresentFs, cfs = Math.round(fs * 0.75);
+    cifSections.forEach(sec => {
+        const info = cifTI(sec.type);
+        const sdiv = document.createElement('div');
+        sdiv.className = 'cpres-sec';
+        const lbl = document.createElement('span');
+        lbl.className = `cpres-badge ${info.cls}`;
+        lbl.textContent = sec.label || info.label;
+        lbl.style.fontSize = (fs * 0.55) + 'px';
+        sdiv.appendChild(lbl);
+
+        const isChordOnly = info.chordsOnly || sec.chordsOnly;
+        if (isChordOnly) {
+            const co = document.createElement('div');
+            co.className = 'cpres-co';
+            (sec.coChords||[]).forEach(ch => {
+                const s2 = document.createElement('span');
+                s2.className='cpres-co-chip'; s2.textContent=ch; s2.style.fontSize=cfs+'px';
+                co.appendChild(s2);
+            });
+            sdiv.appendChild(co);
+        } else {
+            sec.lines.forEach(line => {
+                const map = (line.chordMap||[]).slice().sort((a,b)=>a.pos-b.pos);
+                if (!map.length && !line.lyric) return;
+                const row = buildPreviewLine(line, map, 'cpres-wt','cpres-chord','cpres-text');
+                row.className = 'cpres-line';
+                // Apply font sizes
+                row.querySelectorAll('.cpres-chord').forEach(el=>el.style.fontSize=cfs+'px');
+                row.querySelectorAll('.cpres-text').forEach(el=>el.style.fontSize=fs+'px');
+                sdiv.appendChild(row);
+            });
+        }
+        body.appendChild(sdiv);
+    });
+}
+
 function cifOpenPresent() {
     if (!cifSongId||!cifSections.length){toast('⚠ No hay cifrado para presentar');return;}
     const s=songs.find(x=>x.id===cifSongId);
