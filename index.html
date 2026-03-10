@@ -1898,6 +1898,68 @@
         .cif-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:200px; gap:12px; padding:40px; text-align:center; }
         .cif-empty-ico { font-size:42px; opacity:.3; }
         .cif-empty-txt { color:var(--dim); font-size:13px; line-height:1.7; max-width:280px; }
+        /* ── CHORD PICKER POPUP v2 ── */
+        .cif-chord-popup {
+            position:fixed; z-index:10500; background:var(--panel);
+            border:1px solid var(--border2); border-radius:14px;
+            box-shadow:0 20px 60px rgba(0,0,0,.85);
+            width:340px; padding:12px; display:flex; flex-direction:column; gap:8px;
+            font-family:'DM Sans',sans-serif;
+        }
+        .cif-cp-search-row { display:flex; gap:6px; align-items:center; }
+        .cif-cp-input {
+            flex:1; background:var(--panel2); border:1px solid var(--border2);
+            border-radius:8px; color:var(--text); font-size:14px; padding:8px 12px;
+            outline:none; font-family:'Syne',sans-serif; font-weight:700;
+        }
+        .cif-cp-input:focus { border-color:var(--accent); }
+        .cif-cp-del {
+            background:rgba(255,80,80,.12); border:1px solid rgba(255,80,80,.25);
+            color:#ff6060; border-radius:8px; padding:8px 12px; cursor:pointer;
+            font-size:13px; font-weight:700; font-family:'Syne',sans-serif; transition:all .1s;
+            white-space:nowrap;
+        }
+        .cif-cp-del:hover { background:rgba(255,80,80,.25); }
+
+        /* Category tabs */
+        .cif-cp-cats { display:flex; gap:4px; flex-wrap:wrap; }
+        .cif-cp-cat {
+            background:var(--panel2); border:1px solid var(--border2); border-radius:20px;
+            color:var(--dim); font-size:10px; font-family:'Syne',sans-serif; font-weight:700;
+            padding:3px 10px; cursor:pointer; transition:all .12s; text-transform:uppercase; letter-spacing:.4px;
+        }
+        .cif-cp-cat:hover { border-color:var(--accent); color:var(--accent); }
+        .cif-cp-cat.active { background:var(--accent); border-color:var(--accent); color:#fff; }
+
+        /* Chord grid */
+        .cif-cp-grid {
+            display:grid; grid-template-columns:repeat(6,1fr); gap:4px; max-height:200px; overflow-y:auto;
+        }
+        .cif-cp-chip {
+            border-radius:7px; padding:6px 2px; font-size:12px; font-family:'Syne',sans-serif;
+            font-weight:800; cursor:pointer; border:none; text-align:center;
+            transition:transform .1s, filter .1s; color:#fff;
+        }
+        .cif-cp-chip:hover { transform:scale(1.07); filter:brightness(1.2); }
+        /* color by chord family */
+        .cif-cp-chip.nat  { background:#3b82f6; }   /* natural */
+        .cif-cp-chip.min  { background:#8b5cf6; }   /* minor */
+        .cif-cp-chip.maj7 { background:#0ea5e9; }   /* maj7 */
+        .cif-cp-chip.m7   { background:#a855f7; }   /* m7 */
+        .cif-cp-chip.dom7 { background:#f59e0b; }   /* dom7 */
+        .cif-cp-chip.sus  { background:#10b981; }   /* sus */
+        .cif-cp-chip.aug  { background:#ef4444; }   /* aug/dim */
+        .cif-cp-chip.add  { background:#f97316; }   /* add9 */
+        .cif-cp-chip.sel  { outline:3px solid #fff; transform:scale(1.1); }
+
+        .cif-cp-footer { display:flex; gap:6px; }
+        .cif-cp-ok {
+            flex:1; background:var(--accent); border:none; color:#fff;
+            border-radius:8px; padding:9px; font-size:13px; font-family:'Syne',sans-serif;
+            font-weight:700; cursor:pointer; transition:filter .1s;
+        }
+        .cif-cp-ok:hover { filter:brightness(1.1); }
+
         @media (max-width:768px) { .cif-preview { display:none !important; } }
 
 
@@ -2072,13 +2134,27 @@
     </div>
 </div>
 
-<!-- CIFRADO: Chord picker popup -->
+<!-- CIFRADO: Chord picker popup v2 -->
 <div id="cif-chord-popup" class="cif-chord-popup" style="display:none">
-    <input type="text" id="cif-cp-input" class="cif-cp-input" placeholder="Acorde…" oninput="cifFilterChords(this.value)" onkeydown="cifCPKey(event)">
+    <div class="cif-cp-search-row">
+        <input type="text" id="cif-cp-input" class="cif-cp-input" placeholder="Buscar acorde… (ej: C#m)" oninput="cifFilterChords(this.value)" onkeydown="cifCPKey(event)" autocomplete="off">
+        <button class="cif-cp-del" onclick="cifDeleteChord()" title="Quitar acorde">✕</button>
+    </div>
+    <div class="cif-cp-cats" id="cif-cp-cats"></div>
     <div class="cif-cp-grid" id="cif-cp-grid"></div>
-    <div class="cif-cp-actions">
+    <div class="cif-cp-footer">
         <button class="cif-cp-ok" onclick="cifConfirmChord()">✓ Aplicar</button>
-        <button class="cif-cp-del" onclick="cifDeleteChord()">✕ Quitar</button>
+    </div>
+</div>
+
+<!-- CIFRADO: Preferences panel -->
+<div id="cif-prefs-overlay" style="display:none;position:fixed;inset:0;z-index:11000;background:rgba(0,0,0,.7);display:none;align-items:center;justify-content:center">
+    <div id="cif-prefs-box" style="background:var(--panel);border:1px solid var(--border2);border-radius:16px;padding:0;width:400px;max-width:95vw;box-shadow:0 24px 80px rgba(0,0,0,.9);overflow:hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);background:var(--panel2)">
+            <span style="font-family:'Syne',sans-serif;font-size:15px;font-weight:800;color:var(--text)">⚙ Preferencias</span>
+            <button onclick="cifClosePrefs()" style="background:none;border:none;color:var(--dim);cursor:pointer;font-size:18px;padding:2px 8px">✕</button>
+        </div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:18px" id="cif-prefs-body"></div>
     </div>
 </div>
 
@@ -5556,18 +5632,20 @@ const CIF_TYPES = [
     {key:'outro',        label:'Outro',        cls:'cs-outro',        chordsOnly:false},
     {key:'tag',          label:'Tag',          cls:'cs-tag',          chordsOnly:false},
 ];
-const CHORDS_LIST = [
-    'C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#','Bb','B',
-    'Cm','C#m','Dbm','Dm','D#m','Ebm','Em','Fm','F#m','Gbm','Gm','G#m','Abm','Am','A#m','Bbm','Bm',
-    'Cmaj7','Dmaj7','Emaj7','Fmaj7','Gmaj7','Amaj7','Bmaj7',
-    'Cm7','Dm7','Em7','Fm7','Gm7','Am7','Bm7',
-    'C7','D7','E7','F7','G7','A7','B7',
-    'Csus2','Dsus2','Gsus2','Asus2','Csus4','Dsus4','Gsus4','Asus4',
-    'Cadd9','Dadd9','Gadd9','Aadd9',
-    'D/F#','G/B','A/C#','E/G#','C/E','F/A','G/F#','Bm/D','Em/D',
+// Chord categories with colors
+const CHORD_CATS = [
+    {id:'nat',  label:'Mayores',  cls:'nat',  chords:['C','C#','Db','D','D#','Eb','E','F','F#','Gb','G','G#','Ab','A','A#','Bb','B']},
+    {id:'min',  label:'Menores',  cls:'min',  chords:['Cm','C#m','Dbm','Dm','D#m','Ebm','Em','Fm','F#m','Gbm','Gm','G#m','Abm','Am','A#m','Bbm','Bm']},
+    {id:'maj7', label:'Maj7',     cls:'maj7', chords:['Cmaj7','Dmaj7','Emaj7','Fmaj7','Gmaj7','Amaj7','Bmaj7','C#maj7','Ebmaj7','Gbmaj7','Abmaj7','Bbmaj7']},
+    {id:'m7',   label:'m7',       cls:'m7',   chords:['Cm7','C#m7','Dm7','Ebm7','Em7','Fm7','F#m7','Gm7','Abm7','Am7','Bbm7','Bm7']},
+    {id:'dom7', label:'7',        cls:'dom7', chords:['C7','C#7','D7','Eb7','E7','F7','F#7','G7','Ab7','A7','Bb7','B7']},
+    {id:'sus',  label:'Sus',      cls:'sus',  chords:['Csus2','Dsus2','Esus2','Gsus2','Asus2','Csus4','Dsus4','Esus4','Gsus4','Asus4','G#sus4','F#sus2']},
+    {id:'add',  label:'Add9',     cls:'add',  chords:['Cadd9','Dadd9','Eadd9','Fadd9','Gadd9','Aadd9','Badd9','C2','D2','G2','A2']},
+    {id:'aug',  label:'Dim/Aug',  cls:'aug',  chords:['Cdim','Ddim','Edim','Fdim','Gdim','Adim','Bdim','Caug','Daug','Eaug','Faug','Gaug','Aaug']},
 ];
+const CHORDS_LIST = CHORD_CATS.flatMap(c=>c.chords);
+let _cifCurCat = 'nat';
 
-function cifTI(key){ return CIF_TYPES.find(t=>t.key===key)||CIF_TYPES[6]; }
 function cifUID(){ return Math.random().toString(36).slice(2,9); }
 
 // ── Undo / Redo ──
@@ -5716,7 +5794,13 @@ function cifOpenChordPopup(secId, lineId, posOrIdx, currentChord, anchor, isPosM
     const pop = document.getElementById('cif-chord-popup');
     const inp = document.getElementById('cif-cp-input');
     inp.value = currentChord||'';
-    cifFilterChords(inp.value);
+    if (currentChord) {
+        for (const cat of CHORD_CATS) {
+            if (cat.chords.includes(currentChord)) { _cifCurCat = cat.id; break; }
+        }
+    }
+    cifBuildCatTabs();
+    cifFilterChords(currentChord||'');
     pop.style.display = 'block';
 
     const r = anchor.getBoundingClientRect();
@@ -5727,11 +5811,63 @@ function cifOpenChordPopup(secId, lineId, posOrIdx, currentChord, anchor, isPosM
     setTimeout(()=>{inp.focus();inp.select();},40);
 }
 
+function cifGetChordClass(ch) {
+    for (const cat of CHORD_CATS) {
+        if (cat.chords.includes(ch)) return cat.cls;
+    }
+    if (ch.includes('m7')) return 'm7';
+    if (ch.includes('maj7')) return 'maj7';
+    if (ch.includes('sus')) return 'sus';
+    if (ch.includes('add')||ch.match(/\d$/)) return 'add';
+    if (ch.includes('dim')||ch.includes('aug')) return 'aug';
+    if (ch.includes('7')) return 'dom7';
+    if (ch.includes('m')) return 'min';
+    return 'nat';
+}
+
 function cifFilterChords(q) {
     const grid = document.getElementById('cif-cp-grid');
-    const list = q ? CHORDS_LIST.filter(c=>c.toLowerCase().startsWith(q.toLowerCase())).slice(0,36)
-                   : CHORDS_LIST.slice(0,36);
-    grid.innerHTML = list.map(c=>`<button class="cif-cp-chip" onmousedown="event.preventDefault();document.getElementById('cif-cp-input').value='${c}';cifFilterChords('${c}')">${c}</button>`).join('');
+    if (!grid) return;
+    let list;
+    if (q && q.trim()) {
+        list = CHORDS_LIST.filter(c => c.toLowerCase().startsWith(q.toLowerCase())).slice(0, 48);
+    } else {
+        const cat = CHORD_CATS.find(c => c.id === _cifCurCat) || CHORD_CATS[0];
+        list = cat.chords;
+    }
+    const currentVal = document.getElementById('cif-cp-input')?.value.trim();
+    grid.innerHTML = '';
+    list.forEach(ch => {
+        const btn = document.createElement('button');
+        btn.className = 'cif-cp-chip ' + cifGetChordClass(ch) + (ch === currentVal ? ' sel' : '');
+        btn.textContent = ch;
+        btn.onmousedown = e => {
+            e.preventDefault();
+            const inp = document.getElementById('cif-cp-input');
+            inp.value = ch;
+            cifFilterChords(ch);
+        };
+        grid.appendChild(btn);
+    });
+}
+
+function cifBuildCatTabs() {
+    const cats = document.getElementById('cif-cp-cats');
+    if (!cats) return;
+    cats.innerHTML = '';
+    CHORD_CATS.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'cif-cp-cat' + (cat.id === _cifCurCat ? ' active' : '');
+        btn.textContent = cat.label;
+        btn.onmousedown = e => {
+            e.preventDefault();
+            _cifCurCat = cat.id;
+            document.getElementById('cif-cp-input').value = '';
+            cifBuildCatTabs();
+            cifFilterChords('');
+        };
+        cats.appendChild(btn);
+    });
 }
 
 function cifConfirmChord() {
@@ -5740,60 +5876,185 @@ function cifConfirmChord() {
 }
 function cifDeleteChord() { cifApplyChord(''); }
 
-function cifApplyChord(val) {
-    const {secId,lineId,wordIdx,isPosMode} = _cp;
-    if (!secId) return;
-    const sec = cifSections.find(s=>s.id===secId);
-    if (!sec) return;
-    cifSnapshot();
-
-    if (lineId === '__co__') {
-        // Chord-only section
-        if (!sec.coChords) sec.coChords = [];
-        if (!val) {
-            sec.coChords.splice(wordIdx, 1);
-        } else {
-            if (wordIdx >= sec.coChords.length) sec.coChords.push(val);
-            else sec.coChords[wordIdx] = val;
-        }
-        cifCloseChordPopup();
-        // Rebuild just this co-line
-        if (sec._rebuildCoLine) sec._rebuildCoLine();
-        cifRenderPreview();
-        return;
-    }
-
-    const line = sec?.lines.find(l=>l.id===lineId);
-    if (!line) return;
-
-    if (isPosMode) {
-        if (!line.chordMap) line.chordMap = [];
-        const existing = line.chordMap.findIndex(e=>e.pos===wordIdx);
-        if (!val) {
-            if (existing>=0) line.chordMap.splice(existing,1);
-        } else {
-            if (existing>=0) line.chordMap[existing].chord = val;
-            else line.chordMap.push({pos:wordIdx, chord:val});
-            line.chordMap.sort((a,b)=>a.pos-b.pos);
-        }
-    } else {
-        while ((line.chords||[]).length<=wordIdx) (line.chords=line.chords||[]).push('');
-        line.chords[wordIdx] = val;
-    }
-
-    cifCloseChordPopup();
-    renderCifradoEditor();
-}
-
-function cifCloseChordPopup() {
-    document.getElementById('cif-chord-popup').style.display='none';
-    _cp={secId:null,lineId:null,wordIdx:null};
-}
-
 function cifCPKey(e) {
-    if (e.key==='Enter') cifConfirmChord();
-    if (e.key==='Escape') cifCloseChordPopup();
+    if (e.key === 'Enter') cifConfirmChord();
+    if (e.key === 'Escape') cifCloseChordPopup();
+    if (e.key === 'Tab') {
+        e.preventDefault();
+        const grid = document.getElementById('cif-cp-grid');
+        const first = grid?.querySelector('.cif-cp-chip');
+        if (first) { document.getElementById('cif-cp-input').value = first.textContent; cifFilterChords(first.textContent); }
+    }
 }
+
+// ── Syllable splitter (Spanish) ──
+function splitSyllables(word) {
+    // Spanish syllable rules (simplified but effective)
+    const vowels = 'aeiouáéíóúüAEIOUÁÉÍÓÚÜ';
+    const isV = c => vowels.includes(c);
+    // For short words, don't split
+    if (word.length <= 2) return [word];
+    
+    const syls = [];
+    let cur = '';
+    const w = word;
+    let i = 0;
+    
+    while (i < w.length) {
+        cur += w[i];
+        const next = w[i+1];
+        const afterNext = w[i+2];
+        
+        if (isV(w[i])) {
+            // After vowel: check if we should break
+            if (next && !isV(next)) {
+                if (afterNext && isV(afterNext)) {
+                    // CV pattern: consonant before vowel → break after consonant belongs to next
+                    syls.push(cur);
+                    cur = '';
+                } else if (afterNext && !isV(afterNext) && w[i+3] && isV(w[i+3])) {
+                    // Two consonants: split between them
+                    cur += next;
+                    syls.push(cur);
+                    cur = '';
+                    i++;
+                }
+            } else if (next && isV(next)) {
+                // Two vowels: usually split unless diphthong
+                const diphthong = 'aeiouáéíóú';
+                const strong = 'aeoáéó';
+                if (strong.includes(w[i]) && strong.includes(next)) {
+                    syls.push(cur);
+                    cur = '';
+                }
+            }
+        }
+        i++;
+    }
+    if (cur) syls.push(cur);
+    return syls.length ? syls : [word];
+}
+
+// ── Preferences ──
+let _cifPrefs = {
+    fontFamily: 'DM Sans',
+    showChords: true,
+    showLyrics: true,
+};
+const CIF_FONTS = [
+    {id:'DM Sans', label:'DM Sans (por defecto)'},
+    {id:'Georgia', label:'Georgia (serif)'},
+    {id:'Courier New', label:'Courier New (monoespaciada)'},
+    {id:'Arial', label:'Arial'},
+    {id:'Syne', label:'Syne'},
+];
+
+function cifOpenPrefs() {
+    const overlay = document.getElementById('cif-prefs-overlay');
+    const body = document.getElementById('cif-prefs-body');
+    if (!overlay || !body) return;
+    body.innerHTML = '';
+    overlay.style.display = 'flex';
+
+    function row(label, el) {
+        const r = document.createElement('div');
+        r.style.cssText = 'display:flex;flex-direction:column;gap:6px';
+        const lbl = document.createElement('div');
+        lbl.style.cssText = "font-size:12px;font-family:'Syne',sans-serif;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px";
+        lbl.textContent = label;
+        r.appendChild(lbl); r.appendChild(el);
+        return r;
+    }
+    function sel(options, val, cb) {
+        const s = document.createElement('select');
+        s.style.cssText = 'background:var(--panel2);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;padding:8px 12px;outline:none;cursor:pointer;width:100%';
+        options.forEach(o => {
+            const opt = document.createElement('option');
+            opt.value = o.id; opt.textContent = o.label;
+            if (o.id === val) opt.selected = true;
+            s.appendChild(opt);
+        });
+        s.onchange = () => cb(s.value);
+        return s;
+    }
+
+    // Font size
+    const sizeRow = document.createElement('div');
+    sizeRow.style.cssText = 'display:flex;gap:12px';
+    [{label:'LETRA', which:'lyric', id:'cif-lyric-size-lbl', val:()=>cifLyricSize},
+     {label:'ACORDES', which:'chord', id:'cif-chord-size-lbl', val:()=>cifChordSize}].forEach(item => {
+        const col = document.createElement('div');
+        col.style.cssText = 'flex:1;display:flex;flex-direction:column;gap:6px';
+        const lbl = document.createElement('div');
+        lbl.style.cssText = "font-size:11px;font-family:'Syne',sans-serif;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px";
+        lbl.textContent = item.label;
+        const ctrl = document.createElement('div');
+        ctrl.style.cssText = 'display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px solid var(--border2);border-radius:8px;padding:4px 8px';
+        const bm = document.createElement('button');
+        bm.style.cssText = 'background:none;border:none;color:var(--text);cursor:pointer;font-size:18px;font-weight:800;padding:0 4px;line-height:1';
+        bm.textContent='−'; bm.onclick=()=>{ cifAdjSize(item.which,-1); lbl2.textContent=item.val()+'px'; };
+        const lbl2 = document.createElement('span');
+        lbl2.style.cssText = 'flex:1;text-align:center;font-size:13px;color:var(--text)';
+        lbl2.textContent = item.val()+'px';
+        const bp = document.createElement('button');
+        bp.style.cssText = bm.style.cssText;
+        bp.textContent='+'; bp.onclick=()=>{ cifAdjSize(item.which,1); lbl2.textContent=item.val()+'px'; };
+        ctrl.appendChild(bm); ctrl.appendChild(lbl2); ctrl.appendChild(bp);
+        col.appendChild(lbl); col.appendChild(ctrl);
+        sizeRow.appendChild(col);
+    });
+    body.appendChild(sizeRow);
+
+    // Font family
+    body.appendChild(row('Fuente de letra', sel(CIF_FONTS, _cifPrefs.fontFamily, v => {
+        _cifPrefs.fontFamily = v;
+        document.documentElement.style.setProperty('--cif-font', v);
+        // Update lyric inputs
+        document.querySelectorAll('.cif-wt-text,.cif-lyric-in,.cprev-text,.cpres-text').forEach(el=>el.style.fontFamily=v);
+    })));
+
+    // View toggle
+    const viewRow = document.createElement('div');
+    viewRow.style.cssText = 'display:flex;gap:6px';
+    [['Acordes + Letra','both'],['Solo acordes','chords'],['Solo letra','lyrics']].forEach(([lbl,val]) => {
+        const btn = document.createElement('button');
+        const isActive = (val==='both'&&_cifPrefs.showChords&&_cifPrefs.showLyrics) ||
+                         (val==='chords'&&_cifPrefs.showChords&&!_cifPrefs.showLyrics) ||
+                         (val==='lyrics'&&!_cifPrefs.showChords&&_cifPrefs.showLyrics);
+        btn.className = 'cif-sec-type-btn' + (isActive?' selected':'');
+        btn.textContent = lbl;
+        btn.style.cssText = 'flex:1;padding:8px 6px;font-size:11px;text-align:center';
+        btn.onclick = () => {
+            _cifPrefs.showChords = val!=='lyrics';
+            _cifPrefs.showLyrics = val!=='chords';
+            viewRow.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
+            btn.classList.add('selected');
+            // Toggle chord visibility
+            document.querySelectorAll('.cif-wt-chord,.cprev-chord,.cpres-chord').forEach(el=>{
+                el.style.display = _cifPrefs.showChords ? '' : 'none';
+            });
+            document.querySelectorAll('.cif-wt-text,.cprev-text,.cpres-text').forEach(el=>{
+                el.style.display = _cifPrefs.showLyrics ? '' : 'none';
+            });
+        };
+        viewRow.appendChild(btn);
+    });
+    body.appendChild(row('Vista', viewRow));
+
+    // Close btn
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'cif-tbtn save';
+    closeBtn.style.cssText = 'width:100%;padding:10px;font-size:13px';
+    closeBtn.textContent = '✓ Cerrar preferencias';
+    closeBtn.onclick = cifClosePrefs;
+    body.appendChild(closeBtn);
+}
+
+function cifClosePrefs() {
+    const o = document.getElementById('cif-prefs-overlay');
+    if (o) o.style.display = 'none';
+}
+
 
 document.addEventListener('click', e=>{
     const pop=document.getElementById('cif-chord-popup');
@@ -5840,6 +6101,11 @@ function renderCifrado(display) {
         const btnPres=document.createElement('button');
         btnPres.className='cif-tbtn'; btnPres.textContent='▶ Presentar';
         btnPres.onclick=cifOpenPresent; tb.appendChild(btnPres);
+
+        const btnPrefs=document.createElement('button');
+        btnPrefs.className='cif-tbtn'; btnPrefs.textContent='⚙';
+        btnPrefs.title='Preferencias'; btnPrefs.style.cssText='padding:7px 11px;font-size:15px';
+        btnPrefs.onclick=cifOpenPrefs; tb.appendChild(btnPrefs);
     }
 
     // Font size controls
@@ -6285,36 +6551,54 @@ function buildCifLineEl(sec, line, li) {
         }
 
         tokens.forEach(tok => {
-            const wt = document.createElement('div');
-            wt.className = 'cif-wt' + (tok.type==='space' ? ' sp' : '');
-
-            // Find chord at this word start position
-            const entry = (line.chordMap||[]).find(e=>e.pos===tok.startIdx);
-
-            // Chord span
-            const chord = document.createElement('span');
-            chord.className = 'cif-wt-chord ' + (entry ? 'has' : 'empty');
-            chord.textContent = entry ? entry.chord : '';
-            wt.appendChild(chord);
-
-            // Text span
-            const text = document.createElement('span');
-            text.className = 'cif-wt-text';
-            text.textContent = tok.text;
-            wt.appendChild(text);
-
-            if (tok.type === 'word') {
-                wt.title = `Clic → acorde sobre "${tok.text}"`;
-                wt.onclick = (e) => {
-                    e.stopPropagation();
-                    cifOpenChordPopup(sec.id, line.id, tok.startIdx, entry?.chord||'', chord, true);
-                };
-                chord.onclick = (e) => {
-                    e.stopPropagation();
-                    cifOpenChordPopup(sec.id, line.id, tok.startIdx, entry?.chord||'', chord, true);
-                };
+            if (tok.type === 'space') {
+                // Space token — invisible, no chord
+                const wt = document.createElement('div');
+                wt.className = 'cif-wt sp';
+                const text = document.createElement('span');
+                text.className = 'cif-wt-text';
+                text.textContent = tok.text;
+                wt.appendChild(text);
+                tokenRow.appendChild(wt);
+                return;
             }
-            tokenRow.appendChild(wt);
+
+            // Split word into syllables
+            const syls = splitSyllables(tok.text);
+            let sylOffset = 0;
+
+            syls.forEach((syl, sylIdx) => {
+                const charPos = tok.startIdx + sylOffset;
+                const wt = document.createElement('div');
+                wt.className = 'cif-wt';
+
+                // Find chord at this syllable position
+                const entry = (line.chordMap||[]).find(e=>e.pos===charPos);
+
+                // Chord span
+                const chord = document.createElement('span');
+                chord.className = 'cif-wt-chord ' + (entry ? 'has ' + cifGetChordClass(entry.chord) + '-chip' : 'empty');
+                chord.textContent = entry ? entry.chord : '';
+                wt.appendChild(chord);
+
+                // Syllable text
+                const text = document.createElement('span');
+                text.className = 'cif-wt-text';
+                // Add hyphen hint between syllables (invisible, just spacing)
+                text.textContent = syl;
+                wt.appendChild(text);
+
+                wt.title = 'Clic → acorde sobre "' + syl + '"';
+                const clickHandler = (e) => {
+                    e.stopPropagation();
+                    cifOpenChordPopup(sec.id, line.id, charPos, entry?.chord||'', chord, true);
+                };
+                wt.onclick = clickHandler;
+                chord.onclick = (e) => { e.stopPropagation(); clickHandler(e); };
+
+                tokenRow.appendChild(wt);
+                sylOffset += syl.length;
+            });
         });
     }
 
