@@ -5081,7 +5081,7 @@ async function loadFromSupabase() {
             compass: r.compass||'',
             youtube: r.youtube||'', letter: r.letter||'', url: r.url||'',
             multitrack: r.multitrack||false,
-            cifrado: r.cifrado ? (() => { try { return JSON.parse(r.cifrado); } catch(e) { return null; } })() : null,
+            cifrado: r.cifrado || null,  // Keep as raw string; cifLoad will parse it
             // Preferir Supabase, si no hay → buscar en localStorage
             coverUrl:  r.cover_url  || localStorage.getItem('cover_'+r.id) || null,
             audioData: r.audio_data || localStorage.getItem('audio_'+r.id) || null
@@ -5671,23 +5671,78 @@ function cifRedo() {
 function cifLoad(songId) {
     if (!songId) { cifSongId=null; cifSections=[]; cifUndoStack=[]; cifRedoStack=[]; renderCifradoEditor(); return; }
     const s = songs.find(x=>x.id===songId);
-    if (!s) return;
+    if (!s) { console.warn('[CIF] Song not found:', songId); renderCifradoEditor(); return; }
     cifSongId = songId;
     cifUndoStack = []; cifRedoStack = [];
-    let raw = s.cifrado || localStorage.getItem('cifrado_'+songId);
-    try { cifSections = raw ? JSON.parse(typeof raw==='string'?raw:JSON.stringify(raw)) : []; }
-    catch(e) { cifSections = []; }
+
+    // Try all sources: song object, localStorage
+    let raw = null;
+    // 1. From song object
+    if (s.cifrado) {
+        raw = typeof s.cifrado === 'string' ? s.cifrado : JSON.stringify(s.cifrado);
+    }
+    // 2. From localStorage (may be more recent)
+    const lsRaw = localStorage.getItem('cifrado_'+songId);
+    if (lsRaw && lsRaw !== '[]' && lsRaw !== 'null') {
+        raw = lsRaw; // localStorage overrides (saved more recently)
+    }
+
+    console.log('[CIF] Load songId=', songId, 'raw=', raw ? raw.slice(0,80) : 'null');
+
+    try {
+        const parsed = raw ? JSON.parse(raw) : [];
+        // Ensure each section has required fields
+        cifSections = Array.isArray(parsed) ? parsed.map(sec => ({
+            id: sec.id || cifUID(),
+            type: sec.type || 'verse',
+            label: sec.label || cifTI(sec.type||'verse').label,
+            lines: Array.isArray(sec.lines) ? sec.lines.map(l => ({
+                id: l.id || cifUID(),
+                chords: l.chords || [],
+                chordMap: l.chordMap || [],
+                lyric: l.lyric || ''
+            })) : [],
+            coChords: sec.coChords || undefined,
+            emptyRef: sec.emptyRef || undefined,
+        })) : [];
+    } catch(e) {
+        console.error('[CIF] Parse error:', e, 'raw=', raw);
+        cifSections = [];
+    }
+
+    console.log('[CIF] Loaded', cifSections.length, 'sections');
     renderCifradoEditor();
 }
 
 function cifSave() {
     if (!cifSongId) return;
     const s = songs.find(x=>x.id===cifSongId);
-    if (s) s.cifrado = cifSections;
     const json = JSON.stringify(cifSections);
+    if (s) s.cifrado = json;
     try { localStorage.setItem('cifrado_'+cifSongId, json); } catch(e){}
-    try { sb.from('songs').update({cifrado:json}).eq('id',cifSongId); } catch(e){}
-    toast('💾 Cifrado guardado');
+    // Save to Supabase async
+    sb.from('songs').update({cifrado: json}).eq('id', cifSongId)
+      .then(({error}) => {
+          if (error) { console.error('[CIF] Save error:', error); toast('⚠ Error guardando en nube'); }
+          else toast('💾 Cifrado guardado');
+      });
+}
+
+async function cifLoadFromCloud() {
+    if (!cifSongId) return;
+    toast('☁ Cargando desde nube…');
+    const {data, error} = await sb.from('songs').select('cifrado').eq('id', cifSongId).single();
+    if (error || !data) { toast('⚠ No se pudo cargar desde nube'); return; }
+    if (data.cifrado) {
+        const raw = typeof data.cifrado === 'string' ? data.cifrado : JSON.stringify(data.cifrado);
+        localStorage.setItem('cifrado_'+cifSongId, raw);
+        const s = songs.find(x=>x.id===cifSongId);
+        if (s) s.cifrado = raw;
+        cifLoad(cifSongId);
+        toast('✓ Cifrado cargado desde nube');
+    } else {
+        toast('ℹ No hay cifrado guardado en nube para esta canción');
+    }
 }
 
 // ── Parse pasted text into sections/lines ──
@@ -6097,6 +6152,11 @@ function renderCifrado(display) {
         const btnSave=document.createElement('button');
         btnSave.className='cif-tbtn save'; btnSave.textContent='💾 Guardar';
         btnSave.onclick=cifSave; tb.appendChild(btnSave);
+
+        const btnCloud=document.createElement('button');
+        btnCloud.className='cif-tbtn'; btnCloud.textContent='☁';
+        btnCloud.title='Recargar desde nube'; btnCloud.style.cssText='padding:7px 10px;font-size:14px';
+        btnCloud.onclick=cifLoadFromCloud; tb.appendChild(btnCloud);
 
         const btnPres=document.createElement('button');
         btnPres.className='cif-tbtn'; btnPres.textContent='▶ Presentar';
