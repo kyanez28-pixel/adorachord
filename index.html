@@ -1915,70 +1915,134 @@
         .cif-sec-ctrl button:hover { color:var(--text); }
         .cif-sec-ctrl .del-sec:hover { color:#ff6060; }
 
-        /* Lines */
-        .cif-sec-body { padding:8px 10px; display:flex; flex-direction:column; gap:0; }
+        /* Lines — syllable-based editor */
+        .cif-sec-body { padding:6px 12px 10px; display:flex; flex-direction:column; gap:0; }
 
+        /* One line = chord row + lyric row stacked */
         .cif-line-wrap {
-            display:flex; align-items:center; gap:4px;
-            padding:2px 0; border-bottom:1px solid transparent;
-            transition:border-color .1s;
+            display:flex; align-items:flex-start; gap:6px;
+            padding:2px 0; border-radius:6px; transition:background .1s;
+            position:relative;
         }
-        .cif-line-wrap:hover { border-bottom-color:rgba(255,255,255,.04); }
+        .cif-line-wrap:hover { background:rgba(255,255,255,.02); }
 
-        /* The inner element that holds chord overlay + input */
-        .cif-line-inner {
-            position:relative; flex:1; min-width:0;
-            padding-top:24px;  /* space for chord chips above */
+        .cif-line-main { flex:1; min-width:0; }
+
+        /* Chord row: one chip per syllable token */
+        .cif-chord-row {
+            display:flex; flex-wrap:wrap; min-height:20px;
+            align-items:flex-end; gap:0; margin-bottom:1px;
         }
 
-        .cif-lyric-in {
-            width:100%; background:transparent; border:none;
-            color:var(--text); font-size:14px; font-family:'DM Sans',sans-serif;
-            outline:none; padding:2px 0; line-height:1.5; display:block;
+        /* Each token = syllable unit with chord above + text below */
+        .cif-token {
+            display:inline-flex; flex-direction:column; align-items:flex-start;
+            cursor:pointer; padding:0 1px; border-radius:3px;
+            transition:background .12s; position:relative;
         }
-        .cif-lyric-in::placeholder { color:var(--dim2); font-size:12px; }
-        .cif-lyric-in:focus { background:rgba(255,255,255,.02); border-radius:4px; }
+        .cif-token:hover { background:rgba(232,87,42,.1); }
+        .cif-token:hover .cif-token-chord { opacity:1; }
 
-        /* Tooltip hint */
-        .cif-lyric-in-hint {
-            font-size:10px; color:var(--dim2); margin-top:1px; display:none;
-        }
-        .cif-line-wrap:focus-within .cif-lyric-in-hint { display:block; }
-
-        .cif-chord-chip {
-            font-family:'Syne',sans-serif; font-size:13px; font-weight:800;
+        .cif-token-chord {
+            font-family:'Syne',sans-serif; font-size:12px; font-weight:800;
             color:var(--accent); white-space:nowrap; line-height:1.3;
-            padding:1px 4px; border-radius:4px; cursor:pointer;
-            background:rgba(232,87,42,.1); border:1px solid rgba(232,87,42,.2);
-            transition:background .1s, transform .1s;
+            min-height:16px; display:block; padding:0 2px;
+            border-radius:3px; transition:background .1s;
         }
-        .cif-chord-chip:hover {
-            background:rgba(232,87,42,.25); transform:scale(1.05);
+        .cif-token-chord.has-chord {
+            background:rgba(232,87,42,.12); border:1px solid rgba(232,87,42,.2);
+            cursor:pointer;
         }
-        .cif-chord-chip:empty::before {
-            content:''; display:none;
+        .cif-token-chord.has-chord:hover { background:rgba(232,87,42,.25); }
+        .cif-token-chord.empty { opacity:0; font-size:10px; color:var(--dim2); }
+        .cif-token:hover .cif-token-chord.empty {
+            opacity:.4; content:'+';
         }
+
+        .cif-token-text {
+            font-size:14px; color:var(--text); font-family:'DM Sans',sans-serif;
+            white-space:pre; line-height:1.5; user-select:none;
+        }
+        .cif-token.space .cif-token-text { color:transparent; }
+        .cif-token.space { min-width:8px; }
+
+        /* Editable lyric input (hidden, activated on double-click) */
+        .cif-lyric-edit-row {
+            display:none; align-items:center; gap:6px; margin-top:2px;
+        }
+        .cif-lyric-edit-row.active { display:flex; }
+        .cif-lyric-in {
+            flex:1; background:var(--panel2); border:1px solid var(--accent);
+            border-radius:6px; color:var(--text); font-size:14px;
+            font-family:'DM Sans',sans-serif; outline:none; padding:4px 8px;
+            line-height:1.5;
+        }
+        .cif-lyric-ok {
+            background:var(--accent); border:none; color:#fff; border-radius:6px;
+            padding:4px 10px; font-size:12px; cursor:pointer; font-family:'Syne',sans-serif;
+            font-weight:700; white-space:nowrap;
+        }
+
+        /* Hint: shown when hovering section */
+        .cif-line-hint {
+            font-size:10px; color:var(--dim2); position:absolute; right:0; top:4px;
+            opacity:0; transition:opacity .15s; pointer-events:none;
+            font-family:'Syne',sans-serif;
+        }
+        .cif-line-wrap:hover .cif-line-hint { opacity:1; }
 
         .cif-del-line {
             background:none; border:none; color:var(--dim2); cursor:pointer;
-            font-size:11px; padding:2px 5px; border-radius:3px; opacity:0;
-            transition:opacity .15s; flex-shrink:0; align-self:center;
+            font-size:12px; padding:2px 5px; border-radius:3px; opacity:0;
+            transition:opacity .15s; flex-shrink:0; margin-top:18px;
         }
-        .cif-line-wrap:hover .cif-del-line { opacity:.7; }
+        .cif-line-wrap:hover .cif-del-line { opacity:.6; }
         .cif-del-line:hover { color:#ff6060; opacity:1 !important; }
 
         .cif-add-line {
             background:none; border:1px dashed transparent; border-radius:6px;
             color:var(--dim2); font-size:11px; cursor:pointer; padding:3px 8px;
-            text-align:left; margin-top:4px; transition:all .15s; width:fit-content;
+            margin-top:4px; transition:all .15s; display:inline-block;
         }
-        .cif-add-line:hover { border-color:var(--accent); color:var(--accent); }
+        .cif-add-line:hover { border-color:var(--accent); color:var(--accent); background:rgba(232,87,42,.04); }
 
-        /* Click hint bar */
+        /* Section paste modal */
+        .cif-sec-paste-modal {
+            position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,.7);
+            display:flex; align-items:center; justify-content:center;
+        }
+        .cif-sec-paste-box {
+            background:var(--panel); border:1px solid var(--border2); border-radius:14px;
+            padding:24px; width:480px; max-width:95vw; display:flex; flex-direction:column; gap:14px;
+            box-shadow:0 20px 60px rgba(0,0,0,.8);
+        }
+        .cif-sec-paste-title {
+            font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:var(--text);
+        }
+        .cif-sec-type-row {
+            display:flex; gap:6px; flex-wrap:wrap;
+        }
+        .cif-sec-type-btn {
+            background:var(--panel2); border:1px solid var(--border2);
+            color:var(--dim); border-radius:20px; padding:5px 14px;
+            font-size:11px; font-family:'Syne',sans-serif; font-weight:700;
+            cursor:pointer; transition:all .15s;
+        }
+        .cif-sec-type-btn.selected { border-color:var(--accent); color:var(--accent); background:rgba(232,87,42,.1); }
+        .cif-sec-paste-ta {
+            width:100%; min-height:140px; background:var(--panel2);
+            border:1px solid var(--border2); border-radius:8px; color:var(--text);
+            font-size:13px; font-family:'DM Sans',sans-serif; padding:10px 12px;
+            resize:vertical; outline:none; line-height:1.7;
+        }
+        .cif-sec-paste-ta:focus { border-color:var(--accent); }
+        .cif-sec-paste-actions { display:flex; gap:8px; }
+
         .cif-click-hint {
             font-size:10px; color:var(--dim2); font-family:'Syne',sans-serif;
             padding:4px 10px; background:rgba(232,87,42,.04);
-            border-radius:6px; margin-bottom:4px; border:1px dashed rgba(232,87,42,.12);
+            border-radius:6px; margin-bottom:6px; border:1px dashed rgba(232,87,42,.1);
+            line-height:1.5;
         }
 
         /* Chord popup */
@@ -6006,47 +6070,39 @@ function renderCifrado(display) {
 function buildCifEditor(panel) {
     panel.innerHTML = '';
 
-    const song = songs.find(s=>s.id===cifSongId);
-
-    // If no sections yet → show paste UI
+    // ── If no sections: show the new section-paste UI ──
     if (cifSections.length === 0) {
-        const pasteBox = document.createElement('div');
-        pasteBox.className = 'cif-paste-box';
-        pasteBox.tabIndex = 0;
-        pasteBox.innerHTML = `
-            <div class="cif-paste-box-hint">
-                <span>📋</span>
-                <strong style="color:var(--text);font-size:14px">Pega la letra completa aquí</strong>
-                <div style="font-size:12px;margin-top:4px">Se dividirá automáticamente en secciones por párrafo</div>
-            </div>
-            <textarea class="cif-paste-textarea" id="cif-paste-ta" placeholder="Pega aquí la letra de la canción...&#10;&#10;Línea 1&#10;Línea 2&#10;&#10;(párrafo nuevo = nueva sección)"></textarea>
-            <div class="cif-paste-actions">
-                <button class="cif-tbtn save" style="flex:1" onclick="cifImportPaste()">📥 Importar letra</button>
-                <button class="cif-tbtn" onclick="cifAddSection('verse')">+ Empezar vacío</button>
-            </div>`;
-        panel.appendChild(pasteBox);
-        return;
+        const empty = document.createElement('div');
+        empty.className = 'cif-empty';
+        empty.innerHTML = `
+            <div class="cif-empty-ico">🎸</div>
+            <p class="cif-empty-txt">Agrega secciones una por una.<br>Cada sección = Intro, Verso, Coro, etc.</p>`;
+        panel.appendChild(empty);
     }
 
-    // Add section bar
+    // ── Add section bar (always visible) ──
     const addBar = document.createElement('div');
     addBar.className = 'cif-add-bar';
-    addBar.innerHTML = `<span class="cif-add-bar-lbl">+ Agregar:</span>`;
-    CIF_TYPES.forEach(t=>{
-        const b=document.createElement('button');
-        b.className='cif-add-chip'; b.textContent=t.label;
-        b.onclick=()=>cifAddSection(t.key);
+    addBar.innerHTML = `<span class="cif-add-bar-lbl">+ Agregar sección:</span>`;
+    CIF_TYPES.forEach(t => {
+        const b = document.createElement('button');
+        b.className = 'cif-add-chip';
+        b.textContent = t.label;
+        b.onclick = () => cifOpenSectionPaste(t.key);
         addBar.appendChild(b);
     });
-    // Re-paste option
-    const bPaste = document.createElement('button');
-    bPaste.className='cif-add-chip'; bPaste.textContent='📋 Re-pegar letra';
-    bPaste.onclick=()=>{cifSections=[];renderCifradoEditor();};
-    addBar.appendChild(bPaste);
     panel.appendChild(addBar);
 
-    // Sections
-    cifSections.forEach((sec,si)=>{
+    if (cifSections.length === 0) return;
+
+    // Hint
+    const hint = document.createElement('div');
+    hint.className = 'cif-click-hint';
+    hint.innerHTML = '🎵 <b>Clic</b> en cualquier sílaba/palabra para poner acorde · <b>Clic en acorde naranja</b> para editar/quitar · <b>Doble clic en línea</b> para editar texto';
+    panel.appendChild(hint);
+
+    // ── Render sections ──
+    cifSections.forEach((sec, si) => {
         const info = cifTI(sec.type);
         const card = document.createElement('div');
         card.className = 'cif-sec-card';
@@ -6055,44 +6111,51 @@ function buildCifEditor(panel) {
         const hdr = document.createElement('div');
         hdr.className = 'cif-sec-hdr';
 
-        const badge=document.createElement('span');
-        badge.className=`cif-sec-badge ${info.cls}`; badge.textContent=info.label;
+        const badge = document.createElement('span');
+        badge.className = `cif-sec-badge ${info.cls}`;
+        badge.textContent = info.label;
         hdr.appendChild(badge);
 
-        const nameIn=document.createElement('input');
-        nameIn.className='cif-sec-name-in'; nameIn.value=sec.label; nameIn.placeholder=info.label;
-        nameIn.oninput=()=>sec.label=nameIn.value;
+        const nameIn = document.createElement('input');
+        nameIn.className = 'cif-sec-name-in';
+        nameIn.value = sec.label;
+        nameIn.placeholder = info.label;
+        nameIn.oninput = () => sec.label = nameIn.value;
         hdr.appendChild(nameIn);
 
-        const ctrl=document.createElement('div');
-        ctrl.className='cif-sec-ctrl';
+        const ctrl = document.createElement('div');
+        ctrl.className = 'cif-sec-ctrl';
 
-        const bUp=document.createElement('button'); bUp.textContent='↑'; bUp.title='Subir';
-        bUp.style.opacity=si===0?'0.2':'1';
-        bUp.onclick=()=>cifMoveSection(sec.id,-1);
+        const bUp = document.createElement('button'); bUp.textContent = '↑'; bUp.title = 'Subir sección';
+        bUp.style.opacity = si === 0 ? '0.2' : '1';
+        bUp.onclick = () => cifMoveSection(sec.id, -1);
 
-        const bDn=document.createElement('button'); bDn.textContent='↓'; bDn.title='Bajar';
-        bDn.style.opacity=si===cifSections.length-1?'0.2':'1';
-        bDn.onclick=()=>cifMoveSection(sec.id,1);
+        const bDn = document.createElement('button'); bDn.textContent = '↓'; bDn.title = 'Bajar sección';
+        bDn.style.opacity = si === cifSections.length - 1 ? '0.2' : '1';
+        bDn.onclick = () => cifMoveSection(sec.id, 1);
 
-        const bDel=document.createElement('button'); bDel.textContent='🗑'; bDel.className='del-sec';
-        bDel.onclick=()=>{if(confirm(`¿Eliminar sección "${sec.label}"?`)){cifRemoveSection(sec.id);}};
+        const bEdit = document.createElement('button'); bEdit.textContent = '✏'; bEdit.title = 'Editar letra';
+        bEdit.onclick = () => cifOpenSectionPaste(sec.type, sec);
 
-        ctrl.appendChild(bUp); ctrl.appendChild(bDn); ctrl.appendChild(bDel);
+        const bDel = document.createElement('button'); bDel.textContent = '🗑'; bDel.className = 'del-sec';
+        bDel.onclick = () => { if (confirm(`¿Eliminar sección "${sec.label}"?`)) cifRemoveSection(sec.id); };
+
+        ctrl.appendChild(bUp); ctrl.appendChild(bDn); ctrl.appendChild(bEdit); ctrl.appendChild(bDel);
         hdr.appendChild(ctrl);
         card.appendChild(hdr);
 
-        // Body
-        const secBody=document.createElement('div');
-        secBody.className='cif-sec-body';
+        // Body: syllable-based lines
+        const secBody = document.createElement('div');
+        secBody.className = 'cif-sec-body';
 
-        sec.lines.forEach((line,li)=>{
-            secBody.appendChild(buildCifLineEl(sec,line,li));
+        sec.lines.forEach((line, li) => {
+            secBody.appendChild(buildCifLineEl(sec, line, li));
         });
 
-        const addLineBtn=document.createElement('button');
-        addLineBtn.className='cif-add-line'; addLineBtn.textContent='+ Línea';
-        addLineBtn.onclick=()=>cifAddLine(sec.id);
+        const addLineBtn = document.createElement('button');
+        addLineBtn.className = 'cif-add-line';
+        addLineBtn.textContent = '+ Añadir línea';
+        addLineBtn.onclick = () => cifAddLine(sec.id);
         secBody.appendChild(addLineBtn);
 
         card.appendChild(secBody);
@@ -6100,131 +6163,256 @@ function buildCifEditor(panel) {
     });
 }
 
+// ── Section paste modal ──
+let _cifPasteModal = null;
+
+function cifOpenSectionPaste(typeKey, existingSec) {
+    // Close any existing modal
+    if (_cifPasteModal) _cifPasteModal.remove();
+
+    const overlay = document.createElement('div');
+    overlay.className = 'cif-sec-paste-modal';
+    _cifPasteModal = overlay;
+
+    let selectedType = typeKey;
+
+    const box = document.createElement('div');
+    box.className = 'cif-sec-paste-box';
+    box.onclick = e => e.stopPropagation();
+
+    const isEdit = !!existingSec;
+    const title = document.createElement('div');
+    title.className = 'cif-sec-paste-title';
+    title.textContent = isEdit ? `✏ Editar sección: ${existingSec.label}` : '➕ Nueva sección';
+    box.appendChild(title);
+
+    // Type selector
+    const typeRow = document.createElement('div');
+    typeRow.className = 'cif-sec-type-row';
+    CIF_TYPES.forEach(t => {
+        const btn = document.createElement('button');
+        btn.className = 'cif-sec-type-btn' + (t.key === selectedType ? ' selected' : '');
+        btn.textContent = t.label;
+        btn.onclick = () => {
+            selectedType = t.key;
+            typeRow.querySelectorAll('.cif-sec-type-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+        };
+        typeRow.appendChild(btn);
+    });
+    box.appendChild(typeRow);
+
+    // Label input
+    const labelRow = document.createElement('div');
+    labelRow.style.cssText = 'display:flex;gap:8px;align-items:center';
+    const labelLbl = document.createElement('span');
+    labelLbl.textContent = 'Nombre:';
+    labelLbl.style.cssText = 'font-size:12px;color:var(--dim);white-space:nowrap;font-family:\'Syne\',sans-serif;font-weight:600';
+    const labelIn = document.createElement('input');
+    labelIn.style.cssText = 'flex:1;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:6px 10px;outline:none;font-family:\'DM Sans\',sans-serif';
+    labelIn.value = isEdit ? existingSec.label : cifTI(typeKey).label;
+    labelIn.placeholder = 'Nombre de la sección (ej: Coro 1)';
+    labelRow.appendChild(labelLbl); labelRow.appendChild(labelIn);
+    box.appendChild(labelRow);
+
+    // Textarea
+    const ta = document.createElement('textarea');
+    ta.className = 'cif-sec-paste-ta';
+    ta.placeholder = 'Pega o escribe la letra de esta sección...\nCada línea = una línea de la canción';
+    if (isEdit) ta.value = existingSec.lines.map(l => l.lyric).join('\n');
+    box.appendChild(ta);
+
+    // Actions
+    const actions = document.createElement('div');
+    actions.className = 'cif-sec-paste-actions';
+
+    const btnOk = document.createElement('button');
+    btnOk.className = 'cif-tbtn save';
+    btnOk.style.flex = '1';
+    btnOk.textContent = isEdit ? '✓ Actualizar sección' : '✓ Agregar sección';
+    btnOk.onclick = () => {
+        const text = ta.value.trim();
+        if (!text) { ta.style.borderColor='#ff6060'; ta.focus(); return; }
+        cifSnapshot();
+        const lines = text.split('\n').map(l => {
+            // Preserve existing chordMap if editing and line matches
+            if (isEdit) {
+                const existing = existingSec.lines.find(el => el.lyric === l);
+                if (existing) return {...existing};
+            }
+            return { id: cifUID(), chords: [], chordMap: [], lyric: l };
+        }).filter(l => l.lyric !== undefined);
+
+        const info = cifTI(selectedType);
+        const n = cifSections.filter(s => s.type === selectedType && (!isEdit || s.id !== existingSec?.id)).length;
+        const autoLabel = n ? `${info.label} ${n + 1}` : info.label;
+
+        if (isEdit) {
+            const sec = cifSections.find(s => s.id === existingSec.id);
+            if (sec) {
+                sec.type = selectedType;
+                sec.label = labelIn.value.trim() || autoLabel;
+                sec.lines = lines;
+            }
+        } else {
+            cifSections.push({
+                id: cifUID(),
+                type: selectedType,
+                label: labelIn.value.trim() || autoLabel,
+                lines
+            });
+        }
+        overlay.remove();
+        _cifPasteModal = null;
+        renderCifradoEditor();
+        toast(`✓ Sección ${isEdit ? 'actualizada' : 'agregada'}`);
+    };
+
+    const btnCancel = document.createElement('button');
+    btnCancel.className = 'cif-tbtn';
+    btnCancel.textContent = 'Cancelar';
+    btnCancel.onclick = () => { overlay.remove(); _cifPasteModal = null; };
+
+    actions.appendChild(btnOk); actions.appendChild(btnCancel);
+    box.appendChild(actions);
+
+    overlay.appendChild(box);
+    overlay.onclick = () => { overlay.remove(); _cifPasteModal = null; };
+    document.body.appendChild(overlay);
+    setTimeout(() => ta.focus(), 60);
+}
+
 function buildCifLineEl(sec, line, li) {
-    // Container for the whole line (chords above + lyric below)
+    if (!line.chordMap) line.chordMap = [];
+
     const wrap = document.createElement('div');
     wrap.className = 'cif-line-wrap';
-    wrap.dataset.secId = sec.id;
-    wrap.dataset.lineId = line.id;
 
-    // ── Chord overlay row (positioned absolutely relative to lyric) ──
-    const lineInner = document.createElement('div');
-    lineInner.className = 'cif-line-inner';
+    const main = document.createElement('div');
+    main.className = 'cif-line-main';
 
-    // Hidden measuring span (same font as lyric input)
-    const ruler = document.createElement('span');
-    ruler.style.cssText = 'position:absolute;visibility:hidden;white-space:pre;font-size:14px;font-family:\'DM Sans\',sans-serif;pointer-events:none;top:0;left:0';
-    lineInner.appendChild(ruler);
+    // ── Tokenize lyric into characters ──
+    // Each character is a clickable token; spaces get special treatment
+    const lyric = line.lyric || '';
 
-    // Lyric input
-    const inp = document.createElement('input');
-    inp.className = 'cif-lyric-in';
-    inp.type = 'text';
-    inp.value = line.lyric || '';
-    inp.placeholder = li === 0 ? 'Escribe la letra aquí…' : '';
-    inp.autocomplete = 'off';
-    inp.spellcheck = false;
+    // Build token row — group by "word chars" and "spaces"
+    // Each word = sequence of non-space chars → one token per char within word
+    // Each space → one space token
+    const tokenRow = document.createElement('div');
+    tokenRow.className = 'cif-chord-row';
 
-    // Chord annotations: array of {pos:charIndex, chord:string}
-    // Stored in line.chordMap = [{pos, chord}]
-    if (!line.chordMap) {
-        // Migrate from old chords[] (word-based) if present
-        if (line.chords && line.chords.length) {
-            line.chordMap = [];
-            const words = (line.lyric||'').split(' ');
-            let charPos = 0;
-            line.chords.forEach((ch, wi) => {
-                if (ch) line.chordMap.push({pos: charPos, chord: ch});
-                charPos += (words[wi]||'').length + 1;
-            });
-            line.chords = [];
-        } else {
-            line.chordMap = [];
+    if (!lyric) {
+        // Empty line placeholder
+        const ph = document.createElement('span');
+        ph.style.cssText = 'color:var(--dim2);font-size:12px;font-family:\'DM Sans\',sans-serif;padding:2px 4px;font-style:italic';
+        ph.textContent = 'línea vacía — doble clic para editar';
+        tokenRow.appendChild(ph);
+    } else {
+        for (let ci = 0; ci < lyric.length; ci++) {
+            const ch = lyric[ci];
+            const isSpace = ch === ' ';
+
+            const token = document.createElement('div');
+            token.className = 'cif-token' + (isSpace ? ' space' : '');
+            token.dataset.pos = ci;
+
+            // Find chord at this exact position
+            const chordEntry = (line.chordMap || []).find(e => e.pos === ci);
+
+            // Chord chip (top)
+            const chordSpan = document.createElement('span');
+            chordSpan.className = 'cif-token-chord' + (chordEntry ? ' has-chord' : ' empty');
+            chordSpan.textContent = chordEntry ? chordEntry.chord : '';
+            if (!isSpace) {
+                chordSpan.onclick = (e) => {
+                    e.stopPropagation();
+                    cifOpenChordPopup(sec.id, line.id, ci, chordEntry?.chord || '', chordSpan, true);
+                };
+            }
+
+            // Text (bottom)
+            const textSpan = document.createElement('span');
+            textSpan.className = 'cif-token-text';
+            textSpan.textContent = isSpace ? ' ' : ch;
+
+            token.appendChild(chordSpan);
+            token.appendChild(textSpan);
+
+            if (!isSpace) {
+                token.title = `Clic → acorde sobre "${ch}"`;
+                token.onclick = (e) => {
+                    e.stopPropagation();
+                    cifOpenChordPopup(sec.id, line.id, ci, chordEntry?.chord || '', chordSpan, true);
+                };
+            }
+
+            tokenRow.appendChild(token);
         }
     }
 
-    // Canvas-based chord chips overlay
-    const chordLayer = document.createElement('div');
-    chordLayer.style.cssText = 'position:absolute;top:0;left:0;right:0;height:24px;pointer-events:none;overflow:visible';
+    main.appendChild(tokenRow);
 
-    function getCharX(charIdx, text, inputEl) {
-        ruler.style.font = window.getComputedStyle(inputEl).font;
-        ruler.textContent = (text || '').slice(0, charIdx);
-        return ruler.offsetWidth;
-    }
+    // ── Edit row (shown on double click) ──
+    const editRow = document.createElement('div');
+    editRow.className = 'cif-lyric-edit-row';
 
-    function rebuildChordChips() {
-        chordLayer.innerHTML = '';
-        const text = inp.value;
-        (line.chordMap || []).forEach((entry, ci) => {
-            const x = getCharX(entry.pos, text, inp);
-            const chip = document.createElement('span');
-            chip.className = 'cif-chord-chip';
-            chip.textContent = entry.chord;
-            chip.style.cssText = `position:absolute;left:${x}px;top:0;pointer-events:auto;cursor:pointer;white-space:nowrap`;
-            chip.title = `Acorde en posición ${entry.pos} — clic para editar`;
-            chip.onclick = (e) => {
-                e.stopPropagation();
-                cifOpenChordPopup(sec.id, line.id, entry.pos, entry.chord, chip, true);
-            };
-            chordLayer.appendChild(chip);
-        });
-    }
+    const editInp = document.createElement('input');
+    editInp.className = 'cif-lyric-in';
+    editInp.type = 'text';
+    editInp.value = lyric;
+    editInp.placeholder = 'Texto de la línea…';
 
-    // Click on lyric input → place chord at cursor position
-    inp.addEventListener('click', (e) => {
-        // Only if a modifier key is held OR the input is not focused for typing
-        // Use Shift+Click to place chord at exact character
-        if (!e.shiftKey) return;
-        e.preventDefault();
-        const pos = inp.selectionStart ?? 0;
-        cifOpenChordPopup(sec.id, line.id, pos, '', inp, true);
-    });
+    const editOk = document.createElement('button');
+    editOk.className = 'cif-lyric-ok';
+    editOk.textContent = '✓';
+    editOk.title = 'Confirmar (Enter)';
 
-    // Double-click anywhere on lyric → place chord at nearest character
-    inp.addEventListener('dblclick', (e) => {
-        e.preventDefault();
-        const pos = inp.selectionStart ?? 0;
-        cifOpenChordPopup(sec.id, line.id, pos, '', inp, true);
-    });
-
-    inp.oninput = () => {
-        line.lyric = inp.value;
-        rebuildChordChips();
+    function confirmEdit() {
+        const newLyric = editInp.value;
+        if (newLyric !== line.lyric) {
+            cifSnapshot();
+            // Remap chords: keep chords whose position still exists
+            line.chordMap = (line.chordMap||[]).filter(e => e.pos < newLyric.length);
+            line.lyric = newLyric;
+        }
+        editRow.classList.remove('active');
+        const newEl = buildCifLineEl(sec, line, li);
+        wrap.replaceWith(newEl);
         cifRenderPreview();
+    }
+
+    editOk.onclick = confirmEdit;
+    editInp.onkeydown = (e) => {
+        if (e.key === 'Enter') { e.preventDefault(); confirmEdit(); }
+        if (e.key === 'Escape') { editRow.classList.remove('active'); }
     };
 
-    inp.onkeydown = (e) => {
-        if (e.key === 'Enter') { e.preventDefault(); cifAddLine(sec.id); }
-        if (e.key === 'Backspace' && !inp.value) { e.preventDefault(); cifDelLine(sec.id, line.id); }
+    editRow.appendChild(editInp);
+    editRow.appendChild(editOk);
+    main.appendChild(editRow);
+
+    // Double click on token row → open edit
+    tokenRow.ondblclick = (e) => {
+        e.stopPropagation();
+        editRow.classList.add('active');
+        editInp.focus();
+        editInp.select();
     };
 
-    lineInner.appendChild(chordLayer);
-    lineInner.appendChild(inp);
+    wrap.appendChild(main);
 
     // Delete line button
     const delBtn = document.createElement('button');
-    delBtn.className = 'cif-del-line'; delBtn.textContent = '✕'; delBtn.title = 'Eliminar línea';
+    delBtn.className = 'cif-del-line';
+    delBtn.textContent = '✕';
+    delBtn.title = 'Eliminar línea';
     delBtn.onclick = () => cifDelLine(sec.id, line.id);
-
-    wrap.appendChild(lineInner);
     wrap.appendChild(delBtn);
-
-    // Build chips after DOM insertion (needs layout for ruler)
-    setTimeout(rebuildChordChips, 0);
 
     return wrap;
 }
 
-function cifImportPaste() {
-    const ta = document.getElementById('cif-paste-ta');
-    if (!ta||!ta.value.trim()) return;
-    cifSnapshot();
-    cifSections = cifParsePaste(ta.value);
-    if (!cifSections.length) { toast('⚠ No se detectó texto'); return; }
-    toast(`✓ ${cifSections.length} sección${cifSections.length!==1?'es':''} importada${cifSections.length!==1?'s':''}`);
-    renderCifradoEditor();
-}
+function cifImportPaste() { /* replaced by cifOpenSectionPaste */ }
 
 function renderCifradoEditor() {
     const panel=document.getElementById('cif-editor-panel');
@@ -6444,3 +6632,4 @@ if ('serviceWorker' in navigator) {
 </script>
 </body>
 </html>
+
