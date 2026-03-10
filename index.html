@@ -1811,7 +1811,9 @@
         .cif-add-bar-lbl { font-size:10px; color:var(--dim); font-family:'Syne',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.6px; white-space:nowrap; }
         .cif-add-chip { background:var(--panel2); border:1px dashed var(--border2); color:var(--dim); border-radius:20px; padding:4px 12px; font-size:11px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:700; transition:all .15s; }
         .cif-add-chip:hover { border-color:var(--accent); color:var(--accent); background:rgba(232,87,42,.06); }
-        .cif-sec-card { background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+        .cif-sec-card { background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden; transition:box-shadow .15s; }
+        .cif-sec-card.drag-over-top { border-top:3px solid var(--accent); }
+        .cif-sec-card.drag-over-bot { border-bottom:3px solid var(--accent); }
         .cif-sec-hdr { display:flex; align-items:center; gap:8px; padding:7px 12px; background:var(--panel2); border-bottom:1px solid var(--border); }
         .cif-sec-badge { font-family:'Syne',sans-serif; font-size:9px; font-weight:700; padding:3px 9px; border-radius:20px; text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; }
         .cs-intro { background:rgba(78,205,196,.18); color:#4ecdc4; }
@@ -5924,18 +5926,68 @@ function buildCifEditor(panel) {
     // Usage hint
     const hint = document.createElement('div');
     hint.className = 'cif-hint-row';
-    hint.innerHTML = '🎵 <b>Clic en palabra</b> → poner acorde · <b>Clic en acorde naranja</b> → editar/quitar · <b>Doble clic en línea</b> → editar texto';
+    hint.innerHTML = '🎵 <b>Clic en palabra</b> → poner acorde &nbsp;·&nbsp; <b>Clic en acorde</b> → editar/quitar &nbsp;·&nbsp; <b>Doble clic en línea</b> → editar texto &nbsp;·&nbsp; <b>⠿ Arrastrar</b> → reordenar secciones';
     panel.appendChild(hint);
+
+    // ── Drag state ──
+    let _dragSec = null;
 
     // ── Render sections ──
     cifSections.forEach((sec, si) => {
         const info = cifTI(sec.type);
         const card = document.createElement('div');
         card.className = 'cif-sec-card';
+        card.draggable = true;
+        card.dataset.secId = sec.id;
+
+        // ── Drag events ──
+        card.addEventListener('dragstart', e => {
+            _dragSec = sec.id;
+            card.style.opacity = '0.4';
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        card.addEventListener('dragend', () => {
+            card.style.opacity = '';
+            panel.querySelectorAll('.cif-sec-card').forEach(c => c.classList.remove('drag-over-top','drag-over-bot'));
+        });
+        card.addEventListener('dragover', e => {
+            e.preventDefault();
+            if (_dragSec === sec.id) return;
+            panel.querySelectorAll('.cif-sec-card').forEach(c => c.classList.remove('drag-over-top','drag-over-bot'));
+            const mid = card.getBoundingClientRect().top + card.offsetHeight / 2;
+            card.classList.add(e.clientY < mid ? 'drag-over-top' : 'drag-over-bot');
+        });
+        card.addEventListener('dragleave', () => {
+            card.classList.remove('drag-over-top','drag-over-bot');
+        });
+        card.addEventListener('drop', e => {
+            e.preventDefault();
+            if (!_dragSec || _dragSec === sec.id) return;
+            card.classList.remove('drag-over-top','drag-over-bot');
+            const fromIdx = cifSections.findIndex(s => s.id === _dragSec);
+            const toIdx   = cifSections.findIndex(s => s.id === sec.id);
+            if (fromIdx < 0 || toIdx < 0) return;
+            cifSnapshot();
+            const mid = card.getBoundingClientRect().top + card.offsetHeight / 2;
+            const insertBefore = e.clientY < mid;
+            const [moved] = cifSections.splice(fromIdx, 1);
+            const newIdx = cifSections.findIndex(s => s.id === sec.id);
+            cifSections.splice(insertBefore ? newIdx : newIdx + 1, 0, moved);
+            _dragSec = null;
+            renderCifradoEditor();
+        });
 
         // Header
         const hdr = document.createElement('div');
         hdr.className = 'cif-sec-hdr';
+
+        // Drag handle
+        const dragHandle = document.createElement('span');
+        dragHandle.textContent = '⠿';
+        dragHandle.title = 'Arrastrar para reordenar';
+        dragHandle.style.cssText = 'cursor:grab;color:var(--dim2);font-size:16px;padding:0 4px;user-select:none;flex-shrink:0';
+        dragHandle.onmousedown = () => card.draggable = true;
+        hdr.appendChild(dragHandle);
 
         const badge = document.createElement('span');
         badge.className = `cif-sec-badge ${info.cls}`;
@@ -5947,26 +5999,27 @@ function buildCifEditor(panel) {
         nameIn.value = sec.label;
         nameIn.placeholder = info.label;
         nameIn.oninput = () => sec.label = nameIn.value;
+        // Don't start drag when typing
+        nameIn.onmousedown = e => { card.draggable = false; e.stopPropagation(); };
         hdr.appendChild(nameIn);
 
         const ctrl = document.createElement('div');
         ctrl.className = 'cif-sec-ctrl';
 
-        const bUp = document.createElement('button'); bUp.textContent = '↑'; bUp.title = 'Subir sección';
-        bUp.style.opacity = si === 0 ? '0.2' : '1';
-        bUp.onclick = () => cifMoveSection(sec.id, -1);
+        const bEdit = document.createElement('button');
+        bEdit.innerHTML = '✏'; bEdit.title = 'Editar sección';
+        bEdit.onclick = e => { e.stopPropagation(); cifOpenSectionPaste(sec.type, sec); };
 
-        const bDn = document.createElement('button'); bDn.textContent = '↓'; bDn.title = 'Bajar sección';
-        bDn.style.opacity = si === cifSections.length - 1 ? '0.2' : '1';
-        bDn.onclick = () => cifMoveSection(sec.id, 1);
+        const bSave = document.createElement('button');
+        bSave.innerHTML = '💾'; bSave.title = 'Guardar';
+        bSave.style.color = 'var(--accent)';
+        bSave.onclick = e => { e.stopPropagation(); cifSave(); };
 
-        const bEdit = document.createElement('button'); bEdit.textContent = '✏'; bEdit.title = 'Editar letra';
-        bEdit.onclick = () => cifOpenSectionPaste(sec.type, sec);
+        const bDel = document.createElement('button');
+        bDel.innerHTML = '🗑'; bDel.className = 'del-sec'; bDel.title = 'Eliminar sección';
+        bDel.onclick = e => { e.stopPropagation(); if (confirm(`¿Eliminar "${sec.label}"?`)) cifRemoveSection(sec.id); };
 
-        const bDel = document.createElement('button'); bDel.textContent = '🗑'; bDel.className = 'del-sec';
-        bDel.onclick = () => { if (confirm(`¿Eliminar sección "${sec.label}"?`)) cifRemoveSection(sec.id); };
-
-        ctrl.appendChild(bUp); ctrl.appendChild(bDn); ctrl.appendChild(bEdit); ctrl.appendChild(bDel);
+        ctrl.appendChild(bEdit); ctrl.appendChild(bSave); ctrl.appendChild(bDel);
         hdr.appendChild(ctrl);
         card.appendChild(hdr);
 
