@@ -5976,6 +5976,7 @@ function buildCifEditor(panel) {
 
         const info2 = cifTI(sec.type);
         const isChordOnly = info2.chordsOnly || sec.chordsOnly;
+        const isEmptyRef = sec.emptyRef && !isChordOnly;
 
         if (isChordOnly) {
             // Chord-only section (Intro, Instrumental)
@@ -6010,6 +6011,16 @@ function buildCifEditor(panel) {
 
             // Store rebuildCoLine so applyChord can call it
             sec._rebuildCoLine = rebuildCoLine;
+        } else if (isEmptyRef) {
+            // Empty reference section
+            const refMsg = document.createElement('div');
+            refMsg.style.cssText = "color:var(--dim2);font-size:12px;font-family:'DM Sans',sans-serif;font-style:italic;padding:8px 2px;opacity:.7";
+            refMsg.textContent = '↩ Sección de referencia — clic en "+ Añadir línea" para agregar contenido';
+            secBody.appendChild(refMsg);
+            const addLineBtn2 = document.createElement('button');
+            addLineBtn2.className = 'cif-add-line'; addLineBtn2.textContent = '+ Añadir línea';
+            addLineBtn2.onclick = () => { sec.emptyRef=false; cifAddLine(sec.id); };
+            secBody.appendChild(addLineBtn2);
         } else {
             // Normal lyric lines
             sec.lines.forEach((line, li) => {
@@ -6030,23 +6041,20 @@ function buildCifEditor(panel) {
 let _cifPasteModal = null;
 
 function cifOpenSectionPaste(typeKey, existingSec) {
-    // Close any existing modal
     if (_cifPasteModal) _cifPasteModal.remove();
-
     const overlay = document.createElement('div');
     overlay.className = 'cif-sec-paste-modal';
     _cifPasteModal = overlay;
-
-    let selectedType = typeKey;
-
+    let selectedType = typeKey || 'verse';
     const box = document.createElement('div');
     box.className = 'cif-sec-paste-box';
     box.onclick = e => e.stopPropagation();
-
     const isEdit = !!existingSec;
+
+    // Title
     const title = document.createElement('div');
     title.className = 'cif-sec-paste-title';
-    title.textContent = isEdit ? `✏ Editar sección: ${existingSec.label}` : '➕ Nueva sección';
+    title.textContent = isEdit ? ('\u270f Editar: ' + existingSec.label) : '\u2795 Nueva secci\u00f3n';
     box.appendChild(title);
 
     // Type selector
@@ -6060,97 +6068,129 @@ function cifOpenSectionPaste(typeKey, existingSec) {
             selectedType = t.key;
             typeRow.querySelectorAll('.cif-sec-type-btn').forEach(b => b.classList.remove('selected'));
             btn.classList.add('selected');
-            updateTypeUI();
+            if (!labelIn._edited) labelIn.value = cifTI(selectedType).label;
+            updateUI();
         };
         typeRow.appendChild(btn);
     });
     box.appendChild(typeRow);
 
-    // Label input
+    // Label
     const labelRow = document.createElement('div');
     labelRow.style.cssText = 'display:flex;gap:8px;align-items:center';
     const labelLbl = document.createElement('span');
     labelLbl.textContent = 'Nombre:';
-    labelLbl.style.cssText = 'font-size:12px;color:var(--dim);white-space:nowrap;font-family:\'Syne\',sans-serif;font-weight:600';
+    labelLbl.style.cssText = "font-size:12px;color:var(--dim);white-space:nowrap;font-family:'Syne',sans-serif;font-weight:600";
     const labelIn = document.createElement('input');
-    labelIn.style.cssText = 'flex:1;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:6px 10px;outline:none;font-family:\'DM Sans\',sans-serif';
-    labelIn.value = isEdit ? existingSec.label : cifTI(typeKey).label;
-    labelIn.placeholder = 'Nombre de la sección (ej: Coro 1)';
+    labelIn.style.cssText = "flex:1;background:var(--panel2);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-size:13px;padding:6px 10px;outline:none;font-family:'DM Sans',sans-serif";
+    labelIn.value = isEdit ? existingSec.label : cifTI(selectedType).label;
+    labelIn.placeholder = 'Ej: Coro 1, Verso 2\u2026';
+    labelIn.oninput = () => { labelIn._edited = true; };
     labelRow.appendChild(labelLbl); labelRow.appendChild(labelIn);
     box.appendChild(labelRow);
+
+    // Mode toggle (with-lyric vs empty-reference)
+    const modeRow = document.createElement('div');
+    modeRow.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap';
+    const modeWithLyric = document.createElement('button');
+    modeWithLyric.className = 'cif-sec-type-btn selected';
+    modeWithLyric.textContent = '\ud83c\udfa4 Con letra';
+    const modeEmpty = document.createElement('button');
+    modeEmpty.className = 'cif-sec-type-btn';
+    modeEmpty.textContent = '\u21a9 Solo referencia (vac\u00eda)';
+    modeRow.appendChild(modeWithLyric);
+    modeRow.appendChild(modeEmpty);
+    box.appendChild(modeRow);
+
+    let emptyMode = isEdit && !!existingSec.emptyRef;
+    if (emptyMode) { modeEmpty.classList.add('selected'); modeWithLyric.classList.remove('selected'); }
+    modeWithLyric.onclick = () => { emptyMode=false; modeWithLyric.classList.add('selected'); modeEmpty.classList.remove('selected'); updateUI(); };
+    modeEmpty.onclick = () => { emptyMode=true; modeEmpty.classList.add('selected'); modeWithLyric.classList.remove('selected'); updateUI(); };
 
     // Textarea
     const ta = document.createElement('textarea');
     ta.className = 'cif-sec-paste-ta';
-    ta.placeholder = 'Pega o escribe la letra de esta sección...\nCada línea = una línea de la canción';
-    if (isEdit) ta.value = existingSec.lines.map(l => l.lyric).join('\n');
-    // Update textarea based on selected type
-    function updateTypeUI() {
+    if (isEdit && existingSec.lines) ta.value = existingSec.lines.map(l=>l.lyric).join('\n');
+    box.appendChild(ta);
+
+    // Info label
+    const infoLbl = document.createElement('div');
+    infoLbl.style.cssText = 'font-size:11px;color:var(--dim);line-height:1.7;padding:8px 12px;background:rgba(232,87,42,.05);border-radius:8px;border:1px dashed rgba(232,87,42,.15)';
+    box.appendChild(infoLbl);
+
+    function updateUI() {
         const isCO = cifTI(selectedType).chordsOnly;
-        ta.placeholder = isCO
-            ? 'Esta sección es de SOLO ACORDES.\nLos acordes se agregan desde el editor (clic en "+ Acorde").\nDeja esto vacío o escribe una nota opcional.'
-            : 'Pega o escribe la letra de esta sección...\nCada línea = una línea de la canción';
+        modeRow.style.display = isCO ? 'none' : 'flex';
+        if (isCO) {
+            ta.style.display = 'none';
+            infoLbl.style.display = 'block';
+            infoLbl.innerHTML = '\ud83c\udfb8 Secci\u00f3n de <b>solo acordes</b>. Los acordes se agregan en el editor con <b>+ Acorde</b>. Puedes agregar tantos como necesites.';
+        } else if (emptyMode) {
+            ta.style.display = 'none';
+            infoLbl.style.display = 'block';
+            infoLbl.innerHTML = '\u21a9 Secci\u00f3n <b>vac\u00eda de referencia</b>. \u00datil para indicar repetici\u00f3n (ej: "Coro" sin reescribir toda la letra). Los acordes igual se pueden agregar despu\u00e9s.';
+        } else {
+            ta.style.display = 'block';
+            infoLbl.style.display = 'none';
+            ta.placeholder = 'Pega o escribe la letra de esta secci\u00f3n...\nCada l\u00ednea = una l\u00ednea de la canci\u00f3n\n\nPuedes dejar vac\u00edo y agregar acordes despu\u00e9s.';
+        }
     }
-    updateTypeUI();
+    updateUI();
 
     // Actions
     const actions = document.createElement('div');
     actions.className = 'cif-sec-paste-actions';
-
     const btnOk = document.createElement('button');
     btnOk.className = 'cif-tbtn save';
-    btnOk.style.flex = '1';
-    btnOk.textContent = isEdit ? '✓ Actualizar sección' : '✓ Agregar sección';
+    btnOk.style.cssText = 'flex:1;font-size:13px;padding:10px';
+    btnOk.textContent = isEdit ? '\u2713 Actualizar secci\u00f3n' : '\u2713 Agregar secci\u00f3n';
     btnOk.onclick = () => {
-        const text = ta.value.trim();
-        if (!text) { ta.style.borderColor='#ff6060'; ta.focus(); return; }
         cifSnapshot();
-        const isChordOnlyType = cifTI(selectedType).chordsOnly;
-        const lines = isChordOnlyType ? [] : text.split('\n').map(l => {
-            if (isEdit) {
-                const existing = existingSec.lines.find(el => el.lyric === l);
-                if (existing) return {...existing};
-            }
-            return { id: cifUID(), chords: [], chordMap: [], lyric: l };
-        }).filter(l => l.lyric !== undefined);
-
+        const isCO = cifTI(selectedType).chordsOnly;
         const info = cifTI(selectedType);
-        const n = cifSections.filter(s => s.type === selectedType && (!isEdit || s.id !== existingSec?.id)).length;
-        const autoLabel = n ? `${info.label} ${n + 1}` : info.label;
-
-        if (isEdit) {
-            const sec = cifSections.find(s => s.id === existingSec.id);
-            if (sec) {
-                sec.type = selectedType;
-                sec.label = labelIn.value.trim() || autoLabel;
-                sec.lines = lines;
-            }
-        } else {
-            cifSections.push({
-                id: cifUID(),
-                type: selectedType,
-                label: labelIn.value.trim() || autoLabel,
-                lines
+        const n = cifSections.filter(s=>s.type===selectedType&&(!isEdit||s.id!==existingSec?.id)).length;
+        const autoLabel = n ? (info.label + ' ' + (n+1)) : info.label;
+        const finalLabel = labelIn.value.trim() || autoLabel;
+        let lines = [];
+        if (!isCO && !emptyMode && ta.value.trim()) {
+            lines = ta.value.split('\n').map(l => {
+                if (isEdit && existingSec?.lines) {
+                    const ex = existingSec.lines.find(el=>el.lyric===l);
+                    if (ex) return {...ex};
+                }
+                return {id:cifUID(), chords:[], chordMap:[], lyric:l};
             });
         }
-        overlay.remove();
-        _cifPasteModal = null;
+        if (isEdit) {
+            const sec = cifSections.find(s=>s.id===existingSec.id);
+            if (sec) {
+                sec.type=selectedType; sec.label=finalLabel;
+                if (!isCO) sec.lines=lines;
+                if (emptyMode) sec.emptyRef=true; else delete sec.emptyRef;
+            }
+        } else {
+            const ns={id:cifUID(),type:selectedType,label:finalLabel,lines};
+            if (isCO) ns.coChords = isEdit&&existingSec?.coChords ? [...existingSec.coChords] : [];
+            if (emptyMode) ns.emptyRef=true;
+            cifSections.push(ns);
+        }
+        overlay.remove(); _cifPasteModal=null;
         renderCifradoEditor();
-        toast(`✓ Sección ${isEdit ? 'actualizada' : 'agregada'}`);
+        toast('\u2713 Secci\u00f3n "'+finalLabel+'" '+(isEdit?'actualizada':'agregada'));
     };
-
-    const btnCancel = document.createElement('button');
-    btnCancel.className = 'cif-tbtn';
-    btnCancel.textContent = 'Cancelar';
-    btnCancel.onclick = () => { overlay.remove(); _cifPasteModal = null; };
-
+    const btnCancel=document.createElement('button');
+    btnCancel.className='cif-tbtn'; btnCancel.style.cssText='padding:10px 18px';
+    btnCancel.textContent='Cancelar';
+    btnCancel.onclick=()=>{overlay.remove();_cifPasteModal=null;};
     actions.appendChild(btnOk); actions.appendChild(btnCancel);
     box.appendChild(actions);
-
     overlay.appendChild(box);
-    overlay.onclick = () => { overlay.remove(); _cifPasteModal = null; };
+    overlay.onclick=()=>{overlay.remove();_cifPasteModal=null;};
     document.body.appendChild(overlay);
-    setTimeout(() => ta.focus(), 60);
+    setTimeout(()=>{
+        const isCO=cifTI(selectedType).chordsOnly;
+        if(!isCO&&!emptyMode) ta.focus(); else labelIn.focus();
+    },60);
 }
 
 function buildCifLineEl(sec, line, li) {
