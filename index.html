@@ -7011,5 +7011,1805 @@ if ('serviceWorker' in navigator) {
 }
 
 </script>
+
+<script>
+
+// ═══════════════════════════════════════════════════════════════════
+//  ADORACHORD — CIFRADO FIX PATCH
+//  Fixes applied (all functions were missing or broken):
+//  1. cifTI()                 — type info helper
+//  2. cifApplyChord()         — apply chord to syllable (core fix)
+//  3. cifCloseChordPopup()    — close popup
+//  4. renderCifradoInspector()— inspector panel
+//  5. cifBuildPresent()       — single correct version
+//  6. cifOpenPresent()        — single correct version
+//  7. cifClosePresent()       — close presentation
+//  8. renderCifrado()         — complete rewrite
+//  9. buildCifEditor()        — complete rewrite
+// 10. buildCifLineEl()        — complete rewrite
+// ═══════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────
+// 1. cifTI — type info (MISSING)
+// ─────────────────────────────────
+window.cifTI = function(typeKey) {
+    const types = [
+        {key:'intro',        label:'Intro',        cls:'cs-intro',        chordsOnly:true},
+        {key:'verse',        label:'Verso',        cls:'cs-verse',        chordsOnly:false},
+        {key:'prechorus',    label:'Pre-Coro',     cls:'cs-prechorus',    chordsOnly:false},
+        {key:'chorus',       label:'Coro',         cls:'cs-chorus',       chordsOnly:false},
+        {key:'bridge',       label:'Puente',       cls:'cs-bridge',       chordsOnly:false},
+        {key:'instrumental', label:'Instrumental', cls:'cs-instrumental', chordsOnly:true},
+        {key:'outro',        label:'Outro',        cls:'cs-outro',        chordsOnly:false},
+        {key:'tag',          label:'Tag',          cls:'cs-tag',          chordsOnly:false},
+    ];
+    return types.find(t => t.key === typeKey) || types[1];
+};
+
+// ─────────────────────────────────
+// 2. cifCloseChordPopup (MISSING)
+// ─────────────────────────────────
+window.cifCloseChordPopup = function() {
+    const pop = document.getElementById('cif-chord-popup');
+    if (pop) pop.style.display = 'none';
+    window._cp = { secId: null, lineId: null, wordIdx: null, isPosMode: false };
+};
+
+// ─────────────────────────────────
+// 3. cifApplyChord (MISSING — core of the whole feature)
+// ─────────────────────────────────
+window.cifApplyChord = function(chord) {
+    const { secId, lineId, wordIdx } = window._cp || {};
+    if (!secId) { cifCloseChordPopup(); return; }
+
+    cifSnapshot();
+
+    // Chord-only section (Intro / Instrumental)
+    if (lineId === '__co__') {
+        const sec = cifSections.find(s => s.id === secId);
+        if (sec) {
+            if (!sec.coChords) sec.coChords = [];
+            if (chord) { sec.coChords[wordIdx] = chord; }
+            else { sec.coChords.splice(wordIdx, 1); }
+        }
+        cifCloseChordPopup();
+        cifRenderEditorAndPreview();
+        return;
+    }
+
+    // Normal lyric line
+    const sec = cifSections.find(s => s.id === secId);
+    if (!sec) { cifCloseChordPopup(); return; }
+    const line = (sec.lines || []).find(l => l.id === lineId);
+    if (!line) { cifCloseChordPopup(); return; }
+    if (!line.chordMap) line.chordMap = [];
+
+    const pos = wordIdx;
+
+    if (chord) {
+        const existing = line.chordMap.find(e => e.pos === pos);
+        if (existing) { existing.chord = chord; }
+        else {
+            line.chordMap.push({ pos, chord });
+            line.chordMap.sort((a, b) => a.pos - b.pos);
+        }
+    } else {
+        line.chordMap = line.chordMap.filter(e => e.pos !== pos);
+    }
+
+    cifCloseChordPopup();
+    cifRenderEditorAndPreview();
+};
+
+// ─────────────────────────────────
+// Override cifConfirmChord & cifDeleteChord to use new function
+// ─────────────────────────────────
+window.cifConfirmChord = function() {
+    const val = (document.getElementById('cif-cp-input')?.value || '').trim();
+    cifApplyChord(val);
+};
+window.cifDeleteChord = function() { cifApplyChord(''); };
+
+// ─────────────────────────────────
+// Fix: _cp must be on window to survive re-renders
+// ─────────────────────────────────
+if (!window._cp) window._cp = { secId: null, lineId: null, wordIdx: null, isPosMode: false };
+
+// Override cifOpenChordPopup to use window._cp
+window.cifOpenChordPopup = function(secId, lineId, posOrIdx, currentChord, anchor, isPosMode) {
+    window._cp = { secId, lineId, wordIdx: posOrIdx, isPosMode: !!isPosMode };
+    const pop = document.getElementById('cif-chord-popup');
+    const inp = document.getElementById('cif-cp-input');
+    if (!pop || !inp) return;
+    inp.value = currentChord || '';
+
+    // Set active category
+    if (currentChord) {
+        const cats = (typeof CHORD_CATS !== 'undefined') ? CHORD_CATS : [];
+        for (const cat of cats) {
+            if (cat.chords.includes(currentChord)) { window._cifCurCat = cat.id; break; }
+        }
+    }
+    if (typeof cifBuildCatTabs === 'function') cifBuildCatTabs();
+    if (typeof cifFilterChords === 'function') cifFilterChords(currentChord || '');
+
+    pop.style.display = 'block';
+    const r = anchor.getBoundingClientRect();
+    let top = r.bottom + 6, left = r.left;
+    if (left + 355 > window.innerWidth) left = window.innerWidth - 360;
+    if (top + 320 > window.innerHeight) top = r.top - 330;
+    pop.style.top  = Math.max(4, top) + 'px';
+    pop.style.left = Math.max(4, left) + 'px';
+    setTimeout(() => { inp.focus(); inp.select(); }, 40);
+};
+
+// Fix click-outside listener
+document.removeEventListener('click', window._cifOutsideClick);
+window._cifOutsideClick = function(e) {
+    const pop = document.getElementById('cif-chord-popup');
+    if (pop && pop.style.display !== 'none' && !pop.contains(e.target)) cifCloseChordPopup();
+};
+document.addEventListener('click', window._cifOutsideClick);
+
+// ─────────────────────────────────
+// 4. cifRenderEditorAndPreview — smart partial refresh
+// ─────────────────────────────────
+window.cifRenderEditorAndPreview = function() {
+    const panel = document.getElementById('cif-editor-panel');
+    if (!panel) { renderMain(); return; }
+    cifBuildEditorFixed(panel);
+    cifRenderPreviewFixed();
+};
+
+// Also override renderCifradoEditor
+window.renderCifradoEditor = function() {
+    cifRenderEditorAndPreview();
+};
+
+// ─────────────────────────────────
+// 5. renderCifradoInspector (MISSING)
+// ─────────────────────────────────
+window.renderCifradoInspector = function(panel) {
+    const sec1 = mkEl('div', 'ins-section', '');
+    sec1.innerHTML = '<div class="ins-header">Cifrado</div>';
+
+    if (!cifSongId) {
+        sec1.innerHTML += `<div class="empty-state" style="padding:20px 0">
+            <div class="empty-icon">🎸</div>
+            <p style="font-size:11px">Selecciona una canción</p>
+        </div>`;
+        panel.appendChild(sec1); return;
+    }
+
+    const s = songs.find(x => x.id === cifSongId);
+    if (s) {
+        sec1.innerHTML += `
+            <div style="font-size:13px;font-weight:700;margin-bottom:4px">${esc(s.name)}</div>
+            <div style="font-size:10px;color:var(--dim);margin-bottom:12px">${esc(s.author || '')}</div>`;
+    }
+
+    const totalChords = cifSections.reduce((acc, sec) => {
+        if (sec.coChords) return acc + sec.coChords.filter(Boolean).length;
+        return acc + (sec.lines || []).reduce((a, l) => a + (l.chordMap || []).length, 0);
+    }, 0);
+    const totalLines = cifSections.reduce((acc, sec) => acc + (sec.lines?.length || 0), 0);
+
+    const grid = mkEl('div', 'stat-grid', '');
+    [
+        ['📄', cifSections.length, 'secciones'],
+        ['🎵', totalLines,         'líneas'],
+        ['🎸', totalChords,        'acordes'],
+        ['💾', cifUndoStack.length,'cambios'],
+    ].forEach(([icon, val, label]) => {
+        grid.appendChild(mkEl('div', 'stat-box', `
+            <div class="stat-box-icon">${icon}</div>
+            <div class="stat-box-val">${val}</div>
+            <div class="stat-box-label">${label}</div>`));
+    });
+    sec1.appendChild(grid);
+
+    if (cifSections.length) {
+        const listDiv = document.createElement('div');
+        listDiv.style.marginTop = '12px';
+        cifSections.forEach((sec, i) => {
+            const info = cifTI(sec.type);
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px';
+            row.innerHTML = `<span class="cif-sec-badge ${info.cls}" style="font-size:8px">${esc(sec.label || info.label)}</span>
+                <span style="color:var(--dim);flex:1">${sec.lines?.length || 0} líneas</span>
+                <span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;font-size:10px">${i+1}</span>`;
+            listDiv.appendChild(row);
+        });
+        sec1.appendChild(listDiv);
+    }
+    panel.appendChild(sec1);
+
+    const sec2 = mkEl('div', 'ins-section', '');
+    sec2.innerHTML = '<div class="ins-header">Acciones</div>';
+    const b1 = mkEl('button', 'btn btn-primary', '💾 Guardar cifrado'); b1.onclick = cifSave;
+    const b2 = mkEl('button', 'btn btn-blue',    '▶ Modo presentación'); b2.onclick = cifOpenPresent;
+    const b3 = mkEl('button', 'btn btn-ghost',   '☁ Recargar desde nube'); b3.onclick = cifLoadFromCloud;
+    [b1, b2, b3].forEach(b => sec2.appendChild(b));
+    panel.appendChild(sec2);
+};
+
+// ─────────────────────────────────
+// 6. cifBuildEditorFixed — correct editor builder
+// ─────────────────────────────────
+window.cifBuildEditorFixed = function(panel) {
+    panel.innerHTML = '';
+
+    if (!cifSections.length) {
+        const empty = document.createElement('div');
+        empty.className = 'cif-empty';
+        empty.innerHTML = `<div class="cif-empty-ico">🎸</div>
+            <p class="cif-empty-txt">Agrega secciones con los botones de abajo.</p>`;
+        panel.appendChild(empty);
+    }
+
+    // Add section bar
+    const addBar = document.createElement('div');
+    addBar.className = 'cif-add-bar';
+    addBar.innerHTML = '<span class="cif-add-bar-lbl">+ Agregar sección:</span>';
+    const TYPES = [
+        {key:'intro','label':'Intro'},{key:'verse','label':'Verso'},{key:'prechorus','label':'Pre-Coro'},
+        {key:'chorus','label':'Coro'},{key:'bridge','label':'Puente'},{key:'instrumental','label':'Instrumental'},
+        {key:'outro','label':'Outro'},{key:'tag','label':'Tag'},
+    ];
+    TYPES.forEach(t => {
+        const b = document.createElement('button');
+        b.className = 'cif-add-chip'; b.textContent = t.label;
+        b.onclick = () => cifOpenSectionPaste(t.key);
+        addBar.appendChild(b);
+    });
+    panel.appendChild(addBar);
+
+    if (cifSections.length > 0) {
+        const hint = document.createElement('div');
+        hint.className = 'cif-hint-row';
+        hint.innerHTML = '🎵 <b>Clic en sílaba</b> → poner acorde &nbsp;·&nbsp; <b>Clic en acorde existente</b> → editar/quitar &nbsp;·&nbsp; <b>Doble clic en línea</b> → editar texto &nbsp;·&nbsp; <b>⠿</b> → reordenar sección';
+        panel.appendChild(hint);
+    }
+
+    let _dragSecId = null;
+
+    cifSections.forEach(sec => {
+        const info = cifTI(sec.type);
+        const card = document.createElement('div');
+        card.className = 'cif-sec-card';
+        card.draggable = true;
+
+        card.addEventListener('dragstart', e => {
+            _dragSecId = sec.id; card.style.opacity = '0.4';
+            e.dataTransfer.effectAllowed = 'move';
+        });
+        card.addEventListener('dragend', () => {
+            card.style.opacity = '';
+            panel.querySelectorAll('.cif-sec-card').forEach(c => c.classList.remove('drag-over-top','drag-over-bot'));
+        });
+        card.addEventListener('dragover', e => {
+            e.preventDefault();
+            if (_dragSecId === sec.id) return;
+            panel.querySelectorAll('.cif-sec-card').forEach(c => c.classList.remove('drag-over-top','drag-over-bot'));
+            const mid = card.getBoundingClientRect().top + card.offsetHeight / 2;
+            card.classList.add(e.clientY < mid ? 'drag-over-top' : 'drag-over-bot');
+        });
+        card.addEventListener('dragleave', () => card.classList.remove('drag-over-top','drag-over-bot'));
+        card.addEventListener('drop', e => {
+            e.preventDefault();
+            if (!_dragSecId || _dragSecId === sec.id) return;
+            card.classList.remove('drag-over-top','drag-over-bot');
+            const fromIdx = cifSections.findIndex(s => s.id === _dragSecId);
+            const toIdx   = cifSections.findIndex(s => s.id === sec.id);
+            if (fromIdx < 0 || toIdx < 0) return;
+            cifSnapshot();
+            const [moved] = cifSections.splice(fromIdx, 1);
+            const newIdx  = cifSections.findIndex(s => s.id === sec.id);
+            const mid = card.getBoundingClientRect().top + card.offsetHeight / 2;
+            cifSections.splice(e.clientY < mid ? newIdx : newIdx + 1, 0, moved);
+            cifRenderEditorAndPreview();
+        });
+
+        // Header
+        const hdr = document.createElement('div');
+        hdr.className = 'cif-sec-hdr';
+        const dh = document.createElement('span');
+        dh.textContent = '⠿'; dh.title = 'Arrastrar';
+        dh.style.cssText = 'cursor:grab;color:var(--dim2);font-size:16px;padding:0 4px;user-select:none;flex-shrink:0';
+        hdr.appendChild(dh);
+
+        const badge = document.createElement('span');
+        badge.className = `cif-sec-badge ${info.cls}`;
+        badge.textContent = info.label;
+        hdr.appendChild(badge);
+
+        const nameIn = document.createElement('input');
+        nameIn.className = 'cif-sec-name-in';
+        nameIn.value = sec.label || info.label;
+        nameIn.oninput = () => sec.label = nameIn.value;
+        nameIn.onmousedown = e => { card.draggable = false; e.stopPropagation(); };
+        nameIn.onblur = () => { card.draggable = true; };
+        hdr.appendChild(nameIn);
+
+        const ctrl = document.createElement('div');
+        ctrl.className = 'cif-sec-ctrl';
+        const bE = document.createElement('button'); bE.innerHTML = '✏'; bE.title = 'Editar sección';
+        bE.onclick = e => { e.stopPropagation(); cifOpenSectionPaste(sec.type, sec); };
+        const bS = document.createElement('button'); bS.innerHTML = '💾'; bS.style.color = 'var(--accent)'; bS.title = 'Guardar';
+        bS.onclick = e => { e.stopPropagation(); cifSave(); };
+        const bD = document.createElement('button'); bD.innerHTML = '🗑'; bD.className = 'del-sec'; bD.title = 'Eliminar';
+        bD.onclick = e => { e.stopPropagation(); if (confirm(`¿Eliminar "${sec.label}"?`)) cifRemoveSection(sec.id); };
+        [bE, bS, bD].forEach(b => ctrl.appendChild(b));
+        hdr.appendChild(ctrl);
+        card.appendChild(hdr);
+
+        // Body
+        const secBody = document.createElement('div');
+        secBody.className = 'cif-sec-body';
+
+        if (info.chordsOnly) {
+            if (!sec.coChords) sec.coChords = [];
+            const coLine = document.createElement('div');
+            coLine.className = 'cif-co-line';
+
+            function rebuildCoLine() {
+                coLine.innerHTML = '';
+                (sec.coChords || []).forEach((ch, ci) => {
+                    const chip = document.createElement('span');
+                    chip.className = 'cif-co-chip'; chip.textContent = ch || '?';
+                    chip.onclick = e => { e.stopPropagation(); cifOpenChordPopup(sec.id, '__co__', ci, ch, chip, false); };
+                    coLine.appendChild(chip);
+                });
+                const addBtn = document.createElement('button');
+                addBtn.className = 'cif-co-add'; addBtn.textContent = '+ Acorde';
+                addBtn.onclick = () => {
+                    if (!sec.coChords) sec.coChords = [];
+                    const idx = sec.coChords.length;
+                    sec.coChords.push('');
+                    // Rebuild to show the placeholder, then open popup on it
+                    rebuildCoLine();
+                    const chips = coLine.querySelectorAll('.cif-co-chip');
+                    const anchor = chips[idx] || addBtn;
+                    cifOpenChordPopup(sec.id, '__co__', idx, '', anchor, false);
+                };
+                coLine.appendChild(addBtn);
+            }
+            rebuildCoLine();
+            secBody.appendChild(coLine);
+
+        } else if (sec.emptyRef) {
+            const msg = document.createElement('div');
+            msg.style.cssText = "color:var(--dim2);font-size:12px;font-style:italic;padding:8px 2px;opacity:.7";
+            msg.textContent = '↩ Sección de referencia (vacía) — clic en editar para agregar letra';
+            secBody.appendChild(msg);
+
+        } else {
+            (sec.lines || []).forEach((line, li) => {
+                secBody.appendChild(cifBuildLineElFixed(sec, line, li));
+            });
+            const addBtn = document.createElement('button');
+            addBtn.className = 'cif-add-line'; addBtn.textContent = '+ Añadir línea';
+            addBtn.onclick = () => { cifAddLine(sec.id); };
+            secBody.appendChild(addBtn);
+        }
+
+        card.appendChild(secBody);
+        panel.appendChild(card);
+    });
+};
+
+// ─────────────────────────────────
+// 7. cifBuildLineElFixed — fixed line element builder
+// ─────────────────────────────────
+window.cifBuildLineElFixed = function(sec, line, li) {
+    if (!line.chordMap) line.chordMap = [];
+
+    const wrap = document.createElement('div');
+    wrap.className = 'cif-line-wrap';
+
+    const main = document.createElement('div');
+    main.className = 'cif-line-main';
+
+    const lyric = line.lyric || '';
+    const tokenRow = document.createElement('div');
+    tokenRow.className = 'cif-token-row';
+
+    // Syllable splitter
+    function splitSyls(word) {
+        const v = 'aeiouáéíóúüAEIOUÁÉÍÓÚÜ';
+        const isV = c => v.includes(c);
+        if (word.length <= 3) return [word];
+        const syls = []; let cur = '';
+        for (let i = 0; i < word.length; i++) {
+            cur += word[i];
+            const next = word[i+1], after = word[i+2];
+            if (isV(word[i]) && next && !isV(next) && after && isV(after)) { syls.push(cur); cur = ''; }
+            else if (isV(word[i]) && next && isV(next) && 'aeoáéó'.includes(word[i]) && 'aeoáéó'.includes(next)) { syls.push(cur); cur = ''; }
+        }
+        if (cur) syls.push(cur);
+        return syls.length ? syls : [word];
+    }
+
+    function getChordClass(ch) {
+        if (!ch) return 'nat';
+        if (/m7$/.test(ch)) return 'm7'; if (/maj7/.test(ch)) return 'maj7';
+        if (/sus/.test(ch)) return 'sus'; if (/dim|aug/.test(ch)) return 'aug';
+        if (/add|\d$/.test(ch)) return 'add'; if (/7$/.test(ch)) return 'dom7';
+        if (/m$/.test(ch)) return 'min'; return 'nat';
+    }
+
+    if (!lyric.trim()) {
+        const ph = document.createElement('span');
+        ph.style.cssText = "color:var(--dim2);font-size:12px;padding:2px 6px;font-style:italic;opacity:.5;cursor:pointer";
+        ph.textContent = '(línea vacía — doble clic para editar)';
+        tokenRow.appendChild(ph);
+    } else {
+        // Tokenize
+        let i = 0;
+        while (i < lyric.length) {
+            if (lyric[i] === ' ') {
+                let j = i;
+                while (j < lyric.length && lyric[j] === ' ') j++;
+                const wt = document.createElement('div'); wt.className = 'cif-wt sp';
+                const t = document.createElement('span'); t.className = 'cif-wt-text'; t.textContent = lyric.slice(i,j);
+                wt.appendChild(t); tokenRow.appendChild(wt); i = j;
+            } else {
+                let j = i;
+                while (j < lyric.length && lyric[j] !== ' ') j++;
+                const word = lyric.slice(i, j);
+                const syls = splitSyls(word);
+                let sylOff = 0;
+                syls.forEach(syl => {
+                    const charPos = i + sylOff;
+                    const entry = line.chordMap.find(e => e.pos === charPos);
+                    const wt = document.createElement('div'); wt.className = 'cif-wt';
+                    wt.title = `Clic → acorde sobre "${syl}"`;
+
+                    const chord = document.createElement('span');
+                    if (entry) {
+                        chord.className = `cif-wt-chord has ${getChordClass(entry.chord)}-chip`;
+                        chord.textContent = entry.chord;
+                    } else {
+                        chord.className = 'cif-wt-chord empty';
+                        chord.textContent = '·';
+                    }
+                    wt.appendChild(chord);
+
+                    const text = document.createElement('span'); text.className = 'cif-wt-text'; text.textContent = syl;
+                    wt.appendChild(text);
+
+                    wt.onclick = e => { e.stopPropagation(); cifOpenChordPopup(sec.id, line.id, charPos, entry?.chord || '', chord, true); };
+                    tokenRow.appendChild(wt);
+                    sylOff += syl.length;
+                });
+                i = j;
+            }
+        }
+    }
+
+    main.appendChild(tokenRow);
+
+    // Edit row
+    const editRow = document.createElement('div');
+    editRow.className = 'cif-edit-row';
+    const editInp = document.createElement('input');
+    editInp.className = 'cif-lyric-in'; editInp.type = 'text'; editInp.value = lyric;
+    editInp.placeholder = 'Texto de esta línea…';
+    const editOk = document.createElement('button');
+    editOk.className = 'cif-edit-ok'; editOk.textContent = '✓ OK';
+
+    function confirmEdit() {
+        const nv = editInp.value;
+        if (nv !== line.lyric) {
+            cifSnapshot();
+            line.chordMap = (line.chordMap || []).filter(e => e.pos < nv.length);
+            line.lyric = nv;
+        }
+        editRow.classList.remove('on');
+        const newEl = cifBuildLineElFixed(sec, line, li);
+        wrap.replaceWith(newEl);
+        cifRenderPreviewFixed();
+    }
+    editOk.onclick = confirmEdit;
+    editInp.onkeydown = e => { if (e.key==='Enter'){e.preventDefault();confirmEdit();} if(e.key==='Escape')editRow.classList.remove('on'); };
+    editRow.appendChild(editInp); editRow.appendChild(editOk);
+    main.appendChild(editRow);
+
+    tokenRow.ondblclick = e => { e.stopPropagation(); editRow.classList.add('on'); editInp.focus(); editInp.select(); };
+    wrap.appendChild(main);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'cif-del-line'; delBtn.textContent = '✕'; delBtn.title = 'Eliminar línea';
+    delBtn.onclick = () => cifDelLine(sec.id, line.id);
+    wrap.appendChild(delBtn);
+    return wrap;
+};
+
+// ─────────────────────────────────
+// 8. cifRenderPreviewFixed — correct preview
+// ─────────────────────────────────
+window.cifRenderPreviewFixed = function() {
+    const body = document.getElementById('cif-prev-body');
+    if (!body) return;
+    body.innerHTML = '';
+    if (!cifSections.length) {
+        body.innerHTML = '<div style="color:var(--dim2);font-size:12px;padding:10px">El cifrado aparecerá aquí…</div>';
+        return;
+    }
+    cifSections.forEach(sec => {
+        const info = cifTI(sec.type);
+        const sdiv = document.createElement('div'); sdiv.className = 'cprev-sec';
+        const lbl = document.createElement('span'); lbl.className = `cprev-lbl ${info.cls}`; lbl.textContent = sec.label || info.label;
+        sdiv.appendChild(lbl);
+        if (info.chordsOnly) {
+            const co = document.createElement('div'); co.className = 'cprev-co';
+            (sec.coChords || []).filter(Boolean).forEach(ch => {
+                const s = document.createElement('span'); s.className = 'cprev-co-chip'; s.textContent = ch; co.appendChild(s);
+            });
+            sdiv.appendChild(co);
+        } else {
+            (sec.lines || []).forEach(line => {
+                const map = (line.chordMap || []).slice().sort((a,b) => a.pos-b.pos);
+                if (!map.length && !line.lyric) return;
+                const row = document.createElement('div'); row.className = 'cprev-line';
+                const lyric = line.lyric || '';
+                let i = 0;
+                while (i < lyric.length) {
+                    if (lyric[i] === ' ') {
+                        let j=i; while(j<lyric.length&&lyric[j]===' ')j++;
+                        const wt=document.createElement('span');wt.className='cprev-wt';
+                        const t=document.createElement('span');t.className='cprev-text';t.textContent=lyric.slice(i,j);
+                        wt.appendChild(t);row.appendChild(wt);i=j;
+                    } else {
+                        let j=i; while(j<lyric.length&&lyric[j]!==' ')j++;
+                        const wt=document.createElement('span');wt.className='cprev-wt';
+                        const entry=map.find(e=>e.pos===i);
+                        const c=document.createElement('span');c.className='cprev-chord'+(entry?'':' empty');c.textContent=entry?entry.chord:'\u00a0';
+                        const t=document.createElement('span');t.className='cprev-text';t.textContent=lyric.slice(i,j);
+                        wt.appendChild(c);wt.appendChild(t);row.appendChild(wt);i=j;
+                    }
+                }
+                if (!lyric.trim() && map.length) {
+                    map.forEach(e=>{
+                        const wt=document.createElement('span');wt.className='cprev-wt';
+                        const c=document.createElement('span');c.className='cprev-chord';c.textContent=e.chord;
+                        wt.appendChild(c);row.appendChild(wt);
+                    });
+                }
+                sdiv.appendChild(row);
+            });
+        }
+        body.appendChild(sdiv);
+    });
+};
+
+// Override old cifRenderPreview
+window.cifRenderPreview = function() { cifRenderPreviewFixed(); };
+
+// ─────────────────────────────────
+// 9. cifOpenPresent & cifBuildPresent — single correct version
+// ─────────────────────────────────
+window.cifOpenPresent = function() {
+    if (!cifSongId || !cifSections.length) { toast('⚠ No hay cifrado para presentar'); return; }
+    const s = songs.find(x => x.id === cifSongId);
+    document.getElementById('cif-present-title').textContent = s ? s.name : 'Cifrado';
+    window.cifPresentFs = 18;
+    document.getElementById('cif-present-zoom').textContent = '100%';
+    cifBuildPresentFixed();
+    document.getElementById('cif-present-overlay').classList.add('open');
+};
+
+window.cifClosePresent = function() {
+    document.getElementById('cif-present-overlay').classList.remove('open');
+};
+
+window.cifPresentZoom = function(d) {
+    window.cifPresentFs = Math.max(10, Math.min(40, (window.cifPresentFs || 18) + d));
+    document.getElementById('cif-present-zoom').textContent = Math.round(window.cifPresentFs / 18 * 100) + '%';
+    cifBuildPresentFixed();
+};
+
+window.cifBuildPresentFixed = function() {
+    const body = document.getElementById('cif-present-body');
+    if (!body) return;
+    body.innerHTML = '';
+    const fs = window.cifPresentFs || 18;
+    const cfs = Math.round(fs * 0.72);
+
+    cifSections.forEach(sec => {
+        const info = cifTI(sec.type);
+        const sdiv = document.createElement('div'); sdiv.className = 'cpres-sec';
+        const lbl = document.createElement('span'); lbl.className = `cpres-badge ${info.cls}`;
+        lbl.textContent = sec.label || info.label; lbl.style.fontSize = Math.max(10, fs * 0.55) + 'px';
+        sdiv.appendChild(lbl);
+
+        if (info.chordsOnly) {
+            const co = document.createElement('div'); co.className = 'cpres-co';
+            (sec.coChords || []).filter(Boolean).forEach(ch => {
+                const sp = document.createElement('span'); sp.className = 'cpres-co-chip';
+                sp.textContent = ch; sp.style.fontSize = cfs + 'px'; co.appendChild(sp);
+            });
+            sdiv.appendChild(co);
+        } else {
+            (sec.lines || []).forEach(line => {
+                const map = (line.chordMap || []).slice().sort((a,b) => a.pos-b.pos);
+                if (!map.length && !line.lyric) return;
+                const ldiv = document.createElement('div'); ldiv.className = 'cpres-line';
+
+                if (map.length) {
+                    // Position-based chord + lyric row
+                    const row = document.createElement('div');
+                    row.style.cssText = 'display:flex;flex-wrap:wrap;align-items:flex-end';
+                    const lyric2 = line.lyric || '';
+                    let pos = 0;
+                    map.forEach(entry => {
+                        if (entry.pos > pos) {
+                            const sp = document.createElement('span');
+                            sp.style.cssText = `display:inline-flex;flex-direction:column;align-items:flex-start`;
+                            const ce = document.createElement('span'); ce.style.cssText = `font-size:${cfs}px;visibility:hidden`; ce.textContent = '\u00a0';
+                            const te = document.createElement('span'); te.className = 'cpres-text'; te.textContent = lyric2.slice(pos, entry.pos); te.style.fontSize = fs + 'px'; te.style.whiteSpace = 'pre';
+                            sp.appendChild(ce); sp.appendChild(te); row.appendChild(sp);
+                        }
+                        const nextPos = map.find(e => e.pos > entry.pos)?.pos ?? lyric2.length;
+                        const sylLen = Math.max(entry.chord.length, nextPos - entry.pos);
+                        const sylText = lyric2.slice(entry.pos, entry.pos + sylLen) || '\u00a0';
+                        const wt = document.createElement('span');
+                        wt.style.cssText = 'display:inline-flex;flex-direction:column;align-items:flex-start';
+                        const c = document.createElement('span'); c.className = 'cpres-chord'; c.textContent = entry.chord; c.style.fontSize = cfs + 'px';
+                        const t = document.createElement('span'); t.className = 'cpres-text'; t.textContent = sylText; t.style.fontSize = fs + 'px'; t.style.whiteSpace = 'pre';
+                        wt.appendChild(c); wt.appendChild(t); row.appendChild(wt);
+                        pos = entry.pos + sylLen;
+                    });
+                    if (pos < lyric2.length) {
+                        const rem = document.createElement('span');
+                        rem.style.cssText = 'display:inline-flex;flex-direction:column;align-items:flex-start';
+                        const ce = document.createElement('span'); ce.style.cssText = `font-size:${cfs}px;visibility:hidden`; ce.textContent = '\u00a0';
+                        const te = document.createElement('span'); te.className = 'cpres-text'; te.textContent = lyric2.slice(pos); te.style.fontSize = fs + 'px'; te.style.whiteSpace = 'pre';
+                        rem.appendChild(ce); rem.appendChild(te); row.appendChild(rem);
+                    }
+                    ldiv.appendChild(row);
+                } else if (line.lyric) {
+                    const ly = document.createElement('div');
+                    ly.className = 'cpres-text'; ly.textContent = line.lyric; ly.style.fontSize = fs + 'px';
+                    ldiv.appendChild(ly);
+                }
+                sdiv.appendChild(ldiv);
+            });
+        }
+        body.appendChild(sdiv);
+    });
+};
+
+// Override old cifBuildPresent
+window.cifBuildPresent = function() { cifBuildPresentFixed(); };
+
+// ─────────────────────────────────
+// 10. Override renderCifrado to use fixed editor
+// ─────────────────────────────────
+const _origRenderCifrado = window.renderCifrado;
+window.renderCifrado = function(display) {
+    display.className = 'content-area';
+    display.innerHTML = '';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'cif-wrap';
+
+    // Toolbar
+    const tb = document.createElement('div');
+    tb.className = 'cif-top-bar';
+
+    const sel = document.createElement('select');
+    sel.className = 'cif-song-sel';
+    sel.innerHTML = '<option value="">— Selecciona una canción —</option>' +
+        [...songs].sort((a,b) => a.name.localeCompare(b.name)).map(s =>
+            `<option value="${s.id}" ${s.id === cifSongId ? 'selected' : ''}>${esc(s.name)}${s.author ? ' · ' + esc(s.author) : ''}</option>`
+        ).join('');
+    sel.onchange = () => cifLoad(sel.value);
+    tb.appendChild(sel);
+
+    const btnUndo = document.createElement('button');
+    btnUndo.className = 'cif-tbtn'; btnUndo.title = 'Deshacer (Ctrl+Z)';
+    btnUndo.innerHTML = '↩'; btnUndo.disabled = !(cifUndoStack && cifUndoStack.length);
+    btnUndo.onclick = cifUndo; tb.appendChild(btnUndo);
+
+    const btnRedo = document.createElement('button');
+    btnRedo.className = 'cif-tbtn'; btnRedo.title = 'Rehacer (Ctrl+Y)';
+    btnRedo.innerHTML = '↪'; btnRedo.disabled = !(cifRedoStack && cifRedoStack.length);
+    btnRedo.onclick = cifRedo; tb.appendChild(btnRedo);
+
+    if (cifSongId) {
+        const btnSave = document.createElement('button');
+        btnSave.className = 'cif-tbtn save'; btnSave.textContent = '💾 Guardar';
+        btnSave.onclick = cifSave; tb.appendChild(btnSave);
+
+        const btnCloud = document.createElement('button');
+        btnCloud.className = 'cif-tbtn'; btnCloud.title = 'Recargar desde nube';
+        btnCloud.style.cssText = 'padding:7px 10px;font-size:14px'; btnCloud.innerHTML = '☁';
+        btnCloud.onclick = cifLoadFromCloud; tb.appendChild(btnCloud);
+
+        const btnPres = document.createElement('button');
+        btnPres.className = 'cif-tbtn'; btnPres.textContent = '▶ Presentar';
+        btnPres.onclick = cifOpenPresent; tb.appendChild(btnPres);
+
+        const btnPrefs = document.createElement('button');
+        btnPrefs.className = 'cif-tbtn'; btnPrefs.title = 'Preferencias';
+        btnPrefs.style.cssText = 'padding:7px 11px;font-size:15px'; btnPrefs.innerHTML = '⚙';
+        btnPrefs.onclick = cifOpenPrefs; tb.appendChild(btnPrefs);
+    }
+
+    // Size controls
+    const sc1 = document.createElement('div'); sc1.className = 'cif-size-ctrl'; sc1.title = 'Tamaño letra';
+    sc1.innerHTML = `<span class="cif-size-lbl" style="font-size:9px;opacity:.7">LETRA</span>
+        <button class="cif-size-btn" onclick="cifAdjSize('lyric',-1)">−</button>
+        <span class="cif-size-lbl" id="cif-lyric-size-lbl">${window.cifLyricSize||15}</span>
+        <button class="cif-size-btn" onclick="cifAdjSize('lyric',1)">+</button>`;
+    tb.appendChild(sc1);
+    const sc2 = document.createElement('div'); sc2.className = 'cif-size-ctrl'; sc2.title = 'Tamaño acordes';
+    sc2.innerHTML = `<span class="cif-size-lbl" style="font-size:9px;opacity:.7;color:var(--accent)">ACORDE</span>
+        <button class="cif-size-btn" onclick="cifAdjSize('chord',-1)">−</button>
+        <span class="cif-size-lbl" id="cif-chord-size-lbl">${window.cifChordSize||13}</span>
+        <button class="cif-size-btn" onclick="cifAdjSize('chord',1)">+</button>`;
+    tb.appendChild(sc2);
+    wrap.appendChild(tb);
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'cif-body';
+
+    const editorPanel = document.createElement('div');
+    editorPanel.className = 'cif-editor';
+    editorPanel.id = 'cif-editor-panel';
+
+    if (!cifSongId) {
+        editorPanel.innerHTML = `<div class="cif-empty">
+            <div class="cif-empty-ico">🎸</div>
+            <p class="cif-empty-txt">Selecciona una canción arriba para editar su cifrado con acordes y letra.</p>
+        </div>`;
+    } else {
+        cifBuildEditorFixed(editorPanel);
+    }
+    body.appendChild(editorPanel);
+
+    const prevPanel = document.createElement('div');
+    prevPanel.className = 'cif-preview';
+    prevPanel.innerHTML = `<div class="cif-prev-hdr"><span>Vista previa</span></div>
+                           <div class="cif-prev-body" id="cif-prev-body"></div>`;
+    body.appendChild(prevPanel);
+
+    wrap.appendChild(body);
+    display.appendChild(wrap);
+
+    if (cifSongId) setTimeout(cifRenderPreviewFixed, 0);
+};
+
+// ─────────────────────────────────
+// 11. Keyboard shortcuts — single clean handler
+// ─────────────────────────────────
+document.removeEventListener('keydown', window._cifKeyHandler);
+window._cifKeyHandler = function(e) {
+    if (e.key === 'Escape') {
+        const pres = document.getElementById('cif-present-overlay');
+        if (pres && pres.classList.contains('open')) { cifClosePresent(); return; }
+        const prefs = document.getElementById('cif-prefs-overlay');
+        if (prefs && prefs.style.display === 'flex') { cifClosePrefs(); return; }
+        if (window._cifPasteModal) { window._cifPasteModal.remove(); window._cifPasteModal = null; return; }
+        cifCloseChordPopup();
+    }
+    if (window.viewMode === 'CIFRADO' && (e.ctrlKey || e.metaKey)) {
+        const tag = document.activeElement?.tagName;
+        if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+        if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); cifUndo(); }
+        if (e.key === 'y' || (e.key === 'z' && e.shiftKey)) { e.preventDefault(); cifRedo(); }
+        if (e.key === 's') { e.preventDefault(); cifSave(); }
+    }
+};
+document.addEventListener('keydown', window._cifKeyHandler);
+
+console.log('✅ AdoraChord Cifrado PATCH applied — all 11 fixes active');
+
+</script>
+<script>
+// ═══════════════════════════════════════════════════════════════════════
+//  ADORACHORD — CIFRADO PATCH v2
+//  Mejoras:
+//  1. Silabización española correcta (RAE) — insaciable = in-sa-cia-ble
+//  2. Acordes "flotantes" entre palabras (sin sílaba bajo el acorde)
+//  3. Scroll lateral en cada sección (editor + vista previa)
+//  4. Vista previa con scroll lateral por sección
+// ═══════════════════════════════════════════════════════════════════════
+
+// ─────────────────────────────────────────────────────────
+// CSS ADICIONAL
+// ─────────────────────────────────────────────────────────
+(function injectCSS() {
+    const s = document.createElement('style');
+    s.textContent = `
+/* Scroll horizontal en filas de tokens */
+.cif-token-row {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    padding-bottom: 6px !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: var(--border2) transparent !important;
+    align-items: flex-end !important;
+    min-height: 54px;
+    gap: 0 !important;
+}
+.cif-token-row::-webkit-scrollbar { height: 4px; }
+.cif-token-row::-webkit-scrollbar-track { background: transparent; }
+.cif-token-row::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* Cada token NO wrappea */
+.cif-wt {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    padding: 0 2px !important;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background .12s;
+}
+.cif-wt:hover { background: rgba(255,255,255,.06); }
+.cif-wt.sp { cursor: default; }
+.cif-wt.sp:hover { background: none; }
+
+/* Acorde flotante — sin texto debajo */
+.cif-wt.floating {
+    padding: 0 4px !important;
+}
+.cif-wt.floating .cif-wt-text {
+    font-size: 10px !important;
+    color: var(--dim2) !important;
+    font-style: italic;
+    letter-spacing: 0;
+}
+
+/* Botón "+" para acorde flotante al final de la línea */
+.cif-add-float-btn {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 0 6px;
+    cursor: pointer;
+    opacity: .4;
+    transition: opacity .15s;
+    border: none;
+    background: none;
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1;
+    margin-left: 4px;
+}
+.cif-add-float-btn:hover { opacity: 1; }
+.cif-add-float-btn .cif-add-float-icon {
+    font-size: 15px;
+    line-height: 1;
+    margin-bottom: 2px;
+}
+.cif-add-float-btn .cif-add-float-lbl {
+    font-size: 8px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+/* Vista previa scroll por línea */
+.cprev-line {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding-bottom: 3px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
+    align-items: flex-end;
+}
+.cprev-line::-webkit-scrollbar { height: 3px; }
+.cprev-line::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.cprev-wt {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    padding: 0 1px;
+}
+
+/* Sección body scroll si la línea es muy larga */
+.cif-sec-body {
+    overflow-x: auto;
+}
+
+/* Acorde flotante en vista previa */
+.cprev-wt.floating .cprev-text {
+    font-size: 9px !important;
+    color: var(--dim2) !important;
+    font-style: italic;
+}
+`;
+    document.head.appendChild(s);
+})();
+
+// ─────────────────────────────────────────────────────────
+// 1. SILABIZACIÓN ESPAÑOLA CORRECTA (RAE)
+// ─────────────────────────────────────────────────────────
+window.splitSyllablesES = function(word) {
+    if (!word || word.length === 0) return [word];
+    if (word.length <= 2) return [word];
+
+    const V = 'aeiouáéíóúüAEIOUÁÉÍÓÚÜ';
+    const isV = c => V.includes(c);
+    const strong = new Set('aeoáéóAEOÁÉÓ');
+    const weak   = new Set('iuüIUÜ');
+    // Clusters inseparables (siempre van juntos a la siguiente vocal)
+    const insep  = new Set(['bl','br','cl','cr','dr','fl','fr','gl','gr','pl','pr','tr','tl','ch','ll','rr']);
+
+    const w = word;
+    const n = w.length;
+    const syls = [];
+    let cur = '';
+    let i = 0;
+
+    while (i < n) {
+        const ch = w[i];
+        cur += ch;
+
+        if (isV(ch)) {
+            // ¿Diptongo / triptongo?
+            let vi = i; // posición de la última vocal consumida en este núcleo
+            
+            // Consumir vocales débiles que siguen (diptongo/triptongo)
+            while (vi + 1 < n && isV(w[vi + 1])) {
+                const cv = w[vi], nv = w[vi + 1];
+                const cvS = strong.has(cv.toLowerCase());
+                const nvS = strong.has(nv.toLowerCase());
+                const cvW = weak.has(cv.toLowerCase());
+                const nvW = weak.has(nv.toLowerCase());
+
+                if (cvS && nvS) {
+                    // Hiato: dos fuertes → cortar aquí
+                    break;
+                } else {
+                    // Diptongo: consumir
+                    vi++;
+                    cur += w[vi];
+                    i = vi;
+                    // Triptongo: débil+fuerte+débil
+                    if (vi + 1 < n && isV(w[vi + 1])) {
+                        const cv2 = w[vi], nv2 = w[vi + 1];
+                        if (weak.has(cv2.toLowerCase()) && weak.has(nv2.toLowerCase())) {
+                            // no consumir más (sería hiato)
+                            break;
+                        } else if (strong.has(cv2.toLowerCase()) && weak.has(nv2.toLowerCase())) {
+                            // fuerte+débil → también diptongo
+                            vi++;
+                            cur += w[vi];
+                            i = vi;
+                        } else {
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            // Contar consonantes hasta la siguiente vocal
+            let cStart = i + 1;
+            let cEnd = cStart;
+            while (cEnd < n && !isV(w[cEnd])) cEnd++;
+
+            const nc = cEnd - cStart; // número de consonantes
+
+            if (cEnd >= n) {
+                // No hay más vocales → todo el resto va aquí
+                cur += w.slice(i + 1);
+                i = n;
+                syls.push(cur);
+                cur = '';
+                break;
+            }
+
+            if (nc === 0) {
+                // Vocal directamente: hiato o el bucle ya lo manejó
+                // Si llegamos aquí con hiato, cortar
+                if (strong.has(w[i].toLowerCase()) && strong.has(w[i + 1].toLowerCase())) {
+                    syls.push(cur);
+                    cur = '';
+                }
+            } else if (nc === 1) {
+                // Una consonante → va con la siguiente vocal
+                syls.push(cur);
+                cur = '';
+            } else if (nc === 2) {
+                const pair = (w[cStart] + w[cStart + 1]).toLowerCase();
+                if (insep.has(pair)) {
+                    // Grupo inseparable → ambas van con la siguiente vocal
+                    syls.push(cur);
+                    cur = '';
+                } else {
+                    // Dividir: primera consonante cierra la sílaba actual
+                    cur += w[cStart];
+                    syls.push(cur);
+                    cur = '';
+                    i = cStart; // la segunda consonante arranca la siguiente sílaba
+                }
+            } else { // nc >= 3
+                // Regla: si las últimas 2 forman grupo inseparable, solo la primera cierra
+                const last2 = (w[cEnd - 2] + w[cEnd - 1]).toLowerCase();
+                // Cuántas cierran la sílaba actual
+                if (insep.has(last2)) {
+                    // Todas menos las últimas 2 cierran la sílaba actual
+                    const closes = nc - 2;
+                    cur += w.slice(cStart, cStart + closes);
+                    syls.push(cur);
+                    cur = '';
+                    i = cStart + closes - 1;
+                } else {
+                    // La primera cierra, el resto abre
+                    cur += w[cStart];
+                    syls.push(cur);
+                    cur = '';
+                    i = cStart;
+                }
+            }
+        }
+        i++;
+    }
+
+    if (cur) syls.push(cur);
+    const result = syls.filter(s => s.length > 0);
+    return result.length ? result : [word];
+};
+
+// ─────────────────────────────────────────────────────────
+// 2. GETIR CLASS DE ACORDE
+// ─────────────────────────────────────────────────────────
+window._getChordClass = function(ch) {
+    if (!ch) return 'nat';
+    if (/m7$/.test(ch)) return 'm7';
+    if (/maj7/i.test(ch)) return 'maj7';
+    if (/sus/i.test(ch)) return 'sus';
+    if (/dim|aug/i.test(ch)) return 'aug';
+    if (/add/i.test(ch)) return 'add';
+    if (/7$/.test(ch)) return 'dom7';
+    if (/m$/.test(ch)) return 'min';
+    return 'nat';
+};
+
+// ─────────────────────────────────────────────────────────
+// 3. BUILDER DE LÍNEA — con sílabas correctas + acordes flotantes
+// ─────────────────────────────────────────────────────────
+window.cifBuildLineElFixed = function(sec, line, li) {
+    if (!line.chordMap) line.chordMap = [];
+
+    const wrap = document.createElement('div');
+    wrap.className = 'cif-line-wrap';
+
+    const main = document.createElement('div');
+    main.className = 'cif-line-main';
+
+    const lyric = line.lyric || '';
+    const tokenRow = document.createElement('div');
+    tokenRow.className = 'cif-token-row';
+
+    if (!lyric.trim()) {
+        // Línea vacía: solo mostrar acordes flotantes que haya + placeholder
+        const ph = document.createElement('span');
+        ph.style.cssText = "color:var(--dim2);font-size:12px;padding:2px 6px;font-style:italic;opacity:.5;cursor:pointer;flex-shrink:0";
+        ph.textContent = '(línea vacía — doble clic para editar)';
+        tokenRow.appendChild(ph);
+    } else {
+        // Tokenizar preservando espacios
+        let i = 0;
+        while (i < lyric.length) {
+            if (lyric[i] === ' ') {
+                let j = i;
+                while (j < lyric.length && lyric[j] === ' ') j++;
+                const wt = document.createElement('div');
+                wt.className = 'cif-wt sp';
+                const t = document.createElement('span');
+                t.className = 'cif-wt-text';
+                t.textContent = lyric.slice(i, j);
+                t.style.whiteSpace = 'pre';
+
+                // Acorde flotante en espacio? (pos == i, entre palabras)
+                const entry = line.chordMap.find(e => e.pos === i && e.floating);
+                const chordSpan = document.createElement('span');
+                if (entry) {
+                    chordSpan.className = `cif-wt-chord has ${window._getChordClass(entry.chord)}-chip`;
+                    chordSpan.textContent = entry.chord;
+                    wt.classList.add('floating');
+                    wt.onclick = e => { e.stopPropagation(); cifOpenChordPopup(sec.id, line.id, i, entry.chord, chordSpan, true); };
+                } else {
+                    chordSpan.className = 'cif-wt-chord empty';
+                    chordSpan.textContent = '·';
+                    wt.style.opacity = '0';
+                    wt.style.pointerEvents = 'none';
+                }
+                wt.appendChild(chordSpan);
+                wt.appendChild(t);
+                tokenRow.appendChild(wt);
+                i = j;
+            } else {
+                let j = i;
+                while (j < lyric.length && lyric[j] !== ' ') j++;
+                const word = lyric.slice(i, j);
+                const syls = window.splitSyllablesES(word);
+                let sylOff = 0;
+
+                syls.forEach(syl => {
+                    const charPos = i + sylOff;
+                    const entry = line.chordMap.find(e => e.pos === charPos && !e.floating);
+
+                    const wt = document.createElement('div');
+                    wt.className = 'cif-wt';
+                    wt.title = `Clic → acorde sobre "${syl}"`;
+
+                    const chordSpan = document.createElement('span');
+                    if (entry) {
+                        chordSpan.className = `cif-wt-chord has ${window._getChordClass(entry.chord)}-chip`;
+                        chordSpan.textContent = entry.chord;
+                    } else {
+                        chordSpan.className = 'cif-wt-chord empty';
+                        chordSpan.textContent = '·';
+                    }
+                    wt.appendChild(chordSpan);
+
+                    const textSpan = document.createElement('span');
+                    textSpan.className = 'cif-wt-text';
+                    textSpan.textContent = syl;
+                    wt.appendChild(textSpan);
+
+                    wt.onclick = e => {
+                        e.stopPropagation();
+                        cifOpenChordPopup(sec.id, line.id, charPos, entry?.chord || '', chordSpan, true);
+                    };
+                    tokenRow.appendChild(wt);
+                    sylOff += syl.length;
+                });
+                i = j;
+            }
+        }
+    }
+
+    // Botón "+" para acorde flotante al final
+    const floatBtn = document.createElement('button');
+    floatBtn.className = 'cif-add-float-btn';
+    floatBtn.title = 'Agregar acorde libre (sin sílaba)';
+    floatBtn.innerHTML = '<span class="cif-add-float-icon">♩+</span><span class="cif-add-float-lbl">libre</span>';
+    floatBtn.onclick = e => {
+        e.stopPropagation();
+        // Posición flotante: usamos un índice negativo único basado en timestamp
+        const floatPos = -(Date.now() % 1000000);
+        const placeholder = document.createElement('span');
+        placeholder.className = 'cif-wt-chord empty';
+        placeholder.textContent = '·';
+        // Agregar el acorde flotante con pos negativo
+        if (!line.chordMap) line.chordMap = [];
+        line.chordMap.push({ pos: floatPos, chord: '', floating: true });
+        cifOpenChordPopupFloat(sec.id, line.id, floatPos, '', floatBtn);
+    };
+    tokenRow.appendChild(floatBtn);
+
+    main.appendChild(tokenRow);
+
+    // Fila de edición (doble clic)
+    const editRow = document.createElement('div');
+    editRow.className = 'cif-edit-row';
+    const editInp = document.createElement('input');
+    editInp.className = 'cif-lyric-in';
+    editInp.type = 'text';
+    editInp.value = lyric;
+    editInp.placeholder = 'Texto de esta línea…';
+    const editOk = document.createElement('button');
+    editOk.className = 'cif-edit-ok';
+    editOk.textContent = '✓ OK';
+
+    function confirmEdit() {
+        const nv = editInp.value;
+        if (nv !== line.lyric) {
+            cifSnapshot();
+            // Preservar acordes cuya posición aún es válida
+            line.chordMap = (line.chordMap || []).filter(e => e.floating || e.pos < nv.length);
+            line.lyric = nv;
+        }
+        editRow.classList.remove('on');
+        const newEl = cifBuildLineElFixed(sec, line, li);
+        wrap.replaceWith(newEl);
+        cifRenderPreviewFixed();
+    }
+
+    editOk.onclick = confirmEdit;
+    editInp.onkeydown = e => {
+        if (e.key === 'Enter') { e.preventDefault(); confirmEdit(); }
+        if (e.key === 'Escape') editRow.classList.remove('on');
+    };
+    editRow.appendChild(editInp);
+    editRow.appendChild(editOk);
+    main.appendChild(editRow);
+
+    tokenRow.ondblclick = e => {
+        e.stopPropagation();
+        editRow.classList.add('on');
+        editInp.focus();
+        editInp.select();
+    };
+
+    wrap.appendChild(main);
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'cif-del-line';
+    delBtn.textContent = '✕';
+    delBtn.title = 'Eliminar línea';
+    delBtn.onclick = () => cifDelLine(sec.id, line.id);
+    wrap.appendChild(delBtn);
+
+    return wrap;
+};
+
+// ─────────────────────────────────────────────────────────
+// 4. POPUP PARA ACORDE FLOTANTE
+// ─────────────────────────────────────────────────────────
+window.cifOpenChordPopupFloat = function(secId, lineId, floatPos, currentChord, anchor) {
+    window._cp = { secId, lineId, wordIdx: floatPos, isPosMode: true, isFloat: true };
+    const pop = document.getElementById('cif-chord-popup');
+    const inp = document.getElementById('cif-cp-input');
+    if (!pop || !inp) return;
+    inp.value = currentChord || '';
+    if (typeof cifBuildCatTabs === 'function') cifBuildCatTabs();
+    if (typeof cifFilterChords === 'function') cifFilterChords(currentChord || '');
+    pop.style.display = 'block';
+    const r = anchor.getBoundingClientRect();
+    let top = r.bottom + 6, left = r.left;
+    if (left + 355 > window.innerWidth) left = window.innerWidth - 360;
+    if (top + 320 > window.innerHeight) top = r.top - 330;
+    pop.style.top = Math.max(4, top) + 'px';
+    pop.style.left = Math.max(4, left) + 'px';
+    setTimeout(() => { inp.focus(); inp.select(); }, 40);
+};
+
+// ─────────────────────────────────────────────────────────
+// 5. APLICAR ACORDE — soporta flotantes
+// ─────────────────────────────────────────────────────────
+window.cifApplyChord = function(chord) {
+    const cp = window._cp || {};
+    const { secId, lineId, wordIdx, isFloat } = cp;
+    if (!secId) { cifCloseChordPopup(); return; }
+
+    cifSnapshot();
+
+    // Sección de solo acordes
+    if (lineId === '__co__') {
+        const sec = cifSections.find(s => s.id === secId);
+        if (sec) {
+            if (!sec.coChords) sec.coChords = [];
+            if (chord) { sec.coChords[wordIdx] = chord; }
+            else { sec.coChords.splice(wordIdx, 1); }
+        }
+        cifCloseChordPopup();
+        cifRenderEditorAndPreview();
+        return;
+    }
+
+    const sec = cifSections.find(s => s.id === secId);
+    if (!sec) { cifCloseChordPopup(); return; }
+    const line = (sec.lines || []).find(l => l.id === lineId);
+    if (!line) { cifCloseChordPopup(); return; }
+    if (!line.chordMap) line.chordMap = [];
+
+    const pos = wordIdx;
+
+    if (chord) {
+        const existing = line.chordMap.find(e => e.pos === pos);
+        if (existing) {
+            existing.chord = chord;
+        } else {
+            line.chordMap.push({ pos, chord, floating: !!isFloat });
+            if (!isFloat) line.chordMap.sort((a, b) => a.pos - b.pos);
+        }
+    } else {
+        // Borrar
+        line.chordMap = line.chordMap.filter(e => e.pos !== pos);
+    }
+
+    cifCloseChordPopup();
+    cifRenderEditorAndPreview();
+};
+
+// ─────────────────────────────────────────────────────────
+// 6. VISTA PREVIA MEJORADA — scroll por línea
+// ─────────────────────────────────────────────────────────
+window.cifRenderPreviewFixed = function() {
+    const body = document.getElementById('cif-prev-body');
+    if (!body) return;
+    body.innerHTML = '';
+    if (!cifSections.length) {
+        body.innerHTML = '<div style="color:var(--dim2);font-size:12px;padding:10px">El cifrado aparecerá aquí…</div>';
+        return;
+    }
+
+    cifSections.forEach(sec => {
+        const info = cifTI(sec.type);
+        const sdiv = document.createElement('div');
+        sdiv.className = 'cprev-sec';
+
+        const lbl = document.createElement('span');
+        lbl.className = `cprev-lbl ${info.cls}`;
+        lbl.textContent = sec.label || info.label;
+        sdiv.appendChild(lbl);
+
+        if (info.chordsOnly) {
+            const co = document.createElement('div');
+            co.className = 'cprev-co';
+            (sec.coChords || []).filter(Boolean).forEach(ch => {
+                const s = document.createElement('span');
+                s.className = 'cprev-co-chip';
+                s.textContent = ch;
+                co.appendChild(s);
+            });
+            sdiv.appendChild(co);
+        } else {
+            (sec.lines || []).forEach(line => {
+                const chordMap = (line.chordMap || []);
+                const lyricChords = chordMap.filter(e => !e.floating).sort((a,b) => a.pos - b.pos);
+                const floatChords = chordMap.filter(e => e.floating);
+
+                if (!lyricChords.length && !floatChords.length && !line.lyric) return;
+
+                const row = document.createElement('div');
+                row.className = 'cprev-line';
+
+                const lyric = line.lyric || '';
+
+                if (lyric) {
+                    let i = 0;
+                    while (i < lyric.length) {
+                        if (lyric[i] === ' ') {
+                            let j = i;
+                            while (j < lyric.length && lyric[j] === ' ') j++;
+                            const wt = document.createElement('span');
+                            wt.className = 'cprev-wt';
+                            const t = document.createElement('span');
+                            t.className = 'cprev-text';
+                            t.textContent = lyric.slice(i, j);
+                            t.style.whiteSpace = 'pre';
+                            // ¿Acorde flotante en este espacio?
+                            const fc = chordMap.find(e => e.pos === i && e.floating);
+                            if (fc) {
+                                const c = document.createElement('span');
+                                c.className = 'cprev-chord';
+                                c.textContent = fc.chord;
+                                wt.appendChild(c);
+                            } else {
+                                const phantom = document.createElement('span');
+                                phantom.className = 'cprev-chord empty';
+                                phantom.textContent = '\u00a0';
+                                wt.appendChild(phantom);
+                            }
+                            wt.appendChild(t);
+                            row.appendChild(wt);
+                            i = j;
+                        } else {
+                            let j = i;
+                            while (j < lyric.length && lyric[j] !== ' ') j++;
+                            const word = lyric.slice(i, j);
+                            const syls = window.splitSyllablesES(word);
+                            let sylOff = 0;
+                            syls.forEach(syl => {
+                                const charPos = i + sylOff;
+                                const entry = lyricChords.find(e => e.pos === charPos);
+                                const wt = document.createElement('span');
+                                wt.className = 'cprev-wt';
+                                const c = document.createElement('span');
+                                c.className = 'cprev-chord' + (entry ? '' : ' empty');
+                                c.textContent = entry ? entry.chord : '\u00a0';
+                                const t = document.createElement('span');
+                                t.className = 'cprev-text';
+                                t.textContent = syl;
+                                wt.appendChild(c);
+                                wt.appendChild(t);
+                                row.appendChild(wt);
+                                sylOff += syl.length;
+                            });
+                            i = j;
+                        }
+                    }
+                }
+
+                // Acordes flotantes sin posición en la letra
+                floatChords.filter(e => e.pos < 0).forEach(e => {
+                    const wt = document.createElement('span');
+                    wt.className = 'cprev-wt floating';
+                    const c = document.createElement('span');
+                    c.className = 'cprev-chord';
+                    c.textContent = e.chord;
+                    const t = document.createElement('span');
+                    t.className = 'cprev-text';
+                    t.textContent = '—';
+                    wt.appendChild(c);
+                    wt.appendChild(t);
+                    row.appendChild(wt);
+                });
+
+                sdiv.appendChild(row);
+            });
+        }
+
+        body.appendChild(sdiv);
+    });
+};
+window.cifRenderPreview = function() { cifRenderPreviewFixed(); };
+
+// ─────────────────────────────────────────────────────────
+// 7. MODO PRESENTACIÓN — sílalas correctas + scroll
+// ─────────────────────────────────────────────────────────
+window.cifBuildPresentFixed = function() {
+    const body = document.getElementById('cif-present-body');
+    if (!body) return;
+    body.innerHTML = '';
+    const fs  = window.cifPresentFs || 18;
+    const cfs = Math.round(fs * 0.72);
+
+    cifSections.forEach(sec => {
+        const info = cifTI(sec.type);
+        const sdiv = document.createElement('div');
+        sdiv.className = 'cpres-sec';
+
+        const lbl = document.createElement('span');
+        lbl.className = `cpres-badge ${info.cls}`;
+        lbl.textContent = sec.label || info.label;
+        lbl.style.fontSize = Math.max(10, fs * 0.55) + 'px';
+        sdiv.appendChild(lbl);
+
+        if (info.chordsOnly) {
+            const co = document.createElement('div');
+            co.className = 'cpres-co';
+            (sec.coChords || []).filter(Boolean).forEach(ch => {
+                const sp = document.createElement('span');
+                sp.className = 'cpres-co-chip';
+                sp.textContent = ch;
+                sp.style.fontSize = cfs + 'px';
+                co.appendChild(sp);
+            });
+            sdiv.appendChild(co);
+        } else {
+            (sec.lines || []).forEach(line => {
+                const chordMap = line.chordMap || [];
+                const lyricChords = chordMap.filter(e => !e.floating).sort((a,b) => a.pos-b.pos);
+                const floatChords = chordMap.filter(e => e.floating);
+
+                if (!lyricChords.length && !floatChords.length && !line.lyric) return;
+
+                const ldiv = document.createElement('div');
+                ldiv.className = 'cpres-line';
+                ldiv.style.cssText = `display:flex;flex-wrap:nowrap;overflow-x:auto;align-items:flex-end;padding-bottom:4px`;
+
+                const lyric2 = line.lyric || '';
+
+                if (lyric2) {
+                    let i = 0;
+                    while (i < lyric2.length) {
+                        if (lyric2[i] === ' ') {
+                            let j = i;
+                            while (j < lyric2.length && lyric2[j] === ' ') j++;
+                            const wt = document.createElement('span');
+                            wt.style.cssText = `display:inline-flex;flex-direction:column;align-items:center;flex-shrink:0`;
+                            const fc = chordMap.find(e => e.pos === i && e.floating);
+                            const c = document.createElement('span');
+                            if (fc) {
+                                c.className = 'cpres-chord';
+                                c.textContent = fc.chord;
+                                c.style.fontSize = cfs + 'px';
+                            } else {
+                                c.style.cssText = `font-size:${cfs}px;visibility:hidden`;
+                                c.textContent = '\u00a0';
+                            }
+                            const t = document.createElement('span');
+                            t.className = 'cpres-text';
+                            t.textContent = lyric2.slice(i, j);
+                            t.style.cssText = `font-size:${fs}px;white-space:pre`;
+                            wt.appendChild(c); wt.appendChild(t);
+                            ldiv.appendChild(wt);
+                            i = j;
+                        } else {
+                            let j = i;
+                            while (j < lyric2.length && lyric2[j] !== ' ') j++;
+                            const word = lyric2.slice(i, j);
+                            const syls = window.splitSyllablesES(word);
+                            let sylOff = 0;
+                            syls.forEach(syl => {
+                                const charPos = i + sylOff;
+                                const entry = lyricChords.find(e => e.pos === charPos);
+                                const wt = document.createElement('span');
+                                wt.style.cssText = `display:inline-flex;flex-direction:column;align-items:center;flex-shrink:0`;
+                                const c = document.createElement('span');
+                                if (entry) {
+                                    c.className = 'cpres-chord';
+                                    c.textContent = entry.chord;
+                                    c.style.fontSize = cfs + 'px';
+                                } else {
+                                    c.style.cssText = `font-size:${cfs}px;visibility:hidden`;
+                                    c.textContent = '\u00a0';
+                                }
+                                const t = document.createElement('span');
+                                t.className = 'cpres-text';
+                                t.textContent = syl;
+                                t.style.cssText = `font-size:${fs}px;white-space:pre`;
+                                wt.appendChild(c); wt.appendChild(t);
+                                ldiv.appendChild(wt);
+                                sylOff += syl.length;
+                            });
+                            i = j;
+                        }
+                    }
+                }
+
+                // Acordes flotantes al final
+                floatChords.filter(e => e.pos < 0).forEach(e => {
+                    const wt = document.createElement('span');
+                    wt.style.cssText = `display:inline-flex;flex-direction:column;align-items:center;flex-shrink:0;margin-left:6px`;
+                    const c = document.createElement('span');
+                    c.className = 'cpres-chord';
+                    c.textContent = e.chord;
+                    c.style.fontSize = cfs + 'px';
+                    const t = document.createElement('span');
+                    t.className = 'cpres-text';
+                    t.textContent = '—';
+                    t.style.fontSize = fs + 'px';
+                    wt.appendChild(c); wt.appendChild(t);
+                    ldiv.appendChild(wt);
+                });
+
+                sdiv.appendChild(ldiv);
+            });
+        }
+        body.appendChild(sdiv);
+    });
+};
+window.cifBuildPresent = function() { cifBuildPresentFixed(); };
+
+// ─────────────────────────────────────────────────────────
+// 8. EDITOR — usa nuevo builder de línea
+// ─────────────────────────────────────────────────────────
+window.cifRenderEditorAndPreview = function() {
+    const panel = document.getElementById('cif-editor-panel');
+    if (!panel) { renderMain(); return; }
+    cifBuildEditorFixed(panel);
+    cifRenderPreviewFixed();
+};
+window.renderCifradoEditor = function() { cifRenderEditorAndPreview(); };
+
+console.log('✅ AdoraChord Cifrado PATCH v2 — sílabas ES, acordes flotantes, scroll lateral');
+
+</script>
+
+<style id="_cif_ui_v3">
+/* ═══ UI REDESIGN v3 ═══════════════════════════════════════════════ */
+
+/* ── FIX PRINCIPAL: sílabas sin separación ──────────────────────── */
+.cif-wt {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;        /* sin padding lateral — sílabas pegadas */
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background .1s;
+}
+.cif-wt:not(.sp):hover { background: rgba(232,87,42,.1) !important; }
+.cif-wt.sp { pointer-events: none !important; cursor: default !important; }
+.cif-wt.sp .cif-wt-chord { display: none !important; }
+
+.cif-wt-text {
+    font-size: var(--clf, 15px) !important;
+    color: var(--text) !important;
+    white-space: pre !important;
+    line-height: 1.5 !important;
+    display: block !important;
+    padding: 0 1px !important;   /* 1px mínimo para que el acorde no aplaste */
+    letter-spacing: 0 !important;
+}
+.cif-wt-chord {
+    font-size: var(--caf, 13px) !important;
+    min-height: 16px !important;
+    padding: 1px 2px !important;
+    margin-bottom: 1px !important;
+    white-space: nowrap !important;
+    line-height: 1.25 !important;
+}
+
+/* ── LÍNEA: scroll horizontal suave ─────────────────────────────── */
+.cif-token-row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: flex-end !important;
+    gap: 0 !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(255,255,255,.1) transparent !important;
+    padding-bottom: 2px !important;
+}
+.cif-token-row::-webkit-scrollbar { height: 3px !important; }
+.cif-token-row::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12) !important; border-radius: 2px !important; }
+
+.cif-line-main {
+    flex: 1 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+}
+
+/* ── ESPACIADO ENTRE LÍNEAS DEL EDITOR ───────────────────────────── */
+.cif-line-wrap {
+    padding: 2px 0 6px !important;
+    min-height: 52px !important;
+}
+.cif-sec-body {
+    padding: 10px 14px 14px !important;
+    gap: 0 !important;
+    overflow-x: hidden !important;
+}
+
+/* ── VISTA PREVIA — rediseño total ───────────────────────────────── */
+.cif-preview {
+    width: 290px !important;
+    background: #141414 !important;
+    border-left: 1px solid rgba(255,255,255,.07) !important;
+}
+.cif-prev-hdr {
+    padding: 10px 14px !important;
+    font-size: 9px !important;
+    letter-spacing: 1.2px !important;
+    font-weight: 700 !important;
+    color: rgba(255,255,255,.3) !important;
+    text-transform: uppercase !important;
+    border-bottom: 1px solid rgba(255,255,255,.06) !important;
+    position: sticky !important;
+    top: 0 !important;
+    background: #141414 !important;
+    z-index: 2 !important;
+}
+.cif-prev-body {
+    padding: 14px 16px !important;
+}
+
+/* Sección en vista previa */
+.cprev-sec {
+    margin-bottom: 20px !important;
+    padding-bottom: 16px !important;
+    border-bottom: 1px solid rgba(255,255,255,.05) !important;
+}
+.cprev-sec:last-child { border-bottom: none !important; margin-bottom: 4px !important; }
+
+.cprev-lbl {
+    font-size: 8px !important;
+    font-weight: 700 !important;
+    letter-spacing: .8px !important;
+    padding: 2px 8px !important;
+    border-radius: 20px !important;
+    margin-bottom: 9px !important;
+    display: inline-block !important;
+}
+
+/* Línea de la vista previa — sílabas pegadas */
+.cprev-line {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: flex-end !important;
+    margin-bottom: 8px !important;
+    gap: 0 !important;
+}
+.cprev-wt {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    flex-shrink: 0 !important;
+    padding: 0 !important;
+}
+
+/* Acorde en preview: compacto, tipografía más pequeña */
+.cprev-chord {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    color: var(--accent) !important;
+    white-space: nowrap !important;
+    min-height: 14px !important;
+    line-height: 1.3 !important;
+    display: block !important;
+    padding: 0 1px !important;
+}
+.cprev-chord.empty {
+    opacity: 0 !important;
+    min-height: 14px !important;
+    display: block !important;
+}
+
+/* Texto de sílaba en preview */
+.cprev-text {
+    font-size: 11.5px !important;
+    color: rgba(255,255,255,.82) !important;
+    white-space: pre !important;
+    line-height: 1.45 !important;
+    display: block !important;
+    padding: 0 1px !important;
+    letter-spacing: 0 !important;
+}
+
+/* Espacio entre palabras en preview */
+.cprev-wt.sp .cprev-chord { display: none !important; }
+
+/* ── ACORDES DE INTRO/INSTRUMENTAL (preview) ─────────────────────── */
+.cprev-co {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 5px 12px !important;
+    padding: 4px 0 !important;
+    align-items: center !important;
+}
+.cprev-co-chip {
+    font-family: 'Syne', sans-serif !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    color: var(--accent) !important;
+    background: rgba(232,87,42,.1) !important;
+    padding: 2px 8px !important;
+    border-radius: 5px !important;
+    border: 1px solid rgba(232,87,42,.22) !important;
+}
+
+/* ── SECCIÓN CARD — más refinada ─────────────────────────────────── */
+.cif-sec-card {
+    border-radius: 12px !important;
+    border: 1px solid rgba(255,255,255,.08) !important;
+    background: rgba(255,255,255,.02) !important;
+    transition: border-color .15s !important;
+}
+.cif-sec-card:hover { border-color: rgba(255,255,255,.14) !important; }
+.cif-sec-hdr {
+    padding: 9px 14px !important;
+    background: rgba(255,255,255,.03) !important;
+    border-bottom: 1px solid rgba(255,255,255,.06) !important;
+}
+
+/* ── BOTÓN FLOTANTE: solo visible en hover de la línea ───────────── */
+.cif-add-float-btn {
+    opacity: 0 !important;
+    transition: opacity .15s !important;
+    padding: 0 6px !important;
+    min-height: 50px !important;
+    justify-content: flex-end !important;
+    padding-bottom: 6px !important;
+}
+.cif-line-wrap:hover .cif-add-float-btn { opacity: .6 !important; }
+.cif-add-float-btn:hover { opacity: 1 !important; }
+
+/* ── ADD BAR de secciones ────────────────────────────────────────── */
+.cif-add-bar {
+    padding: 8px 10px !important;
+    border-radius: 10px !important;
+    background: rgba(255,255,255,.015) !important;
+    border: 1px dashed rgba(255,255,255,.07) !important;
+    gap: 5px !important;
+}
+
+/* ── HINT ────────────────────────────────────────────────────────── */
+.cif-hint-row {
+    padding: 5px 10px !important;
+    font-size: 10px !important;
+    opacity: .7 !important;
+    line-height: 1.7 !important;
+}
+
+@media (max-width: 900px) { .cif-preview { width: 230px !important; } }
+@media (max-width: 700px) { .cif-preview { display: none !important; } }
+/* ═══════════════════════════════════════════════════════════════════ */
+</style>
+
 </body>
 </html>
