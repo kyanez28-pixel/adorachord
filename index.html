@@ -2708,16 +2708,16 @@ function renderLibrary(display) {
     grid.className = 'files-grid';
 
     filtered.forEach(s => {
-        // Imagen principal: acordes > portada > placeholder
-        const imgHtml = s.url
-            ? `<img src="${s.url}" loading="lazy" alt="${esc(s.name)}">`
-            : s.coverUrl
-                ? `<img src="${s.coverUrl}" loading="lazy" alt="${esc(s.name)}" style="object-fit:cover">`
+        // Imagen principal: portada > placeholder (acordes se muestra como badge 🎸)
+        const imgHtml = s.coverUrl
+            ? `<img src="${s.coverUrl}" loading="lazy" alt="${esc(s.name)}" style="object-fit:cover">`
+            : s.url
+                ? `<img src="${s.url}" loading="lazy" alt="${esc(s.name)}">`
                 : `<div class="card-no-img"><span>🎵</span><small>${typeLabel(s.type)}</small></div>`;
 
-        // Mini portada en esquina si tiene acordes Y portada
-        const coverCorner = (s.url && s.coverUrl)
-            ? `<div style="position:absolute;bottom:5px;left:5px;width:28px;height:28px;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,0.2)"><img src="${s.coverUrl}" style="width:100%;height:100%;object-fit:cover"></div>`
+        // Badge 🎸 en esquina si tiene imagen de acordes
+        const coverCorner = s.url
+            ? `<div style="position:absolute;bottom:5px;right:5px;background:rgba(0,0,0,0.55);border:1px solid rgba(232,87,42,0.5);border-radius:5px;padding:2px 6px;font-size:11px;" title="Ver acordes">🎸</div>`
             : '';
 
         const zoomBadge = songZooms[s.id] ? `<div style="position:absolute;top:5px;right:5px;background:rgba(62,207,142,0.15);border:1px solid rgba(62,207,142,0.3);border-radius:5px;padding:2px 5px;font-family:'Syne',sans-serif;font-size:9px;font-weight:700;color:var(--green)">${songZooms[s.id]}%</div>` : '';
@@ -12313,6 +12313,191 @@ async function runSeed() {
 setTimeout(runSeed, 3000);
 
 })();
+
+
+/* ── patch_v25.js ── */
+// ════════════════════════════════════════════════════════════════════
+//  PATCH v25 — IMAGEN DE ACORDES EN EDITAR DATOS (separada de portada)
+//
+//  - Agrega sección "Imagen de acordes" al modal (campo url)
+//  - Botón subir JPG/PNG para acordes
+//  - Al guardar, url queda en s.url (no toca coverUrl/portada)
+//  - "Ver acordes" solo abre si hay url, sino pide subir
+//  - Zoom se guarda igual que antes (ya funciona)
+// ════════════════════════════════════════════════════════════════════
+(function patchV25() {
+
+let _pendingAcordesUrl = null; // url de imagen de acordes pendiente
+
+// ── 1. Inyectar sección de acordes en el modal ────────────────────
+function injectAcordesSection() {
+    if (document.getElementById('acordes-section')) return;
+
+    // Buscar el div de los botones Guardar/Cancelar
+    const saveBtnDiv = document.querySelector('#song-modal .modal-body > div:last-child, #song-modal [onclick="saveModal()"]')?.closest('div[style*="flex"]');
+    if (!saveBtnDiv) return;
+
+    const section = document.createElement('div');
+    section.id = 'acordes-section';
+    section.className = 'field-group';
+    section.style.cssText = 'margin-bottom:12px;';
+    section.innerHTML = `
+        <label style="font-family:'Syne',sans-serif;font-size:9px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:6px;">
+            Imagen de acordes / partitura
+        </label>
+        <div id="acordes-preview" style="margin-bottom:6px;"></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <label id="acordes-upload-label" style="display:flex;align-items:center;gap:8px;background:var(--panel2);border:1px dashed rgba(232,87,42,.35);border-radius:8px;padding:10px 14px;cursor:pointer;font-size:12px;color:var(--accent);transition:all 0.15s;font-family:'Syne',sans-serif;font-weight:600;"
+                onmouseover="this.style.borderColor='var(--accent)';this.style.background='rgba(232,87,42,.08)'"
+                onmouseout="this.style.borderColor='rgba(232,87,42,.35)';this.style.background='var(--panel2)'">
+                📄 Subir imagen de acordes (JPG / PNG)
+                <input type="file" id="acordes-file-input" accept="image/jpeg,image/png,image/webp" hidden>
+            </label>
+            <button type="button" id="acordes-clear-btn" onclick="window._clearAcordes()" style="display:none;background:none;border:1px solid rgba(255,60,60,0.25);color:#ff6060;border-radius:8px;padding:9px 12px;cursor:pointer;font-size:11px;">✕ Quitar</button>
+        </div>
+    `;
+
+    saveBtnDiv.parentNode.insertBefore(section, saveBtnDiv);
+
+    // File input handler
+    const fileInput = document.getElementById('acordes-file-input');
+    fileInput.onchange = function() {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            _pendingAcordesUrl = e.target.result;
+            showAcordesPreview(e.target.result);
+        };
+        reader.readAsDataURL(file);
+    };
+}
+
+function showAcordesPreview(dataUrl) {
+    const preview = document.getElementById('acordes-preview');
+    if (!preview) return;
+    preview.innerHTML = `<img src="${dataUrl}" style="max-width:100%;max-height:120px;border-radius:6px;border:1px solid rgba(232,87,42,.3);object-fit:contain;">`;
+    const clearBtn = document.getElementById('acordes-clear-btn');
+    if (clearBtn) clearBtn.style.display = 'block';
+}
+
+window._clearAcordes = function() {
+    _pendingAcordesUrl = null;
+    const preview = document.getElementById('acordes-preview');
+    if (preview) preview.innerHTML = '';
+    const clearBtn = document.getElementById('acordes-clear-btn');
+    if (clearBtn) clearBtn.style.display = 'none';
+    const fileInput = document.getElementById('acordes-file-input');
+    if (fileInput) fileInput.value = '';
+};
+
+// ── 2. Override openEditModal para cargar url existente ───────────
+const _origOpen = window.openEditModal;
+window.openEditModal = function(songId) {
+    _origOpen && _origOpen(songId);
+    _pendingAcordesUrl = null;
+    setTimeout(() => {
+        injectAcordesSection();
+        const s = (typeof songs !== 'undefined' ? songs : []).find(x => x.id === songId);
+        if (s && s.url) {
+            _pendingAcordesUrl = s.url;
+            showAcordesPreview(s.url);
+        } else {
+            window._clearAcordes && window._clearAcordes();
+        }
+    }, 120);
+};
+
+// Al abrir modal nueva canción
+document.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (btn && btn.textContent.trim().startsWith('+ Nueva')) {
+        _pendingAcordesUrl = null;
+        setTimeout(() => {
+            injectAcordesSection();
+            window._clearAcordes && window._clearAcordes();
+        }, 150);
+    }
+});
+
+// ── 3. Override saveModal para incluir url de acordes ─────────────
+const _origSave = window.saveModal;
+window.saveModal = function() {
+    // Inject url into the song before saving
+    if (typeof modalSongId !== 'undefined' && modalSongId) {
+        const s = (typeof songs !== 'undefined' ? songs : []).find(x => x.id === modalSongId);
+        if (s && _pendingAcordesUrl !== null) {
+            s.url = _pendingAcordesUrl;
+        }
+    }
+    // Store pending url so saveModal's finishSave can use it
+    window._pendingAcordesUrlForSave = _pendingAcordesUrl;
+    _origSave && _origSave();
+};
+
+// Patch finishSave to include url
+const _origFinishSave = window.finishSave;
+// Since finishSave is local, we hook into dbSaveSong instead
+const _origDbSave = window.dbSaveSong;
+window.dbSaveSong = async function(song) {
+    // Ensure url is included
+    if (window._pendingAcordesUrlForSave !== undefined && window._pendingAcordesUrlForSave !== null) {
+        song.url = window._pendingAcordesUrlForSave;
+    }
+    window._pendingAcordesUrlForSave = undefined;
+    return _origDbSave && _origDbSave(song);
+};
+
+// ── 4. "Ver acordes" siempre visible, abre viewer o pide subir ────
+function ensureVerAcordesBtn() {
+    const panel = document.getElementById('inspector-panel');
+    if (!panel) return;
+    if (panel.querySelector('._v25-ver-acordes')) return;
+
+    const songId = typeof selectedSongId !== 'undefined' ? selectedSongId : null;
+    if (!songId) return;
+    const s = (typeof songs !== 'undefined' ? songs : []).find(x => x.id === songId);
+    if (!s) return;
+
+    // Remove any old "Ver acordes" btn added by v24
+    panel.querySelectorAll('button').forEach(b => {
+        if (b.textContent.includes('Ver acordes') && !b.classList.contains('_v25-ver-acordes')) b.remove();
+    });
+
+    const editBtn = [...panel.querySelectorAll('button')].find(b => b.textContent.includes('Editar datos'));
+    if (!editBtn) return;
+
+    const viewBtn = document.createElement('button');
+    viewBtn.className = 'btn btn-ghost _v25-ver-acordes';
+    viewBtn.style.cssText = 'width:100%;margin-bottom:6px;';
+
+    if (s.url) {
+        viewBtn.innerHTML = '🎸 Ver acordes';
+        viewBtn.onclick = () => typeof openFull === 'function' && openFull(s);
+    } else {
+        viewBtn.innerHTML = '🎸 Ver acordes <span style="font-size:10px;opacity:.5">(sin imagen)</span>';
+        viewBtn.style.opacity = '0.7';
+        viewBtn.onclick = () => {
+            if (typeof toast === 'function') toast('📄 Sube la imagen de acordes en "Editar datos"');
+            if (typeof openEditModal === 'function') openEditModal(s.id);
+        };
+    }
+
+    editBtn.parentNode.insertBefore(viewBtn, editBtn);
+}
+
+// Hook en renderLibraryInspector
+const _origRender = window.renderLibraryInspector;
+window.renderLibraryInspector = function(panel) {
+    _origRender && _origRender(panel);
+    setTimeout(ensureVerAcordesBtn, 60);
+};
+
+setTimeout(ensureVerAcordesBtn, 600);
+document.addEventListener('click', () => setTimeout(ensureVerAcordesBtn, 200));
+
+})();
+console.log('✅ Patch v25: imagen de acordes separada de portada + Ver acordes siempre visible');
 
 </script>
 </body>
