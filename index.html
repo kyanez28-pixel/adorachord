@@ -13747,7 +13747,54 @@ console.log('✅ Patch v26: Nomenclatura Latina y Transposición Robusta integra
 
 var GVURL = ''; // Se auto-configurará buscando modelos compatibles
 
-var GPROMPT = 'Analiza esta imagen de una hoja de acordes musicales y extrae la información en JSON estricto.\n\nReglas:\n1. Extrae TODAS las secciones (Intro, Verso, Coro, Puente, Outro, etc.)\n2. Secciones con letra: extrae cada línea con los acordes y el índice de palabra (0-based) sobre el que va el acorde.\n3. Secciones sin letra (Intro, Instrumental, Outro): lista solo los acordes.\n4. Tipos válidos: intro, verse, prechorus, chorus, bridge, instrumental, outro, tag\n5. Detecta la tonalidad si aparece.\n\nResponde ÚNICAMENTE con JSON válido exactamente así:\n{"key":"G","bpm":120,"sections":[{"type":"intro","label":"Intro","chordsOnly":true,"chords":["G","D","Em","C"]},{"type":"verse","label":"Verso 1","chordsOnly":false,"lines":[{"lyric":"En mi corazón","chords":[{"word":0,"chord":"G"},{"word":2,"chord":"D"}]}]}]}\n\nIMPORTANTE: Escapa cualquier comilla doble interna usando backslash (\\") y NUNCA dejes comas sueltas al final de un objeto o arreglo (no trailing commas). Responde SOLO JSON sin markdown.';
+var GPROMPT = `Eres un experto en análisis de partituras de acordes musicales. Analiza esta imagen y extrae TODA la información en formato JSON.
+
+INSTRUCCIONES CRÍTICAS:
+1. Identifica TODAS las secciones visibles (Intro, Verso, Estrofa, Coro, Puente, Outro, etc.)
+2. Para cada línea de letra, identifica los acordes que están VISUALMENTE POSICIONADOS sobre las palabras
+3. Ignora títulos, créditos, números de página y texto decorativo
+4. El índice "word" es 0-based (primera palabra = 0)
+
+TIPOS DE SECCIÓN VÁLIDOS:
+- intro, verse, prechorus, chorus, bridge, instrumental, outro, tag
+
+FORMATO DE RESPUESTA (JSON PURO, SIN MARKDOWN):
+{
+  "key": "C",
+  "bpm": 0,
+  "sections": [
+    {
+      "type": "verse",
+      "label": "Verso 1",
+      "chordsOnly": false,
+      "chords": [],
+      "lines": [
+        {
+          "lyric": "Cristo es la peña de Horeb que está brotando",
+          "chords": [
+            {"word": 0, "chord": "Em"},
+            {"word": 4, "chord": "B7"}
+          ]
+        }
+      ]
+    },
+    {
+      "type": "intro",
+      "label": "Intro",
+      "chordsOnly": true,
+      "chords": ["Em", "B7", "Em"],
+      "lines": []
+    }
+  ]
+}
+
+REGLAS ESTRICTAS:
+- NO incluyas markdown (```json)
+- NO incluyas comas al final de arrays u objetos
+- Escapa comillas internas con backslash
+- Si un acorde está sobre una palabra, usa el índice de esa palabra
+- Si hay múltiples acordes en una línea, mapea cada uno a su palabra correspondiente
+- Responde SOLO con el JSON, nada más`;
 
 // ── Inyectar botones 📸 IA y 📝 OCR en toolbar ───────────────────────────
 var _origRenderCif = window.renderCifrado;
@@ -13924,10 +13971,18 @@ window.cifOpenImageImport = function() {
         if (!imgB64) { if (typeof toast === 'function') toast('⚠ Sube una imagen primero'); return; }
         localStorage.setItem('gemini_api_key', apiKey);
         anBtn.disabled = true;
-        anBtn.innerHTML = '<span class="cif-spin"></span> Analizando con IA…';
+        anBtn.innerHTML = '<span class="cif-spin"></span> Analizando con IA PRO…';
         resDiv.style.display = 'none';
         try {
-            parsed = await callGemini(imgB64, imgMime, apiKey);
+            parsed = await callGeminiWithRetry(imgB64, imgMime, apiKey, 3, function(attempt, max, status) {
+                if (status === 'analyzing') {
+                    anBtn.innerHTML = '<span class="cif-spin"></span> IA PRO (Intento ' + attempt + '/' + max + ')';
+                } else if (status === 'retrying') {
+                    anBtn.innerHTML = '<span class="cif-spin"></span> Reintentando…';
+                } else if (status === 'success') {
+                    anBtn.innerHTML = '✓ Análisis completado';
+                }
+            });
             showResults(resDiv, parsed);
             resDiv.style.display = 'block';
             impBtn.disabled = false;
@@ -13949,6 +14004,50 @@ window.cifOpenImageImport = function() {
 };
 
 // ── Llamada a Gemini Vision ────────────────────────────────────
+// ── Llamada a Gemini Vision con REINTENTOS AUTOMÁTICOS ────────────────────────────────────
+async function callGeminiWithRetry(b64, mime, key, maxRetries = 3, progressCallback) {
+    var lastError = null;
+    
+    for (var attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            if (progressCallback) progressCallback(attempt, maxRetries, 'analyzing');
+            console.log('🤖 Intento ' + attempt + ' de ' + maxRetries + ' - Analizando imagen con IA...');
+            var result = await callGemini(b64, mime, key);
+            
+            // Validar que el resultado tenga secciones
+            if (!result || !result.sections || result.sections.length === 0) {
+                throw new Error('La IA no detectó ninguna sección en la imagen');
+            }
+            
+            console.log('✅ IA respondió correctamente con ' + result.sections.length + ' secciones');
+            if (progressCallback) progressCallback(attempt, maxRetries, 'success');
+            return result;
+            
+        } catch (error) {
+            lastError = error;
+            console.warn('⚠️ Intento ' + attempt + ' falló:', error.message);
+            
+            // Si es error de API Key, no reintentar
+            if (error.message.includes('API') || error.message.includes('key') || error.message.includes('401') || error.message.includes('403')) {
+                if (progressCallback) progressCallback(attempt, maxRetries, 'error');
+                throw error;
+            }
+            
+            // Si no es el último intento, esperar antes de reintentar
+            if (attempt < maxRetries) {
+                var waitTime = attempt * 1000; // 1s, 2s, 3s
+                console.log('⏳ Esperando ' + (waitTime/1000) + 's antes de reintentar...');
+                if (progressCallback) progressCallback(attempt, maxRetries, 'retrying');
+                await new Promise(function(resolve) { setTimeout(resolve, waitTime); });
+            }
+        }
+    }
+    
+    // Si llegamos aquí, todos los intentos fallaron
+    if (progressCallback) progressCallback(maxRetries, maxRetries, 'failed');
+    throw new Error('La IA falló después de ' + maxRetries + ' intentos. Último error: ' + (lastError ? lastError.message : 'Desconocido'));
+}
+
 async function callGemini(b64, mime, key) {
     if (!GVURL) {
         try {
