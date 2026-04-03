@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación AdoraChord Pro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0C0B0A;
+            color: #F0EBE3;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #1A1917;
+            border: 1px solid #252320;
+            border-radius: 12px;
+            padding: 30px;
+        }
+        h1 {
+            color: #E8572A;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #7A6E65;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .test-section {
+            background: #222120;
+            border: 1px solid #2E2B28;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .test-title {
+            font-weight: 600;
+            color: #E8572A;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #2E2B28;
+        }
+        .test-item:last-child { border-bottom: none; }
+        .status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .status.success { background: #3ECF8E; }
+        .status.error { background: #FF6060; }
+        .status.pending { background: #7A6E65; }
+        .test-label {
+            flex: 1;
+            font-size: 14px;
+        }
+        .test-value {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #7A6E65;
+        }
+        button {
+            background: #E8572A;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background: #FF7A4D;
+            transform: translateY(-1px);
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .result.success {
+            background: rgba(62, 207, 142, 0.1);
+            border: 1px solid rgba(62, 207, 142, 0.3);
+            color: #3ECF8E;
+        }
+        .result.error {
+            background: rgba(255, 96, 96, 0.1);
+            border: 1px solid rgba(255, 96, 96, 0.3);
+            color: #FF6060;
+        }
+        .code {
+            background: #0C0B0A;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            margin-top: 15px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Verificación AdoraChord Pro</h1>
+        <p class="subtitle">Prueba automática de componentes reparados</p>
+
+        <div class="test-section">
+            <div class="test-title">📋 Archivos del Proyecto</div>
+            <div class="test-item">
+                <div class="status pending" id="status-index"></div>
+                <div class="test-label">index.html</div>
+                <div class="test-value" id="value-index">Verificando...</div>
+            </div>
+            <div class="test-item">
+                <div class="status pending" id="status-sw"></div>
+                <div class="test-label">Service Worker</div>
+                <div class="test-value" id="value-sw">Verificando...</div>
+            </div>
+            <div class="test-item">
+                <div class="status pending" id="status-manifest"></div>
+                <div class="test-label">Manifest PWA</div>
+                <div class="test-value" id="value-manifest">Verificando...</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">⚙️ Funciones Críticas</div>
+            <div class="test-item">
+                <div class="status pending" id="status-syncstart"></div>
+                <div class="test-label">syncStart()</div>
+                <div class="test-value" id="value-syncstart">Verificando...</div>
+            </div>
+            <div class="test-item">
+                <div class="status pending" id="status-syncdone"></div>
+                <div class="test-label">syncDone()</div>
+                <div class="test-value" id="value-syncdone">Verificando...</div>
+            </div>
+            <div class="test-item">
+                <div class="status pending" id="status-dbsave"></div>
+                <div class="test-label">dbSaveSong()</div>
+                <div class="test-value" id="value-dbsave">Verificando...</div>
+            </div>
+            <div class="test-item">
+                <div class="status pending" id="status-handleupload"></div>
+                <div class="test-label">handleUpload()</div>
+                <div class="test-value" id="value-handleupload">Verificando...</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">🔄 Service Worker</div>
+            <div class="test-item">
+                <div class="status pending" id="status-swreg"></div>
+                <div class="test-label">Registrado</div>
+                <div class="test-value" id="value-swreg">Verificando...</div>
+            </div>
+            <div class="test-item">
+                <div class="status pending" id="status-swactive"></div>
+                <div class="test-label">Activo</div>
+                <div class="test-value" id="value-swactive">Verificando...</div>
+            </div>
+            <div class="test-item">
+                <div class="status pending" id="status-cache"></div>
+                <div class="test-label">Caché</div>
+                <div class="test-value" id="value-cache">Verificando...</div>
+            </div>
+        </div>
+
+        <button onclick="runTests()">🔍 Ejecutar Verificación</button>
+
+        <div id="result"></div>
+
+        <div class="code" id="console-output" style="display: none;">
+            <strong>Console Output:</strong><br>
+            <div id="console-content"></div>
+        </div>
+    </div>
+
+    <script>
+        let consoleLog = [];
+
+        // Capturar console.log
+        const originalLog = console.log;
+        console.log = function(...args) {
+            consoleLog.push(args.join(' '));
+            originalLog.apply(console, args);
+        };
+
+        function setStatus(id, status, value) {
+            const statusEl = document.getElementById(`status-${id}`);
+            const valueEl = document.getElementById(`value-${id}`);
+            
+            statusEl.className = `status ${status}`;
+            if (valueEl) valueEl.textContent = value;
+        }
+
+        async function runTests() {
+            consoleLog = [];
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('console-output').style.display = 'none';
+
+            let passed = 0;
+            let failed = 0;
+
+            // Test 1: Verificar que estamos en la página correcta
+            const isIndexPage = window.location.pathname.includes('index.html') || 
+                               window.location.pathname.endsWith('/');
+            setStatus('index', isIndexPage ? 'success' : 'error', 
+                     isIndexPage ? 'Cargado' : 'No encontrado');
+            isIndexPage ? passed++ : failed++;
+
+            // Test 2: Service Worker support
+            const hasSW = 'serviceWorker' in navigator;
+            setStatus('sw', hasSW ? 'success' : 'error', 
+                     hasSW ? 'Soportado' : 'No soportado');
+            hasSW ? passed++ : failed++;
+
+            // Test 3: Manifest
+            try {
+                const manifestResp = await fetch('/manifest.json');
+                const hasManifest = manifestResp.ok;
+                setStatus('manifest', hasManifest ? 'success' : 'error', 
+                         hasManifest ? 'Encontrado' : 'No encontrado');
+                hasManifest ? passed++ : failed++;
+            } catch(e) {
+                setStatus('manifest', 'error', 'Error al cargar');
+                failed++;
+            }
+
+            // Test 4-7: Funciones críticas
+            const functions = [
+                { id: 'syncstart', name: 'syncStart' },
+                { id: 'syncdone', name: 'syncDone' },
+                { id: 'dbsave', name: 'dbSaveSong' },
+                { id: 'handleupload', name: 'handleUpload' }
+            ];
+
+            functions.forEach(fn => {
+                const exists = typeof window[fn.name] === 'function';
+                setStatus(fn.id, exists ? 'success' : 'error', 
+                         exists ? 'function' : 'undefined');
+                exists ? passed++ : failed++;
+            });
+
+            // Test 8-10: Service Worker
+            if (hasSW) {
+                try {
+                    const reg = await navigator.serviceWorker.getRegistration();
+                    
+                    const isRegistered = !!reg;
+                    setStatus('swreg', isRegistered ? 'success' : 'error', 
+                             isRegistered ? 'Sí' : 'No');
+                    isRegistered ? passed++ : failed++;
+
+                    const isActive = !!(reg && reg.active);
+                    setStatus('swactive', isActive ? 'success' : 'error', 
+                             isActive ? 'Sí' : 'No');
+                    isActive ? passed++ : failed++;
+
+                    const keys = await caches.keys();
+                    const hasCache = keys.some(k => k.includes('adorachord'));
+                    setStatus('cache', hasCache ? 'success' : 'pending', 
+                             hasCache ? keys.find(k => k.includes('adorachord')) : 'No creada aún');
+                    hasCache ? passed++ : failed++;
+                } catch(e) {
+                    setStatus('swreg', 'error', 'Error');
+                    setStatus('swactive', 'error', 'Error');
+                    setStatus('cache', 'error', 'Error');
+                    failed += 3;
+                }
+            } else {
+                setStatus('swreg', 'error', 'SW no soportado');
+                setStatus('swactive', 'error', 'SW no soportado');
+                setStatus('cache', 'error', 'SW no soportado');
+                failed += 3;
+            }
+
+            // Mostrar resultado
+            const total = passed + failed;
+            const percentage = Math.round((passed / total) * 100);
+            
+            let resultHTML = '';
+            if (percentage === 100) {
+                resultHTML = `
+                    <div class="result success">
+                        <strong>✅ ¡Perfecto! (${passed}/${total})</strong><br>
+                        Todos los componentes están funcionando correctamente.<br>
+                        Tu aplicación está lista para usar.
+                    </div>
+                `;
+            } else if (percentage >= 70) {
+                resultHTML = `
+                    <div class="result success">
+                        <strong>✅ Muy bien (${passed}/${total})</strong><br>
+                        La mayoría de componentes funcionan. Revisa los items marcados en rojo.
+                    </div>
+                `;
+            } else {
+                resultHTML = `
+                    <div class="result error">
+                        <strong>⚠️ Atención (${passed}/${total})</strong><br>
+                        Algunos componentes no están funcionando. Revisa GUIA_PASO_A_PASO.md
+                    </div>
+                `;
+            }
+
+            document.getElementById('result').innerHTML = resultHTML;
+
+            // Mostrar console output
+            if (consoleLog.length > 0) {
+                document.getElementById('console-output').style.display = 'block';
+                document.getElementById('console-content').innerHTML = 
+                    consoleLog.map(l => `<div>${l}</div>`).join('');
+            }
+        }
+
+        // Ejecutar automáticamente al cargar
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>
