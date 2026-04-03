@@ -13799,29 +13799,44 @@ REGLAS ESTRICTAS:
 // ── Inyectar botones 📸 IA y 📝 OCR en toolbar ───────────────────────────
 var _origRenderCif = window.renderCifrado;
 window.renderCifrado = function(display) {
-    _origRenderCif && _origRenderCif(display);
+    // Llamar a la función original primero
+    if (_origRenderCif) {
+        try {
+            _origRenderCif(display);
+        } catch(e) {
+            console.warn('Error en renderCifrado original:', e);
+        }
+    }
+    
+    // Esperar un poco para que el DOM se actualice
     setTimeout(function() {
-        // Buscar la barra de herramientas (puede ser .cif-top-bar o .cif-top-ban)
-        var tb = display ? (display.querySelector('.cif-top-bar') || display.querySelector('.cif-top-ban')) 
-                        : (document.querySelector('.cif-top-bar') || document.querySelector('.cif-top-ban'));
-        
-        if (!tb) {
-            console.warn('No se encontró la barra de herramientas del cifrado');
-            return;
-        }
-        
-        if (tb.querySelector('.cif-tbtn-ia')) {
-            console.log('Botones IA/OCR ya existen');
-            return;
-        }
-        
-        var songId = (typeof cifSongId !== 'undefined') ? cifSongId : null;
-        if (!songId) {
-            console.warn('No hay songId disponible');
-            return;
-        }
-        
-        console.log('✓ Inyectando botones IA y OCR en:', tb);
+        try {
+            // Buscar la barra de herramientas (puede ser .cif-top-bar o .cif-top-ban)
+            var tb = null;
+            if (display) {
+                tb = display.querySelector('.cif-top-bar') || display.querySelector('.cif-top-ban');
+            }
+            if (!tb) {
+                tb = document.querySelector('.cif-top-bar') || document.querySelector('.cif-top-ban');
+            }
+            
+            if (!tb) {
+                console.warn('No se encontró la barra de herramientas del cifrado');
+                return;
+            }
+            
+            if (tb.querySelector('.cif-tbtn-ia')) {
+                console.log('Botones IA/OCR ya existen');
+                return;
+            }
+            
+            var songId = (typeof cifSongId !== 'undefined') ? cifSongId : null;
+            if (!songId) {
+                console.warn('No hay songId disponible');
+                return;
+            }
+            
+            console.log('✓ Inyectando botones IA y OCR en:', tb);
         
         // Botón IA
         var btnIA = document.createElement('button');
@@ -13848,6 +13863,9 @@ window.renderCifrado = function(display) {
         }
         
         console.log('✓ Botones IA y OCR agregados a la barra de herramientas');
+        } catch(err) {
+            console.error('Error al inyectar botones IA/OCR:', err);
+        }
     }, 150);
 };
 
