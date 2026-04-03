@@ -14466,37 +14466,76 @@ console.log('✅ Patch v27: Importar cifrado desde imagen con Gemini Vision');
             var result = { key: '', bpm: 0, sections: [] };
             var currentSection = null;
             
-            // Detectar tonalidad y BPM en las primeras líneas
-            for (var i = 0; i < Math.min(5, lines.length); i++) {
+            // Detectar tonalidad y BPM
+            for (var i = 0; i < Math.min(10, lines.length); i++) {
                 var line = lines[i];
-                
-                // Buscar tonalidad (ej: "Tono: C", "Key: Am", "C mayor")
                 var keyMatch = line.match(/(?:tono|key|tonalidad)[:\s]*([A-G][#b]?m?)/i);
                 if (keyMatch) result.key = keyMatch[1];
-                
-                // Buscar BPM (ej: "BPM: 120", "Tempo: 90")
                 var bpmMatch = line.match(/(?:bpm|tempo)[:\s]*(\d+)/i);
                 if (bpmMatch) result.bpm = parseInt(bpmMatch[1]);
+            }
+            
+            // Función auxiliar para detectar si una línea es solo acordes
+            function isChordLine(line) {
+                // Ignorar líneas muy largas (probablemente letra)
+                if (line.length > 80) return false;
+                
+                // Patrón mejorado para acordes
+                var chordPattern = /^([A-G][#b]?m?(sus|maj|min|dim|aug|add|\d)*[\s\/]*)+$/;
+                return chordPattern.test(line);
+            }
+            
+            // Función auxiliar para extraer acordes de una línea
+            function extractChords(line) {
+                var matches = line.match(/[A-G][#b]?m?(sus|maj|min|dim|aug|add|\d)*/g);
+                return matches || [];
             }
             
             // Procesar líneas
             for (var i = 0; i < lines.length; i++) {
                 var line = lines[i];
                 
-                // Detectar sección (ej: "INTRO", "[Verso 1]", "Coro:")
-                var sectionMatch = line.match(/^[\[\(]?(intro|verso|estrofa|coro|puente|bridge|outro|instrumental|solo)[\s\d]*[\]\)]?:?$/i);
+                // Ignorar líneas de título/artista (muy largas o con guiones/comas)
+                if (line.length > 100 || /[-–—,].*[-–—,]/.test(line)) {
+                    continue;
+                }
+                
+                // Detectar sección
+                var sectionMatch = line.match(/^[\[\(]?(intro|verso|estrofa|coro|chorus|puente|bridge|outro|instrumental|solo|pre-?coro|pre-?chorus)[\s\d]*[\]\)]?:?$/i);
                 if (sectionMatch) {
-                    if (currentSection) result.sections.push(currentSection);
-                    var type = sectionMatch[1].toLowerCase();
-                    if (type === 'estrofa') type = 'verso';
-                    if (type === 'bridge') type = 'puente';
+                    if (currentSection && (currentSection.lines.length > 0 || currentSection.chords.length > 0)) {
+                        result.sections.push(currentSection);
+                    }
+                    var type = sectionMatch[1].toLowerCase().replace(/-/g, '');
+                    if (type === 'estrofa') type = 'verse';
                     if (type === 'verso') type = 'verse';
-                    if (type === 'coro') type = 'chorus';
+                    if (type === 'coro' || type === 'chorus') type = 'chorus';
+                    if (type === 'puente' || type === 'bridge') type = 'bridge';
+                    if (type === 'precoro' || type === 'prechorus') type = 'prechorus';
+                    
                     currentSection = {
                         type: type,
                         label: line.replace(/[\[\]\(\):]/g, '').trim(),
                         chordsOnly: false,
                         chords: [],
+                        lines: []
+                    };
+                    continue;
+                }
+                
+                // Detectar líneas como "Intro E Am F E7" (sección con acordes)
+                var introMatch = line.match(/^(intro|outro|instrumental|solo)\s+([A-G][#b]?.*)/i);
+                if (introMatch) {
+                    if (currentSection && (currentSection.lines.length > 0 || currentSection.chords.length > 0)) {
+                        result.sections.push(currentSection);
+                    }
+                    var type = introMatch[1].toLowerCase();
+                    var chordsPart = introMatch[2];
+                    currentSection = {
+                        type: type,
+                        label: introMatch[1].charAt(0).toUpperCase() + introMatch[1].slice(1),
+                        chordsOnly: true,
+                        chords: extractChords(chordsPart),
                         lines: []
                     };
                     continue;
@@ -14513,23 +14552,21 @@ console.log('✅ Patch v27: Importar cifrado desde imagen con Gemini Vision');
                     };
                 }
                 
-                // Detectar si es línea de acordes (solo acordes, sin letra)
-                var isChordLine = /^[A-G][#b]?m?(sus|maj|min|dim|aug|add|[0-9])*(\s+[A-G][#b]?m?(sus|maj|min|dim|aug|add|[0-9])*)*\s*$/.test(line);
-                
-                if (isChordLine) {
-                    // Línea solo con acordes
-                    var chords = line.split(/\s+/).filter(Boolean);
-                    currentSection.chords = currentSection.chords.concat(chords);
+                // Detectar si es línea de acordes
+                if (isChordLine(line)) {
+                    var chords = extractChords(line);
                     
-                    // Si la siguiente línea no es acordes, es letra con acordes arriba
-                    if (i + 1 < lines.length && !/^[A-G][#b]?m?/.test(lines[i + 1])) {
+                    // Verificar si la siguiente línea es letra
+                    if (i + 1 < lines.length && !isChordLine(lines[i + 1]) && lines[i + 1].length > 5) {
                         var lyricLine = lines[i + 1];
                         i++; // Saltar la siguiente línea
                         
-                        // Intentar mapear acordes a palabras
+                        // Mapear acordes a palabras
                         var words = lyricLine.split(/\s+/);
                         var chordPositions = [];
-                        for (var j = 0; j < Math.min(chords.length, words.length); j++) {
+                        
+                        // Distribuir acordes entre las palabras
+                        for (var j = 0; j < chords.length && j < words.length; j++) {
                             chordPositions.push({ word: j, chord: chords[j] });
                         }
                         
@@ -14537,8 +14574,11 @@ console.log('✅ Patch v27: Importar cifrado desde imagen con Gemini Vision');
                             lyric: lyricLine,
                             chords: chordPositions
                         });
+                    } else {
+                        // Solo acordes, sin letra
+                        currentSection.chords = currentSection.chords.concat(chords);
                     }
-                } else {
+                } else if (line.length > 2) {
                     // Línea de letra sin acordes
                     currentSection.lines.push({
                         lyric: line,
@@ -14548,16 +14588,20 @@ console.log('✅ Patch v27: Importar cifrado desde imagen con Gemini Vision');
             }
             
             // Agregar última sección
-            if (currentSection) result.sections.push(currentSection);
+            if (currentSection && (currentSection.lines.length > 0 || currentSection.chords.length > 0)) {
+                result.sections.push(currentSection);
+            }
             
-            // Si no hay secciones, crear una por defecto
+            // Si no hay secciones, crear una por defecto con todo el texto
             if (result.sections.length === 0) {
                 result.sections.push({
                     type: 'verse',
                     label: 'Verso 1',
                     chordsOnly: false,
                     chords: [],
-                    lines: lines.map(function(l) { return { lyric: l, chords: [] }; })
+                    lines: lines.filter(function(l) { return l.length > 2; }).map(function(l) { 
+                        return { lyric: l, chords: [] }; 
+                    })
                 });
             }
             
