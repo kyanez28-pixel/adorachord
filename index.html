@@ -13798,8 +13798,89 @@ REGLAS ESTRICTAS:
 
 // ── Inyectar botones 📸 IA y 📝 OCR en toolbar ───────────────────────────
 var _origRenderCif = window.renderCifrado;
+var _buttonsInjected = false;
+
+function injectButtons() {
+    if (_buttonsInjected) return;
+    
+    try {
+        // Buscar la barra de herramientas
+        var tb = document.querySelector('.cif-top-bar') || document.querySelector('.cif-top-ban');
+        
+        if (!tb) {
+            console.warn('⏳ Esperando a que aparezca la barra de herramientas...');
+            return false;
+        }
+        
+        if (tb.querySelector('.cif-tbtn-ia')) {
+            console.log('✓ Botones IA/OCR ya existen');
+            _buttonsInjected = true;
+            return true;
+        }
+        
+        var songId = (typeof cifSongId !== 'undefined') ? cifSongId : (typeof window.selectedSongId !== 'undefined' ? window.selectedSongId : null);
+        if (!songId) {
+            console.warn('⏳ Esperando songId...');
+            return false;
+        }
+        
+        console.log('✓ Inyectando botones IA y OCR en:', tb);
+        
+        // Botón IA
+        var btnIA = document.createElement('button');
+        btnIA.className = 'cif-tbtn-ia';
+        btnIA.title = 'Importar cifrado desde imagen con IA PRO (Gemini)';
+        btnIA.textContent = '📸 IA';
+        btnIA.style.cssText = 'margin-left:8px;';
+        btnIA.onclick = function() { window.cifOpenImageImport(); };
+        
+        // Botón OCR
+        var btnOCR = document.createElement('button');
+        btnOCR.className = 'cif-tbtn-ia cif-tbtn-ocr';
+        btnOCR.title = 'Extraer texto de imagen con OCR';
+        btnOCR.textContent = '📝 OCR';
+        btnOCR.style.cssText = 'margin-left:4px;';
+        btnOCR.onclick = function() { window.cifOpenOCRImport(); };
+        
+        // Insertar botones
+        var firstBtn = tb.querySelector('.cif-tbtn, .undo-btn2, button');
+        if (firstBtn) {
+            tb.insertBefore(btnIA, firstBtn);
+            tb.insertBefore(btnOCR, firstBtn);
+        } else {
+            tb.appendChild(btnIA);
+            tb.appendChild(btnOCR);
+        }
+        
+        console.log('✅ Botones IA y OCR agregados exitosamente');
+        _buttonsInjected = true;
+        return true;
+        
+    } catch(err) {
+        console.error('❌ Error al inyectar botones:', err);
+        return false;
+    }
+}
+
+// Intentar inyectar botones múltiples veces
+function tryInjectButtons(attempts, delay) {
+    var attempt = 0;
+    var interval = setInterval(function() {
+        attempt++;
+        console.log('🔄 Intento ' + attempt + ' de ' + attempts + ' para inyectar botones...');
+        
+        if (injectButtons()) {
+            clearInterval(interval);
+            console.log('✅ Botones inyectados exitosamente en intento ' + attempt);
+        } else if (attempt >= attempts) {
+            clearInterval(interval);
+            console.warn('⚠️ No se pudieron inyectar los botones después de ' + attempts + ' intentos');
+        }
+    }, delay);
+}
+
 window.renderCifrado = function(display) {
-    // Llamar a la función original primero
+    // Llamar a la función original
     if (_origRenderCif) {
         try {
             _origRenderCif(display);
@@ -13808,65 +13889,9 @@ window.renderCifrado = function(display) {
         }
     }
     
-    // Esperar un poco para que el DOM se actualice
-    setTimeout(function() {
-        try {
-            // Buscar la barra de herramientas (puede ser .cif-top-bar o .cif-top-ban)
-            var tb = null;
-            if (display) {
-                tb = display.querySelector('.cif-top-bar') || display.querySelector('.cif-top-ban');
-            }
-            if (!tb) {
-                tb = document.querySelector('.cif-top-bar') || document.querySelector('.cif-top-ban');
-            }
-            
-            if (!tb) {
-                console.warn('No se encontró la barra de herramientas del cifrado');
-                return;
-            }
-            
-            if (tb.querySelector('.cif-tbtn-ia')) {
-                console.log('Botones IA/OCR ya existen');
-                return;
-            }
-            
-            var songId = (typeof cifSongId !== 'undefined') ? cifSongId : null;
-            if (!songId) {
-                console.warn('No hay songId disponible');
-                return;
-            }
-            
-            console.log('✓ Inyectando botones IA y OCR en:', tb);
-        
-        // Botón IA
-        var btnIA = document.createElement('button');
-        btnIA.className = 'cif-tbtn-ia';
-        btnIA.title = 'Importar cifrado desde imagen con IA (Gemini)';
-        btnIA.textContent = '📸 IA';
-        btnIA.onclick = function() { window.cifOpenImageImport(); };
-        
-        // Botón OCR
-        var btnOCR = document.createElement('button');
-        btnOCR.className = 'cif-tbtn-ia cif-tbtn-ocr';
-        btnOCR.title = 'Extraer texto de imagen con OCR (más confiable)';
-        btnOCR.textContent = '📝 OCR';
-        btnOCR.style.marginLeft = '4px';
-        btnOCR.onclick = function() { window.cifOpenOCRImport(); };
-        
-        var undoBtns = tb.querySelectorAll('.cif-tbtn, .undo-btn2');
-        if (undoBtns && undoBtns.length) {
-            tb.insertBefore(btnIA, undoBtns[0]);
-            tb.insertBefore(btnOCR, undoBtns[0]);
-        } else {
-            tb.appendChild(btnIA);
-            tb.appendChild(btnOCR);
-        }
-        
-        console.log('✓ Botones IA y OCR agregados a la barra de herramientas');
-        } catch(err) {
-            console.error('Error al inyectar botones IA/OCR:', err);
-        }
-    }, 150);
+    // Resetear flag e intentar inyectar botones
+    _buttonsInjected = false;
+    tryInjectButtons(10, 200); // 10 intentos cada 200ms = 2 segundos total
 };
 
 // ── Modal principal ───────────────────────────────────────────
