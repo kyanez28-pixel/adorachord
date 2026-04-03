@@ -14164,7 +14164,7 @@ function showResults(container, data) {
 }
 
 // ── Importar al editor ─────────────────────────────────────────
-function importToEditor(data) {
+window.importToEditor = function importToEditor(data) {
     if (typeof cifSongId === 'undefined' || !cifSongId) {
         if (typeof toast === 'function') toast('⚠ Selecciona una canción primero');
         return;
@@ -14228,7 +14228,7 @@ function importToEditor(data) {
 
     var n = newSecs.length;
     if (typeof toast === 'function') toast('✅ Importadas ' + n + ' sección' + (n !== 1 ? 'es' : '') + ' desde imagen');
-}
+};
 
 })();
 console.log('✅ Patch v27: Importar cifrado desde imagen con Gemini Vision');
@@ -14443,8 +14443,8 @@ console.log('✅ Patch v27: Importar cifrado desde imagen con Gemini Vision');
                 var structured = parseChordText(text);
                 
                 // Importar al editor usando la función existente
-                if (typeof importToEditor === 'function') {
-                    importToEditor(structured);
+                if (typeof window.importToEditor === 'function') {
+                    window.importToEditor(structured);
                     ov.remove();
                     if (typeof toast === 'function') {
                         toast('✓ Acordes importados correctamente desde OCR');
