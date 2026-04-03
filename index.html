@@ -14438,9 +14438,131 @@ console.log('✅ Patch v27: Importar cifrado desde imagen con Gemini Vision');
                 return;
             }
             
-            alert('✓ Texto extraído correctamente.\n\nAhora puedes copiar este texto y pegarlo manualmente en el editor de cifrado.\n\n(La importación automática se implementará en una próxima versión)');
-            ov.remove();
+            try {
+                // Parsear el texto extraído
+                var structured = parseChordText(text);
+                
+                // Importar al editor usando la función existente
+                if (typeof importToEditor === 'function') {
+                    importToEditor(structured);
+                    ov.remove();
+                    if (typeof toast === 'function') {
+                        toast('✓ Acordes importados correctamente desde OCR');
+                    } else {
+                        alert('✓ Acordes importados correctamente desde OCR');
+                    }
+                } else {
+                    throw new Error('Función de importación no disponible');
+                }
+            } catch(err) {
+                alert('Error al procesar el texto: ' + err.message + '\n\nPuedes copiar el texto manualmente y pegarlo en el editor.');
+                console.error('Error al importar:', err);
+            }
         };
+        
+        // Función para parsear texto a estructura de acordes
+        function parseChordText(text) {
+            var lines = text.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+            var result = { key: '', bpm: 0, sections: [] };
+            var currentSection = null;
+            
+            // Detectar tonalidad y BPM en las primeras líneas
+            for (var i = 0; i < Math.min(5, lines.length); i++) {
+                var line = lines[i];
+                
+                // Buscar tonalidad (ej: "Tono: C", "Key: Am", "C mayor")
+                var keyMatch = line.match(/(?:tono|key|tonalidad)[:\s]*([A-G][#b]?m?)/i);
+                if (keyMatch) result.key = keyMatch[1];
+                
+                // Buscar BPM (ej: "BPM: 120", "Tempo: 90")
+                var bpmMatch = line.match(/(?:bpm|tempo)[:\s]*(\d+)/i);
+                if (bpmMatch) result.bpm = parseInt(bpmMatch[1]);
+            }
+            
+            // Procesar líneas
+            for (var i = 0; i < lines.length; i++) {
+                var line = lines[i];
+                
+                // Detectar sección (ej: "INTRO", "[Verso 1]", "Coro:")
+                var sectionMatch = line.match(/^[\[\(]?(intro|verso|estrofa|coro|puente|bridge|outro|instrumental|solo)[\s\d]*[\]\)]?:?$/i);
+                if (sectionMatch) {
+                    if (currentSection) result.sections.push(currentSection);
+                    var type = sectionMatch[1].toLowerCase();
+                    if (type === 'estrofa') type = 'verso';
+                    if (type === 'bridge') type = 'puente';
+                    if (type === 'verso') type = 'verse';
+                    if (type === 'coro') type = 'chorus';
+                    currentSection = {
+                        type: type,
+                        label: line.replace(/[\[\]\(\):]/g, '').trim(),
+                        chordsOnly: false,
+                        chords: [],
+                        lines: []
+                    };
+                    continue;
+                }
+                
+                // Si no hay sección, crear una por defecto
+                if (!currentSection) {
+                    currentSection = {
+                        type: 'verse',
+                        label: 'Verso 1',
+                        chordsOnly: false,
+                        chords: [],
+                        lines: []
+                    };
+                }
+                
+                // Detectar si es línea de acordes (solo acordes, sin letra)
+                var isChordLine = /^[A-G][#b]?m?(sus|maj|min|dim|aug|add|[0-9])*(\s+[A-G][#b]?m?(sus|maj|min|dim|aug|add|[0-9])*)*\s*$/.test(line);
+                
+                if (isChordLine) {
+                    // Línea solo con acordes
+                    var chords = line.split(/\s+/).filter(Boolean);
+                    currentSection.chords = currentSection.chords.concat(chords);
+                    
+                    // Si la siguiente línea no es acordes, es letra con acordes arriba
+                    if (i + 1 < lines.length && !/^[A-G][#b]?m?/.test(lines[i + 1])) {
+                        var lyricLine = lines[i + 1];
+                        i++; // Saltar la siguiente línea
+                        
+                        // Intentar mapear acordes a palabras
+                        var words = lyricLine.split(/\s+/);
+                        var chordPositions = [];
+                        for (var j = 0; j < Math.min(chords.length, words.length); j++) {
+                            chordPositions.push({ word: j, chord: chords[j] });
+                        }
+                        
+                        currentSection.lines.push({
+                            lyric: lyricLine,
+                            chords: chordPositions
+                        });
+                    }
+                } else {
+                    // Línea de letra sin acordes
+                    currentSection.lines.push({
+                        lyric: line,
+                        chords: []
+                    });
+                }
+            }
+            
+            // Agregar última sección
+            if (currentSection) result.sections.push(currentSection);
+            
+            // Si no hay secciones, crear una por defecto
+            if (result.sections.length === 0) {
+                result.sections.push({
+                    type: 'verse',
+                    label: 'Verso 1',
+                    chordsOnly: false,
+                    chords: [],
+                    lines: lines.map(function(l) { return { lyric: l, chords: [] }; })
+                });
+            }
+            
+            return result;
+        }
 
         document.body.appendChild(ov);
     };
