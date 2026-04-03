@@ -13801,10 +13801,27 @@ var _origRenderCif = window.renderCifrado;
 window.renderCifrado = function(display) {
     _origRenderCif && _origRenderCif(display);
     setTimeout(function() {
-        var tb = display ? display.querySelector('.cif-top-bar') : document.querySelector('.cif-top-bar');
-        if (!tb || tb.querySelector('.cif-tbtn-ia')) return;
+        // Buscar la barra de herramientas (puede ser .cif-top-bar o .cif-top-ban)
+        var tb = display ? (display.querySelector('.cif-top-bar') || display.querySelector('.cif-top-ban')) 
+                        : (document.querySelector('.cif-top-bar') || document.querySelector('.cif-top-ban'));
+        
+        if (!tb) {
+            console.warn('No se encontró la barra de herramientas del cifrado');
+            return;
+        }
+        
+        if (tb.querySelector('.cif-tbtn-ia')) {
+            console.log('Botones IA/OCR ya existen');
+            return;
+        }
+        
         var songId = (typeof cifSongId !== 'undefined') ? cifSongId : null;
-        if (!songId) return;
+        if (!songId) {
+            console.warn('No hay songId disponible');
+            return;
+        }
+        
+        console.log('✓ Inyectando botones IA y OCR en:', tb);
         
         // Botón IA
         var btnIA = document.createElement('button');
