@@ -2173,6 +2173,23 @@
         .cif-pctrl-btn:hover { background:rgba(255,255,255,.16); }
         .cif-pctrl-lbl { color:rgba(255,255,255,.5); font-size:12px; min-width:40px; text-align:center; }
         .cif-present-body { flex:1; overflow-y:auto; padding:36px 56px; }
+        /* Botón flotante de salida para móvil */
+        .cif-exit-fab { display:none; position:fixed; bottom:24px; right:20px; z-index:12100;
+            background:#E8572A; color:#fff; border:none; border-radius:50px;
+            padding:12px 20px; font-size:15px; font-family:'Syne',sans-serif; font-weight:700;
+            box-shadow:0 4px 20px rgba(232,87,42,0.6); cursor:pointer; 
+            align-items:center; gap:8px; transition:all .2s; }
+        .cif-exit-fab:active { transform:scale(0.95); }
+        @media (max-width: 600px) {
+            .cif-present-hdr { padding:8px 12px; flex-wrap:wrap; gap:6px; }
+            .cif-present-song { font-size:13px; }
+            .cif-present-ctrl { gap:4px; }
+            .cif-pctrl-btn { padding:5px 10px; font-size:12px; }
+            .cif-pctrl-lbl { font-size:11px; min-width:32px; }
+            .cif-exit-text { display:none; } /* Ocultar texto "Salir", solo mostrar ✕ */
+            .cif-present-body { padding:20px 16px; }
+            .cif-exit-fab { display:flex; }
+        }
         .cpres-sec { margin-bottom:32px; }
         .cpres-badge { font-family:'Syne',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.8px; padding:3px 12px; border-radius:20px; display:inline-block; margin-bottom:12px; }
         .cpres-line { display:flex; flex-wrap:wrap; align-items:flex-end; margin-bottom:4px; }
@@ -2497,10 +2514,12 @@
             <button class="cif-pctrl-btn" onclick="cifPresentZoom(-2)">A−</button>
             <span class="cif-pctrl-lbl" id="cif-present-zoom">100%</span>
             <button class="cif-pctrl-btn" onclick="cifPresentZoom(+2)">A+</button>
-            <button class="cif-pctrl-btn" onclick="cifClosePresent()" style="margin-left:8px">✕ Salir</button>
+            <button class="cif-pctrl-btn" onclick="cifClosePresent()" style="margin-left:8px">✕ <span class="cif-exit-text">Salir</span></button>
         </div>
     </div>
     <div class="cif-present-body" id="cif-present-body"></div>
+    <!-- Botón flotante Salir para móvil -->
+    <button class="cif-exit-fab" onclick="cifClosePresent()">✕ Salir</button>
 </div>
 
 <!-- Sidebar backdrop (móvil) -->
