@@ -16,7 +16,7 @@
     <meta name="description" content="Gestión de equipo de alabanza y canciones">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #0C0B0A;
@@ -1760,7 +1760,7 @@
         .month-count { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 800; color: var(--accent); }
 
         /* ── TEAM VIEW ── */
-        .team-layout { display: grid; grid-template-columns: 1fr 340px; gap: 14px; height: 100%; overflow: hidden; }
+        .team-layout { display: grid; grid-template-columns: 1fr; gap: 14px; height: 100%; overflow: hidden; }
         .team-panel { display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; min-height: 0; }
         .team-panel-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
         .team-panel-body   { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
@@ -2118,7 +2118,7 @@
         .cif-sec-ctrl .del-sec:hover { color:#ff6060; }
         .cif-sec-body { padding:10px 14px 12px; display:flex; flex-direction:column; gap:0; }
         .cif-co-line { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; padding:4px 0; min-height:34px; }
-        .cif-co-chip { font-family:'Syne',sans-serif; font-size:var(--caf); font-weight:800; color:var(--accent); background:rgba(232,87,42,.1); border:1px solid rgba(232,87,42,.25); border-radius:6px; padding:3px 10px; cursor:pointer; transition:all .12s; }
+        .cif-co-chip { font-family:'Courier New',Courier,monospace; font-size:var(--caf); font-weight:700; font-style:italic; color:var(--accent); background:rgba(232,87,42,.1); border:1px solid rgba(232,87,42,.25); border-radius:6px; padding:3px 10px; cursor:pointer; transition:all .12s; letter-spacing:0.02em; }
         .cif-co-chip:hover { background:rgba(232,87,42,.25); }
         .cif-co-add { background:none; border:1px dashed rgba(232,87,42,.3); color:var(--dim); border-radius:6px; padding:3px 10px; font-size:11px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:600; transition:all .12s; }
         .cif-co-add:hover { border-color:var(--accent); color:var(--accent); }
@@ -2129,7 +2129,7 @@
         .cif-token-row { display:flex; flex-wrap:wrap; align-items:flex-end; }
         .cif-wt { display:inline-flex; flex-direction:column; align-items:flex-start; cursor:pointer; position:relative; border-radius:3px; transition:background .1s; }
         .cif-wt:not(.sp):hover { background:rgba(232,87,42,.09); }
-        .cif-wt-chord { font-family:'Syne',sans-serif; font-size:var(--caf); font-weight:800; color:var(--accent); white-space:nowrap; line-height:1.35; min-height:18px; padding:1px 2px; border-radius:3px; display:block; }
+        .cif-wt-chord { font-family:'Courier New',Courier,monospace; font-size:var(--caf); font-weight:700; font-style:italic; color:var(--accent); white-space:nowrap; line-height:1.35; min-height:18px; padding:1px 2px; border-radius:3px; display:block; letter-spacing:0.02em; }
         .cif-wt-chord.has { background:rgba(232,87,42,.12); border:1px solid rgba(232,87,42,.25); cursor:pointer; }
         .cif-wt-chord.has:hover { background:rgba(232,87,42,.28); }
         .cif-wt-chord.empty { opacity:0; pointer-events:none; }
@@ -2159,11 +2159,11 @@
         .cprev-lbl { font-family:'Syne',sans-serif; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; padding:2px 8px; border-radius:20px; display:inline-block; margin-bottom:8px; }
         .cprev-line { display:flex; flex-wrap:wrap; align-items:flex-end; margin-bottom:2px; }
         .cprev-wt { display:inline-flex; flex-direction:column; align-items:flex-start; }
-        .cprev-chord { font-family:'Syne',sans-serif; font-size:11px; font-weight:800; color:var(--accent); white-space:nowrap; min-height:15px; line-height:1.3; }
+        .cprev-chord { font-family:'Courier New',Courier,monospace; font-size:11px; font-weight:700; font-style:italic; color:var(--accent); white-space:nowrap; min-height:15px; line-height:1.3; letter-spacing:0.02em; }
         .cprev-chord.empty { opacity:0; }
         .cprev-text { font-size:12px; color:var(--text); white-space:pre; line-height:1.55; }
         .cprev-co { display:flex; flex-wrap:wrap; gap:8px; padding:3px 0; }
-        .cprev-co-chip { font-family:'Syne',sans-serif; font-size:11px; font-weight:800; color:var(--accent); }
+        .cprev-co-chip { font-family:'Courier New',Courier,monospace; font-size:11px; font-weight:700; font-style:italic; color:var(--accent); letter-spacing:0.02em; }
         .cif-present { position:fixed; inset:0; background:#060606; z-index:12000; display:none; flex-direction:column; }
         .cif-present.open { display:flex; }
         .cif-present-hdr { display:flex; align-items:center; justify-content:space-between; padding:12px 24px; border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0; }
@@ -2177,11 +2177,11 @@
         .cpres-badge { font-family:'Syne',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.8px; padding:3px 12px; border-radius:20px; display:inline-block; margin-bottom:12px; }
         .cpres-line { display:flex; flex-wrap:wrap; align-items:flex-end; margin-bottom:4px; }
         .cpres-wt { display:inline-flex; flex-direction:column; align-items:flex-start; }
-        .cpres-chord { font-family:'Syne',sans-serif; font-weight:800; color:var(--accent); white-space:nowrap; line-height:1.3; }
+        .cpres-chord { font-family:'Courier New',Courier,monospace; font-weight:700; font-style:italic; color:var(--accent); white-space:nowrap; line-height:1.3; letter-spacing:0.03em; }
         .cpres-chord.empty { opacity:0; }
         .cpres-text { font-family:'DM Sans',sans-serif; color:#f0ebe3; white-space:pre; line-height:1.45; }
         .cpres-co { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:6px; }
-        .cpres-co-chip { font-family:'Syne',sans-serif; font-weight:800; color:var(--accent); }
+        .cpres-co-chip { font-family:'Courier New',Courier,monospace; font-weight:700; font-style:italic; color:var(--accent); letter-spacing:0.03em; }
         .cif-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:200px; gap:12px; padding:40px; text-align:center; }
         .cif-empty-ico { font-size:42px; opacity:.3; }
         .cif-empty-txt { color:var(--dim); font-size:13px; line-height:1.7; max-width:280px; }
@@ -3456,7 +3456,7 @@ function renderRegistro(display) {
     leftPanel.appendChild(mkEl('div','reg-panel-header',`
         <span class="reg-panel-title">📋 Setlist</span>
         <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--accent)">
-            ${dayList.length} tema${dayList.length!==1?'s':''} · ${total} min
+            ${dayList.length} tema${dayList.length!==1?'s':''} · ${secToDurStr(total)}
         </span>
     `));
 
@@ -3499,7 +3499,7 @@ function renderRegistro(display) {
                         ${singerHtml}
                     </div>
                 </div>
-                ${s.duration ? `<span class="setlist-dur">${s.duration}m</span>` : ''}
+                ${s.duration ? `<span class="setlist-dur">${secToDurStr(s.duration)}</span>` : ''}
                 <button class="setlist-remove" title="Quitar">×</button>
             `;
 
@@ -3583,14 +3583,14 @@ function renderRegistro(display) {
     }
 
     if (total > 0) {
-        const totEl = mkEl('span','',`<span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--dim);margin-left:auto">${total} min</span>`);
+        const totEl = mkEl('span','',`<span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--dim);margin-left:auto">${secToDurStr(total)}</span>`);
         lFoot.appendChild(totEl);
     }
 
     leftPanel.appendChild(lFoot);
 
     // ── Picker derecho ──
-    const rightPanel = mkEl('div','reg-panel','');
+    const rightPanel = mkEl('div','reg-panel mobile-hidden','');
     rightPanel.appendChild(mkEl('div','reg-panel-header',`
         <span class="reg-panel-title">🎵 Agregar canciones</span>
         <span style="font-size:10px;color:var(--dim)">${songs.length} en biblioteca</span>
@@ -4044,6 +4044,8 @@ function secToDurStr(sec) {
     const s = sec % 60;
     return `${m}:${String(s).padStart(2,'0')}`;
 }
+
+
 
 function clearAudio() {
     const ap = document.getElementById('mt-audio-preview');
@@ -4937,59 +4939,7 @@ function renderTeam(display) {
     }
     leftPanel.appendChild(lBody);
 
-    // ── Historial de asignaciones (archivo) ──
-    const rightPanel = mkEl('div','team-panel','');
-    rightPanel.appendChild(mkEl('div','team-panel-header',`
-        <span class="reg-panel-title">📋 Archivo de asignaciones</span>
-        <span style="font-size:10px;color:var(--dim)">${Object.keys(singerAssignments).length} fechas</span>
-    `));
-
-    const rBody = mkEl('div','team-panel-body','');
-
-    const dates = Object.keys(singerAssignments).sort().reverse();
-    if (!dates.length) {
-        rBody.appendChild(mkEl('div','empty-state',`
-            <div class="empty-icon">📋</div>
-            <p style="font-size:12px">Sin asignaciones archivadas</p>
-            <p style="font-size:11px;color:var(--dim2)">Asigna cantantes en el Registro de Fechas</p>
-        `));
-    } else {
-        dates.forEach(date => {
-            const assignments = singerAssignments[date];
-            const dayList = history[date] || [];
-            const singers = new Set();
-            Object.values(assignments).forEach(mid => {
-                const mem = members.find(m=>m.id===mid);
-                if (mem) singers.add(mem.name.split(' ')[0]);
-            });
-
-            const row = mkEl('div','',`
-                <div style="padding:10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.13s;border-radius:6px">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-                        <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--accent)">${fmtDate(date)}</span>
-                        <span style="font-size:10px;color:var(--dim)">${dayList.length} canciones</span>
-                    </div>
-                    <div style="font-size:11px;color:var(--dim)">🎤 ${singers.size ? [...singers].join(', ') : 'Sin cantantes asignados'}</div>
-                    <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px">
-                        ${dayList.slice(0,4).map(s => {
-                            const mid = assignments[s.id];
-                            const mem = mid ? members.find(m=>m.id===mid) : null;
-                            return `<div style="font-size:10px;background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:2px 7px;white-space:nowrap">
-                                ${esc(s.name)}${mem?` <span style="color:var(--purple)">· ${esc(mem.name.split(' ')[0])}</span>`:''}
-                            </div>`;
-                        }).join('')}
-                        ${dayList.length > 4 ? `<span style="font-size:10px;color:var(--dim2)">+${dayList.length-4} más</span>` : ''}
-                    </div>
-                </div>
-            `);
-            row.querySelector('div').onclick = () => { switchView('SETLISTS'); setRegDate(date); };
-            rBody.appendChild(row);
-        });
-    }
-
-    rightPanel.appendChild(rBody);
     layout.appendChild(leftPanel);
-    layout.appendChild(rightPanel);
     display.appendChild(layout);
 }
 
@@ -6419,6 +6369,16 @@ function cifTransposeAll(semitones) {
     }
     
     renderCifradoEditor();
+    
+    // Actualizar el indicador de tono en la barra de herramientas
+    const kd = document.getElementById('cif-key-display');
+    if (kd) {
+        const sCurrent = songs.find(x => x.id === cifSongId);
+        kd.textContent = sCurrent && sCurrent.key 
+            ? (typeof cifFormatChord === 'function' ? cifFormatChord(sCurrent.key) : sCurrent.key)
+            : '—';
+    }
+    if (typeof window._cifUpdateTopBanner === 'function') window._cifUpdateTopBanner();
     toast(`🔀 Transpuesto ${semitones > 0 ? '+' : ''}${semitones} semitono${Math.abs(semitones)!==1?'s':''}`);
 }
 
@@ -8685,6 +8645,22 @@ window.renderCifrado = function(display) {
         <span class="cif-size-lbl" id="cif-chord-size-lbl">${window.cifChordSize||13}</span>
         <button class="cif-size-btn" onclick="cifAdjSize('chord',1)">+</button>`;
     tb.appendChild(sc2);
+    
+    // Controles de Transposición
+    if (cifSongId) {
+        const sc3 = document.createElement('div'); sc3.className = 'cif-size-ctrl trans-grp'; sc3.title = 'Transponer';
+        sc3.innerHTML = `<span class="cif-size-lbl" style="font-size:9px;opacity:.7;color:var(--accent)">TONO</span>
+            <button class="cif-size-btn" onclick="if(typeof cifTransposeAll==='function') cifTransposeAll(-1)" style="font-size:16px">−</button>
+            <span class="cif-size-lbl cif-key-display" id="cif-key-display" title="Haz clic para transponer" style="font-size:12px;font-weight:800;color:#fff;cursor:pointer;padding:0 2px">${(() => { const s = songs.find(x=>x.id===cifSongId); return s && s.key ? (typeof cifFormatChord==='function'?cifFormatChord(s.key):s.key) : '—'; })()}</span>
+            <button class="cif-size-btn" onclick="if(typeof cifTransposeAll==='function') cifTransposeAll(1)" style="font-size:16px">+</button>`;
+        tb.appendChild(sc3);
+        
+        setTimeout(() => {
+            const kd = document.getElementById('cif-key-display');
+            if (kd) kd.onclick = (e) => { e.stopPropagation(); if(typeof window.cifOpenTransposerPopup==='function') window.cifOpenTransposerPopup(kd); };
+        }, 50);
+    }
+
     wrap.appendChild(tb);
 
     // Body
@@ -13498,26 +13474,8 @@ window.renderCifrado = function(display) {
         btnLat.classList.add('active');
     };
 
-    notationGroup.appendChild(btnAm);
     notationGroup.appendChild(btnLat);
     tb.insertBefore(notationGroup, tb.querySelector('.cif-size-ctrl'));
-
-    // Indicador de tonalidad cerca de los botones de transposición
-    if (cifSongId) {
-        const s = songs.find(x => x.id === cifSongId);
-        if (s && s.key) {
-            const keyDisp = document.createElement('div');
-            keyDisp.className = 'cif-key-display';
-            keyDisp.textContent = cifFormatChord(s.key);
-            keyDisp.title = 'Tonalidad actual';
-            
-            // Insertar antes de los controles de transposición
-            const transCtrl = [...tb.querySelectorAll('.cif-size-ctrl')].find(c => c.title.includes('Transponer'));
-            if (transCtrl) {
-                transCtrl.parentNode.insertBefore(keyDisp, transCtrl);
-            }
-        }
-    }
 };
 
 // 3. Sobrescribir el renderizado de presentación para usar cifFormatChord
@@ -13747,54 +13705,83 @@ console.log('✅ Patch v26: Nomenclatura Latina y Transposición Robusta integra
 
 var GVURL = ''; // Se auto-configurará buscando modelos compatibles
 
-var GPROMPT = `Eres un experto en análisis de partituras de acordes musicales. Analiza esta imagen y extrae TODA la información en formato JSON.
+var GPROMPT = `Eres un experto en transcripción de hojas de acordes musicales. Analiza CUIDADOSAMENTE esta imagen y extrae TODO el contenido en formato JSON.
 
-INSTRUCCIONES CRÍTICAS:
-1. Identifica TODAS las secciones visibles (Intro, Verso, Estrofa, Coro, Puente, Outro, etc.)
-2. Para cada línea de letra, identifica los acordes que están VISUALMENTE POSICIONADOS sobre las palabras
-3. Ignora títulos, créditos, números de página y texto decorativo
-4. El índice "word" es 0-based (primera palabra = 0)
+MAPEO DE SECCIONES (nombren en español → tipo JSON):
+- INTRO → "intro" (chordsOnly: true)
+- VERSO, ESTROFA, VERSE → "verse" (chordsOnly: false) 
+- PRE-CORO, PRECORO → "prechorus" (chordsOnly: false)
+- CORO, CHORUS → "chorus" (chordsOnly: false)
+- PUENTE, BRIDGE → "bridge" (chordsOnly: false)
+- ESTRIBILLO → "tag" (chordsOnly: false)
+- SOLO, INSTRUMENTAL → "instrumental" (chordsOnly: true)
+- OUTRO, FINAL → "outro" (chordsOnly: false)
 
-TIPOS DE SECCIÓN VÁLIDOS:
-- intro, verse, prechorus, chorus, bridge, instrumental, outro, tag
+REGLAS CRÍTICAS DE EXTRACCIÓN:
+1. Para secciones CON letra (chordsOnly: false): extrae CADA línea de letra con sus acordes indicando en qué PALABRA (índice 0-based) va cada acorde.
+2. Para secciones SOLO ACORDES (chordsOnly: true): extrae los acordes en el array "chords". NUNCA dejes este array vacío si hay acordes en la imagen.
+3. NUNCA dejes una sección completamente vacía. Si hay acordes encima de palabras, inclúyelos.
+4. Incluye la tonalidad de la canción en "key" con modo mayor/menor (ej: "C#m", "G", "Bbm").
+5. El índice "word" es 0-based: primera palabra = 0, segunda = 1, etc.
 
-FORMATO DE RESPUESTA (JSON PURO, SIN MARKDOWN):
+FORMATO DE RESPUESTA (JSON PURO, SIN MARKDOWN, SIN comentarios):
 {
-  "key": "C",
+  "key": "C#m",
   "bpm": 0,
   "sections": [
     {
+      "type": "intro",
+      "label": "Intro",
+      "chordsOnly": true,
+      "chords": ["C#m", "G#m", "A", "C#m", "B"],
+      "lines": []
+    },
+    {
       "type": "verse",
-      "label": "Verso 1",
+      "label": "Estrofa",
       "chordsOnly": false,
       "chords": [],
       "lines": [
         {
-          "lyric": "Cristo es la peña de Horeb que está brotando",
+          "lyric": "En mi corazón hay un clamor",
           "chords": [
-            {"word": 0, "chord": "Em"},
-            {"word": 4, "chord": "B7"}
+            {"word": 0, "chord": "C#m"},
+            {"word": 4, "chord": "G#m"}
+          ]
+        },
+        {
+          "lyric": "deseo insaciable",
+          "chords": [
+            {"word": 0, "chord": "A"}
           ]
         }
       ]
     },
     {
-      "type": "intro",
-      "label": "Intro",
-      "chordsOnly": true,
-      "chords": ["Em", "B7", "Em"],
-      "lines": []
+      "type": "chorus",
+      "label": "Coro",
+      "chordsOnly": false,
+      "chords": [],
+      "lines": [
+        {
+          "lyric": "Llena hoy mi lámpara Señor",
+          "chords": [
+            {"word": 0, "chord": "C#m"},
+            {"word": 4, "chord": "B"}
+          ]
+        }
+      ]
     }
   ]
 }
 
-REGLAS ESTRICTAS:
-- NO incluyas markdown (```json)
+REGLAS DE FORMATO JSON:
+- NO incluyas markdown (sin \`\`\`json)
 - NO incluyas comas al final de arrays u objetos
 - Escapa comillas internas con backslash
-- Si un acorde está sobre una palabra, usa el índice de esa palabra
-- Si hay múltiples acordes en una línea, mapea cada uno a su palabra correspondiente
+- Para el campo "key": incluye si es mayor o menor (ej: "C#m" para C# menor, "G" para G mayor)
 - Responde SOLO con el JSON, nada más`;
+
 
 // ── Inyectar botones 📸 IA y 📝 OCR en toolbar ───────────────────────────
 var _origRenderCif = window.renderCifrado;
@@ -14433,25 +14420,26 @@ console.log('✅ Patch v27: Importar cifrado desde imagen con Gemini Vision');
 
         var info = document.createElement('div');
         info.style.cssText = 'background:rgba(77,158,255,0.1);border:1px solid rgba(77,158,255,0.3);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:#4D9EFF;line-height:1.6;';
-        info.innerHTML = '<strong>💡 Sistema OCR (más confiable):</strong><br>1. Sube una imagen con acordes y letra<br>2. El OCR extraerá todo el texto<br>3. Revisa y edita el texto si es necesario<br>4. Importa para estructurarlo automáticamente';
+        info.innerHTML = '<strong>💡 Sistema OCR con Gemini Vision:</strong><br>1. Sube una imagen con acordes y letra<br>2. Gemini extraerá todo el texto automáticamente<br>3. Revisa y edita el texto si es necesario<br>4. Importa para estructurarlo al editor';
         body.appendChild(info);
 
         var keyWrap = document.createElement('div');
         keyWrap.style.cssText = 'margin-bottom:16px;';
-        keyWrap.innerHTML = '<label style="display:block;font-size:12px;font-weight:600;color:#7A6E65;margin-bottom:6px;">🔑 API Key de Google Cloud Vision</label>';
+        keyWrap.innerHTML = '<label style="display:block;font-size:12px;font-weight:600;color:#7A6E65;margin-bottom:6px;">🔑 API Key de Gemini (Google AI Studio)</label>';
         
         var keyInput = document.createElement('input');
         keyInput.type = 'password';
-        keyInput.placeholder = 'Ingresa tu API Key (se guardará localmente)';
+        keyInput.placeholder = 'Ingresa tu API Key de aistudio.google.com';
         keyInput.style.cssText = 'width:100%;background:#222120;border:1px solid #2E2B28;color:#F0EBE3;padding:10px 14px;border-radius:8px;font-size:13px;font-family:inherit;outline:none;';
-        keyInput.value = localStorage.getItem('google_vision_api_key') || '';
+        // Reusar la misma key que el modal de IA
+        keyInput.value = localStorage.getItem('gemini_api_key') || localStorage.getItem('google_vision_api_key') || '';
         keyInput.onfocus = function() { this.style.borderColor = 'rgba(232,87,42,0.4)'; };
         keyInput.onblur = function() { this.style.borderColor = '#2E2B28'; };
         keyWrap.appendChild(keyInput);
         
         var keyHelp = document.createElement('div');
         keyHelp.style.cssText = 'font-size:11px;color:#7A6E65;margin-top:4px;';
-        keyHelp.innerHTML = 'Habilita Cloud Vision API en: <a href="https://console.cloud.google.com/apis/library/vision.googleapis.com" target="_blank" style="color:#4D9EFF;">Google Cloud Console</a>';
+        keyHelp.innerHTML = 'Obtén tu key gratuita en: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#4D9EFF;">aistudio.google.com</a>';
         keyWrap.appendChild(keyHelp);
         body.appendChild(keyWrap);
 
@@ -14536,41 +14524,53 @@ console.log('✅ Patch v27: Importar cifrado desde imagen con Gemini Vision');
         extractBtn.onclick = async function() {
             var apiKey = keyInput.value.trim();
             if (!apiKey) {
-                alert('Por favor ingresa tu API Key de Google Cloud Vision');
+                alert('Por favor ingresa tu API Key de Gemini (aistudio.google.com)');
                 keyInput.focus();
                 return;
             }
             
+            // Guardar key tanto para OCR como para IA
+            localStorage.setItem('gemini_api_key', apiKey);
             localStorage.setItem('google_vision_api_key', apiKey);
             
             extractBtn.disabled = true;
             extractBtn.textContent = '⏳ Extrayendo texto...';
             
             try {
-                var url = 'https://vision.googleapis.com/v1/images:annotate?key=' + apiKey;
+                // Usar Gemini Vision para extraer texto (sin restricción de referer)
+                var MODELS = [
+                    'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash',
+                    'gemini-1.5-flash-8b', 'gemini-1.5-pro'
+                ];
+                var lastErr = null;
+                var text = null;
                 
-                var response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        requests: [{
-                            image: { content: imgB64 },
-                            features: [{ type: 'TEXT_DETECTION', maxResults: 1 }]
-                        }]
-                    })
-                });
-                
-                if (!response.ok) {
-                    var error = await response.json().catch(function() { return {}; });
-                    throw new Error(error.error?.message || 'Error HTTP ' + response.status);
+                for (var mi = 0; mi < MODELS.length && !text; mi++) {
+                    try {
+                        var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + MODELS[mi] + ':generateContent?key=' + apiKey;
+                        var resp = await fetch(url, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [
+                                    { text: 'Extrae TODO el texto que ves en esta imagen tal como aparece. Incluye nombres de secciones (INTRO, VERSO, CORO, etc.), letras de canciones y acordes musicales (como C#m, G#m, A, B, etc.). Preserva el orden y estructura visual. Responde SOLO con el texto extraído, sin comentarios adicionales.' },
+                                    { inline_data: { mime_type: imgMime, data: imgB64 } }
+                                ]}],
+                                generationConfig: { temperature: 0 }
+                            })
+                        });
+                        if (!resp.ok) {
+                            var errD = await resp.json().catch(function(){return {};});
+                            throw new Error(errD.error && errD.error.message ? errD.error.message : 'HTTP ' + resp.status);
+                        }
+                        var d = await resp.json();
+                        var candidate = d.candidates && d.candidates[0];
+                        text = candidate && candidate.content && candidate.content.parts && candidate.content.parts[0] && candidate.content.parts[0].text;
+                        if (!text) throw new Error('Respuesta vacía');
+                    } catch(e) { lastErr = e; text = null; }
                 }
                 
-                var data = await response.json();
-                var text = data.responses?.[0]?.textAnnotations?.[0]?.description;
-                
-                if (!text) {
-                    throw new Error('No se pudo extraer texto de la imagen. Verifica que la imagen sea clara y contenga texto.');
-                }
+                if (!text) throw lastErr || new Error('No se pudo extraer texto');
                 
                 extractedText = text;
                 resultText.value = text;
@@ -14584,7 +14584,7 @@ console.log('✅ Patch v27: Importar cifrado desde imagen con Gemini Vision');
                 
                 resultWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             } catch(err) {
-                alert('Error al extraer texto: ' + err.message + '\n\nAsegúrate de haber habilitado Cloud Vision API en Google Cloud Console.');
+                alert('Error al extraer texto: ' + err.message + '\n\nVerifica que tu API Key de Gemini sea válida (aistudio.google.com/app/apikey)');
                 extractBtn.disabled = false;
                 extractBtn.textContent = '🔍 Extraer texto';
             }
@@ -15171,7 +15171,7 @@ console.log('✅ Patch OCR: Sistema de extracción de texto con Google Cloud Vis
             btn.className = 'cif-trans-key' + (getNoteIndex(currentKey) === getNoteIndex(k) ? ' active' : '');
             
             // Si la canción es menor, mostrar opciones menores en el texto visual
-            const isMinor = currentKey.toLowerCase().includes('m');
+            const isMinor = /m$/.test(currentKey.trim());
             const targetKeyName = isMinor ? k + 'm' : k;
             const label = _cifPrefs.notation === 'latin' ? (LATIN_MAP[k] + (isMinor ? 'm' : '')) : targetKeyName;
             
