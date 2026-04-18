@@ -108,15 +108,15 @@
             /* Inspector → oculto por defecto, se abre como panel inferior */
             .inspector {
                 position: fixed;
-                bottom: -100%;
+                bottom: -110%; /* Iniciar más abajo para ocultar bien */
                 left: 0; right: 0;
-                height: 92vh;
-                border-radius: 20px 20px 0 0;
-                border-left: none;
-                border-top: 1px solid var(--border);
+                height: 100%;
+                height: 100dvh;
+                border-radius: 0;
+                border: none;
                 z-index: 6500;
-                transition: bottom 0.32s cubic-bezier(0.4,0,0.2,1);
-                box-shadow: 0 -12px 60px rgba(0,0,0,0.7);
+                transition: bottom 0.28s cubic-bezier(0.4,0,0.2,1);
+                box-shadow: none;
                 background: var(--sidebar);
                 display: flex;
                 flex-direction: column;
@@ -124,16 +124,23 @@
 
             .inspector.open { bottom: 0; }
 
-            /* Handle */
-            .inspector::before {
-                content: '';
-                display: block;
-                width: 36px; height: 4px;
-                background: var(--border2);
-                border-radius: 2px;
-                margin: 12px auto 0;
-                flex-shrink: 0;
+            /* Ya no hay handle de arrastrar para móviles, tenemos botón Volver */
+            .inspector::before { display: none; }
+            
+            .inspector-mobile-header {
+                display: flex; align-items: center; justify-content: space-between;
+                padding: 12px 16px; border-bottom: 1px solid var(--border);
+                background: var(--panel2); flex-shrink: 0;
             }
+            .ins-mob-back-btn {
+                background: rgba(232,87,42,0.1); color: var(--accent);
+                border: 1px solid rgba(232,87,42,0.25); border-radius: 20px;
+                padding: 7px 15px; font-family: 'Syne', sans-serif; font-size: 11px;
+                font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
+                transition: all 0.2s;
+            }
+            .ins-mob-back-btn:hover { background: rgba(232,87,42,0.18); }
+            .ins-mob-back-btn:active { transform: scale(0.96); }
 
             /* Scroll dentro del inspector móvil */
             .inspector .ins-scroll {
@@ -1154,6 +1161,8 @@
             min-height: 0;
             overflow: hidden;
         }
+
+        .inspector-mobile-header { display: none; }
 
         .ins-scroll {
             flex: 1;
@@ -2612,6 +2621,13 @@
 
     <!-- INSPECTOR -->
     <aside class="inspector" id="inspector-aside">
+        <div class="inspector-mobile-header" id="ins-mob-header">
+            <button class="ins-mob-back-btn" onclick="closeInspector()">
+                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+                VOLVER
+            </button>
+            <span style="font-family:'Syne',sans-serif; font-size:11px; font-weight:800; color:var(--text); letter-spacing:1px; opacity:0.8">INFO</span>
+        </div>
         <div class="ins-scroll" id="inspector-panel"></div>
     </aside>
 </div>
@@ -3510,7 +3526,7 @@ function renderRegistro(display) {
                 <span class="setlist-num">${i+1}</span>
                 <div class="setlist-thumb" title="Ver acordes">${thumbHtml}</div>
                 <div class="setlist-info">
-                    <b>${esc(s.name)}</b>
+                    <b class="setlist-title" style="cursor:pointer;" title="Ver/Editar Información">${esc(s.name)}</b>
                     <div class="setlist-tags">
                         ${s.author ? `<span style="font-size:10px;color:var(--dim)">${esc(s.author)}</span>` : ''}
                         ${s.key ? `<span class="tag tag-key" style="font-size:8px">${esc(s.key)}</span>` : ''}
@@ -3523,6 +3539,7 @@ function renderRegistro(display) {
             `;
 
             item.querySelector('.setlist-thumb').onclick = () => { if(s.url) openFull(s); };
+            item.querySelector('.setlist-title').onclick = () => { openEditModal(s.id); };
             item.querySelector('.setlist-remove').onclick = () => removeFromHistory(i);
 
             // ── Drag Notion-style ──
@@ -5340,6 +5357,7 @@ function renderAttendance(display) {
             if (!confirm(`¿Limpiar registro de ${fmtDate(attendDate)}?`)) return;
             snapshot(`Limpiar asistencia ${fmtDate(attendDate)}`);
             delete attendance[attendDate];
+            if (typeof dbClearAttendance === 'function') dbClearAttendance(attendDate);
             renderMain(); renderInspector();
         };
         foot.appendChild(clr);
@@ -6930,14 +6948,49 @@ function renderCifrado(display) {
     const tb = document.createElement('div');
     tb.className = 'cif-top-bar';
 
-    const sel = document.createElement('select');
+    const selWrap = document.createElement('div');
+    selWrap.style.cssText = 'position:relative; flex:1; min-width:160px; max-width:300px;';
+
+    const sel = document.createElement('input');
     sel.className = 'cif-song-sel';
-    sel.innerHTML = '<option value="">— Selecciona una canción —</option>' +
-        [...songs].sort((a,b)=>a.name.localeCompare(b.name)).map(s=>
-            `<option value="${s.id}" ${s.id===cifSongId?'selected':''}>${esc(s.name)}${s.author?' · '+esc(s.author):''}</option>`
-        ).join('');
-    sel.onchange = ()=>cifLoad(sel.value);
-    tb.appendChild(sel);
+    sel.setAttribute('list', 'cif-songs-data');
+    sel.placeholder = '🔍 Buscar canción...';
+    sel.style.width = '100%';
+    sel.style.boxSizing = 'border-box';
+
+    let dl = document.getElementById('cif-songs-data');
+    if (!dl) {
+        dl = document.createElement('datalist');
+        dl.id = 'cif-songs-data';
+        document.body.appendChild(dl);
+    }
+    dl.innerHTML = [...songs].sort((a,b)=>a.name.localeCompare(b.name)).map(s=>
+        `<option value="${esc(s.name)}${s.author?' · '+esc(s.author):''}" data-id="${s.id}"></option>`
+    ).join('');
+
+    const textOf = (s) => `${s.name}${s.author ? ' · ' + s.author : ''}`;
+    if (cifSongId) {
+        const s = songs.find(x => x.id === cifSongId);
+        if (s) sel.value = textOf(s);
+    }
+
+    sel.addEventListener('input', function() {
+        const opt = [...dl.options].find(o => o.value === this.value);
+        if (opt && opt.dataset.id && opt.dataset.id !== cifSongId) {
+            cifLoad(opt.dataset.id);
+            this.blur();
+        }
+    });
+    sel.addEventListener('focus', function() { this.value = ''; });
+    sel.addEventListener('blur', function() {
+        if (cifSongId) {
+            const s = songs.find(x => x.id === cifSongId);
+            if (s && !this.value) this.value = textOf(s);
+        }
+    });
+
+    selWrap.appendChild(sel);
+    tb.appendChild(selWrap);
 
     // Undo / Redo
     const btnUndo = document.createElement('button');
@@ -8617,14 +8670,49 @@ window.renderCifrado = function(display) {
     const tb = document.createElement('div');
     tb.className = 'cif-top-bar';
 
-    const sel = document.createElement('select');
+    const selWrap = document.createElement('div');
+    selWrap.style.cssText = 'position:relative; flex:1; min-width:160px; max-width:300px;';
+
+    const sel = document.createElement('input');
     sel.className = 'cif-song-sel';
-    sel.innerHTML = '<option value="">— Selecciona una canción —</option>' +
-        [...songs].sort((a,b) => a.name.localeCompare(b.name)).map(s =>
-            `<option value="${s.id}" ${s.id === cifSongId ? 'selected' : ''}>${esc(s.name)}${s.author ? ' · ' + esc(s.author) : ''}</option>`
-        ).join('');
-    sel.onchange = () => cifLoad(sel.value);
-    tb.appendChild(sel);
+    sel.setAttribute('list', 'cif-songs-data');
+    sel.placeholder = '🔍 Buscar canción...';
+    sel.style.width = '100%';
+    sel.style.boxSizing = 'border-box';
+
+    let dl = document.getElementById('cif-songs-data');
+    if (!dl) {
+        dl = document.createElement('datalist');
+        dl.id = 'cif-songs-data';
+        document.body.appendChild(dl);
+    }
+    dl.innerHTML = [...songs].sort((a,b)=>a.name.localeCompare(b.name)).map(s=>
+        `<option value="${esc(s.name)}${s.author?' · '+esc(s.author):''}" data-id="${s.id}"></option>`
+    ).join('');
+
+    const textOf = (s) => `${s.name}${s.author ? ' · ' + s.author : ''}`;
+    if (cifSongId) {
+        const s = songs.find(x => x.id === cifSongId);
+        if (s) sel.value = textOf(s);
+    }
+
+    sel.addEventListener('input', function() {
+        const opt = [...dl.options].find(o => o.value === this.value);
+        if (opt && opt.dataset.id && opt.dataset.id !== cifSongId) {
+            cifLoad(opt.dataset.id);
+            this.blur();
+        }
+    });
+    sel.addEventListener('focus', function() { this.value = ''; });
+    sel.addEventListener('blur', function() {
+        if (cifSongId) {
+            const s = songs.find(x => x.id === cifSongId);
+            if (s && !this.value) this.value = textOf(s);
+        }
+    });
+
+    selWrap.appendChild(sel);
+    tb.appendChild(selWrap);
 
     const btnUndo = document.createElement('button');
     btnUndo.className = 'cif-tbtn'; btnUndo.title = 'Deshacer (Ctrl+Z)';
