@@ -2038,21 +2038,30 @@
         }
 
         .attend-status-btn:hover { transform: scale(1.1); }
-        .attend-status-btn.present  { background: rgba(62,207,142,0.2);  border-color: var(--green);  }
-        .attend-status-btn.late     { background: rgba(240,192,64,0.2);  border-color: var(--yellow); }
-        .attend-status-btn.absent   { background: rgba(255,60,60,0.2);   border-color: #ff6060; }
-        .attend-status-btn.excused  { background: rgba(77,158,255,0.2);  border-color: var(--blue); }
+        .attend-status-btn.present      { background: rgba(62,207,142,0.2);  border-color: var(--green);  }
+        .attend-status-btn.late         { background: rgba(240,192,64,0.2);  border-color: var(--yellow); }
+        .attend-status-btn.late-excused { background: rgba(255,210,0,0.2);   border-color: #f5c518; }
+        .attend-status-btn.absent       { background: rgba(255,60,60,0.2);   border-color: #ff6060; }
+        .attend-status-btn.excused      { background: rgba(77,158,255,0.2);  border-color: var(--blue); }
 
         .status-pill {
             font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 700;
             padding: 2px 8px; border-radius: 20px; white-space: nowrap;
         }
 
-        .status-pill.present  { background: rgba(62,207,142,0.15);  color: var(--green); }
-        .status-pill.late     { background: rgba(240,192,64,0.15);  color: var(--yellow); }
-        .status-pill.absent   { background: rgba(255,60,60,0.12);   color: #ff6060; }
-        .status-pill.excused  { background: rgba(77,158,255,0.12);  color: var(--blue); }
-        .status-pill.none     { background: rgba(255,255,255,0.05); color: var(--dim2); }
+        .status-pill.present      { background: rgba(62,207,142,0.15);  color: var(--green); }
+        .status-pill.late         { background: rgba(240,192,64,0.15);  color: var(--yellow); }
+        .status-pill.late-excused { background: rgba(255,210,0,0.15);   color: #f5c518; }
+        .status-pill.absent       { background: rgba(255,60,60,0.12);   color: #ff6060; }
+        .status-pill.excused      { background: rgba(77,158,255,0.12);  color: var(--blue); }
+        .status-pill.none         { background: rgba(255,255,255,0.05); color: var(--dim2); }
+
+        .sanctioned-row {
+            border-left: 3px solid #ff4040 !important;
+            padding-left: 8px;
+            background: rgba(255,60,60,0.04);
+            border-radius: 6px;
+        }
 
         .attend-obs-input {
             background: transparent; border: none; outline: none;
@@ -5228,18 +5237,44 @@ document.getElementById('singer-modal').addEventListener('click', function(e) {
 // ══════════════════════════════════════════════
 //  ASISTENCIA — ESTADO
 // ══════════════════════════════════════════════
-// attendance: { "YYYY-MM-DD": { type:'ensayo'|'culto', records:[{memberId, status:'present'|'late'|'absent'|'excused', obs:''}] } }
+// attendance: { "YYYY-MM-DD": { type:'ensayo'|'culto', records:[{memberId, status:'present'|'late'|'absent'|'excused'|'late_excused'|'abs_excused', obs:''}] } }
 let attendance    = {};
 let attendDate    = todayStr();
 let attendType    = 'culto';   // 'ensayo' | 'culto'
 
 const STATUS_INFO = {
-    present : { emoji:'✅', label:'Presente',    cls:'present'  },
-    late    : { emoji:'⏰', label:'Tarde',        cls:'late'     },
-    absent  : { emoji:'❌', label:'Inasistencia', cls:'absent'   },
-    excused : { emoji:'🔵', label:'Justificado',  cls:'excused'  },
-    none    : { emoji:'○',  label:'Sin registrar',cls:'none'     },
+    present      : { emoji:'✅', label:'Presente',             cls:'present'      },
+    late         : { emoji:'⏰', label:'Atraso',               cls:'late'         },
+    late_excused : { emoji:'🟡', label:'Atraso Justificado',   cls:'late-excused' },
+    absent       : { emoji:'❌', label:'Inasistencia',         cls:'absent'       },
+    abs_excused  : { emoji:'🔵', label:'Falta Justificada',    cls:'excused'      },
+    none         : { emoji:'○',  label:'Sin registrar',        cls:'none'         },
 };
+
+// Devuelve true si el miembro está sancionado (3+ atrasos sin justificar en los últimos 7 días desde 'refDate')
+function getMemberSanction(memberId, refDate) {
+    const ref = new Date(refDate);
+    // Contar atrasos sin justificar en los últimos 7 días naturales
+    let lateCount = 0;
+    Object.entries(attendance).forEach(([date, d]) => {
+        const diff = (ref - new Date(date)) / 86400000;
+        if (diff >= 0 && diff < 7) {
+            const r = d.records.find(x => x.memberId === memberId);
+            if (r && r.status === 'late') lateCount++;
+        }
+    });
+    return lateCount >= 3;
+}
+
+// Devuelve el total de atrasos sin justificar en historial completo para badge
+function getMemberLateCount(memberId) {
+    let n = 0;
+    Object.values(attendance).forEach(d => {
+        const r = d.records.find(x => x.memberId === memberId);
+        if (r && r.status === 'late') n++;
+    });
+    return n;
+}
 
 function getAttendRecord(date) {
     return attendance[date] || { type: attendType, records: [] };
@@ -5253,7 +5288,7 @@ function getMemberStatus(date, memberId) {
 function cycleStatus(date, memberId) {
     snapshot(`Cambiar asistencia`);
     if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
-    const order = ['present','late','absent','excused','none'];
+    const order = ['present','late','late_excused','absent','abs_excused','none'];
     const rec   = attendance[date].records.find(r => r.memberId === memberId);
     if (!rec) {
         attendance[date].records.push({ memberId, status:'present', obs:'' });
@@ -5300,16 +5335,20 @@ function renderAttendance(display) {
     // ── Panel izquierdo: Registro del día ──
     const left = mkEl('div','attend-panel','');
     const rec  = getAttendRecord(attendDate);
-    const present = rec.records.filter(r=>r.status==='present').length;
-    const late    = rec.records.filter(r=>r.status==='late').length;
-    const absent  = rec.records.filter(r=>r.status==='absent').length;
+    const present     = rec.records.filter(r=>r.status==='present').length;
+    const late        = rec.records.filter(r=>r.status==='late').length;
+    const lateEx      = rec.records.filter(r=>r.status==='late_excused').length;
+    const absent      = rec.records.filter(r=>r.status==='absent').length;
+    const absEx       = rec.records.filter(r=>r.status==='abs_excused').length;
 
     left.appendChild(mkEl('div','attend-panel-header',`
         <span class="reg-panel-title">📋 ${attendType==='culto'?'⛪ Culto':'🎸 Ensayo'} — ${fmtDate(attendDate)}</span>
-        <div style="display:flex;gap:6px">
-            <span class="status-pill present">${present} presentes</span>
-            <span class="status-pill late">${late} tarde</span>
-            <span class="status-pill absent">${absent} ausentes</span>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+            <span class="status-pill present">${present} pres.</span>
+            ${late    ? `<span class="status-pill late">${late} atraso</span>` : ''}
+            ${lateEx  ? `<span class="status-pill late-excused">${lateEx} at.just.</span>` : ''}
+            ${absent  ? `<span class="status-pill absent">${absent} aus.</span>` : ''}
+            ${absEx   ? `<span class="status-pill excused">${absEx} f.just.</span>` : ''}
         </div>
     `));
 
@@ -5326,16 +5365,18 @@ function renderAttendance(display) {
         lBody.appendChild(lbl);
 
         members.forEach(m => {
-            const sr   = getMemberStatus(attendDate, m.id);
-            const info = STATUS_INFO[sr.status] || STATUS_INFO.none;
+            const sr       = getMemberStatus(attendDate, m.id);
+            const info     = STATUS_INFO[sr.status] || STATUS_INFO.none;
+            const sanctioned = getMemberSanction(m.id, attendDate);
 
-            const row = mkEl('div','attend-row','');
+            const row = mkEl('div','attend-row' + (sanctioned ? ' sanctioned-row' : ''),'');
             row.innerHTML = `
                 <button class="attend-status-btn ${info.cls}" title="Clic para cambiar estado">${info.emoji}</button>
                 <div class="member-avatar" style="width:30px;height:30px;font-size:11px;flex-shrink:0">${memberInitials(m.name)}</div>
                 <div style="flex:1;min-width:0">
                     <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.name)}</div>
                     <div style="font-size:10px;color:var(--dim)">${roleLabel(m.role)}${m.instrument?' · '+esc(m.instrument):''}</div>
+                    ${sanctioned ? `<div style="font-size:10px;color:#ff4040;font-weight:700;font-family:'Syne',sans-serif;margin-top:2px">🚫 SANCIÓN — No puede tocar esta semana</div>` : ''}
                 </div>
                 <span class="status-pill ${info.cls}">${info.label}</span>
                 <input class="attend-obs-input" placeholder="Observación…" value="${esc(sr.obs||'')}" title="Observaciones">
@@ -5389,7 +5430,9 @@ function renderAttendance(display) {
             const total   = members.length;
             const pres    = d.records.filter(r=>r.status==='present').length;
             const lt      = d.records.filter(r=>r.status==='late').length;
+            const ltEx    = d.records.filter(r=>r.status==='late_excused').length;
             const abs     = d.records.filter(r=>r.status==='absent').length;
+            const absEx   = d.records.filter(r=>r.status==='abs_excused').length;
 
             const row = mkEl('div','attend-history-row','');
             row.innerHTML = `
@@ -5401,9 +5444,11 @@ function renderAttendance(display) {
                     <span style="font-size:10px;color:var(--dim)">${d.records.length}/${total}</span>
                 </div>
                 <div style="display:flex;gap:5px;flex-wrap:wrap">
-                    ${pres?`<span class="status-pill present">✅ ${pres}</span>`:''}
-                    ${lt  ?`<span class="status-pill late">⏰ ${lt}</span>`:''}
-                    ${abs ?`<span class="status-pill absent">❌ ${abs}</span>`:''}
+                    ${pres  ?`<span class="status-pill present">✅ ${pres}</span>`:''}
+                    ${lt    ?`<span class="status-pill late">⏰ ${lt}</span>`:''}
+                    ${ltEx  ?`<span class="status-pill late-excused">🟡 ${ltEx}</span>`:''}
+                    ${abs   ?`<span class="status-pill absent">❌ ${abs}</span>`:''}
+                    ${absEx ?`<span class="status-pill excused">🔵 ${absEx}</span>`:''}
                 </div>
             `;
             row.onclick = () => setAttendDate(date);
@@ -5445,25 +5490,34 @@ function renderAttendanceInspector(panel) {
     }
 
     members.forEach(m => {
-        let pr=0, lt=0, ab=0, ex=0, tot=0;
+        let pr=0, lt=0, ltEx=0, ab=0, absEx=0, tot=0;
         Object.values(attendance).forEach(d => {
             const r = d.records.find(x => x.memberId===m.id);
-            if (r) { tot++; if(r.status==='present')pr++; else if(r.status==='late')lt++; else if(r.status==='absent')ab++; else if(r.status==='excused')ex++; }
+            if (r) {
+                tot++;
+                if(r.status==='present')     pr++;
+                else if(r.status==='late')         lt++;
+                else if(r.status==='late_excused') ltEx++;
+                else if(r.status==='absent')       ab++;
+                else if(r.status==='abs_excused')  absEx++;
+            }
         });
-        const pct = tot ? Math.round((pr+lt)/tot*100) : 0;
+        const pct = tot ? Math.round((pr + lt + ltEx + absEx) / tot * 100) : 0;
+        const sanctioned = getMemberSanction(m.id, attendDate);
 
         sec.innerHTML += `
-            <div style="padding:7px 0;border-bottom:1px solid var(--border)">
+            <div style="padding:7px 0;border-bottom:1px solid var(--border)${sanctioned?';background:rgba(255,60,60,0.05);border-radius:6px;padding:7px 6px':''};">
                 <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                    <span style="font-size:12px;font-weight:600">${esc(m.name)}</span>
+                    <span style="font-size:12px;font-weight:600">${esc(m.name)} ${sanctioned?'<span style="font-size:9px;background:#ff4040;color:#fff;padding:1px 5px;border-radius:4px;font-family:Syne,sans-serif;font-weight:800">🚫 SANCIÓN</span>':''}</span>
                     <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'}">${pct}%</span>
                 </div>
                 <div style="display:flex;gap:4px;flex-wrap:wrap">
-                    ${pr?`<span class="status-pill present">✅${pr}</span>`:''}
-                    ${lt?`<span class="status-pill late">⏰${lt}</span>`:''}
-                    ${ab?`<span class="status-pill absent">❌${ab}</span>`:''}
-                    ${ex?`<span class="status-pill excused">🔵${ex}</span>`:''}
-                    ${!tot?`<span class="status-pill none">Sin datos</span>`:''}
+                    ${pr    ?`<span class="status-pill present">✅${pr}</span>`:''}
+                    ${lt    ?`<span class="status-pill late">⏰${lt} atr.</span>`:''}
+                    ${ltEx  ?`<span class="status-pill late-excused">🟡${ltEx} at.j.</span>`:''}
+                    ${ab    ?`<span class="status-pill absent">❌${ab} fal.</span>`:''}
+                    ${absEx ?`<span class="status-pill excused">🔵${absEx} f.j.</span>`:''}
+                    ${!tot  ?`<span class="status-pill none">Sin datos</span>`:''}
                 </div>
                 <div style="margin-top:5px;background:var(--panel2);border-radius:4px;height:4px;overflow:hidden">
                     <div style="height:100%;width:${pct}%;background:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'};border-radius:4px;transition:width 0.4s"></div>
@@ -5480,8 +5534,10 @@ function renderAttendanceInspector(panel) {
     [
         ['📅', Object.keys(attendance).length, 'sesiones'],
         ['✅', allRec.filter(r=>r.status==='present').length, 'presentes'],
-        ['⏰', allRec.filter(r=>r.status==='late').length, 'tardanzas'],
+        ['⏰', allRec.filter(r=>r.status==='late').length, 'atrasos'],
+        ['🟡', allRec.filter(r=>r.status==='late_excused').length, 'atr.just.'],
         ['❌', allRec.filter(r=>r.status==='absent').length, 'ausencias'],
+        ['🔵', allRec.filter(r=>r.status==='abs_excused').length, 'f.just.'],
     ].forEach(([icon,val,label]) => {
         grid.appendChild(mkEl('div','stat-box',`<div class="stat-box-icon">${icon}</div><div class="stat-box-val">${val}</div><div class="stat-box-label">${label}</div>`));
     });
@@ -6204,7 +6260,7 @@ window.assignSinger = function(songId, memberId) {
 const _origCycleStatus = cycleStatus;
 window.cycleStatus = function(date, memberId) {
     if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
-    const order = ['present','late','absent','excused','none'];
+    const order = ['present','late','late_excused','absent','abs_excused','none'];
     const rec   = attendance[date].records.find(r => r.memberId === memberId);
     let newStatus;
     if (!rec) {
@@ -6215,6 +6271,16 @@ window.cycleStatus = function(date, memberId) {
         newStatus = order[(idx + 1) % order.length];
         rec.status = newStatus;
     }
+    // Sanction check: warn if 3+ unexcused lates this week
+    const lateCount = Object.entries(attendance).filter(([d,day]) => {
+        const ref = new Date(date); const dt = new Date(d);
+        const diff = (ref - dt) / 86400000;
+        return diff >= 0 && diff < 7;
+    }).reduce((acc, [,day]) => {
+        const r = day.records.find(x => x.memberId === memberId);
+        return acc + (r && r.status === 'late' ? 1 : 0);
+    }, 0);
+    if (lateCount >= 3) toast('⚠️ 3 atrasos sin justificar — SANCIÓN: no puede tocar esta semana');
     // Render BEFORE the async call so UI updates instantly without waiting for Supabase
     renderMain(); renderInspector();
     // Sync to Supabase in background — won't block or break UI
