@@ -2,8 +2,8 @@
   "name": "AdoraChord Pro",
   "short_name": "AdoraChord",
   "description": "Gestión integral de equipo de alabanza, canciones y presentaciones",
-  "start_url": "/",
-  "scope": "/",
+  "start_url": "/adorachord/",
+  "scope": "/adorachord/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "theme_color": "#E8572A",
@@ -54,7 +54,7 @@
       "name": "Ver canciones",
       "short_name": "Canciones",
       "description": "Acceso rápido al listado de canciones",
-      "url": "/?tab=songs",
+      "url": "/adorachord/?tab=songs",
       "icons": [
         {
           "src": "icon-192.png",
@@ -67,7 +67,7 @@
       "name": "Mi equipo",
       "short_name": "Equipo",
       "description": "Gestionar miembros del equipo",
-      "url": "/?tab=team",
+      "url": "/adorachord/?tab=team",
       "icons": [
         {
           "src": "icon-192.png",
