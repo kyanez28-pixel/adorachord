@@ -4027,7 +4027,7 @@ function renderRegistroInspector(panel) {
                         <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;
                                color:${regDate===date?'var(--accent)':'var(--text)'}">
                                ${fmtDate(date)}</span>
-                        <span style="font-size:10px;color:var(--dim)">${mins}m</span>
+
                     </div>
                     <div style="font-size:10px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
                         ${items.map(x => x.name).join(' · ')}
@@ -4047,7 +4047,6 @@ function renderRegistroInspector(panel) {
     [
         ['📅', Object.keys(history).length, 'servicios'],
         ['▶', allItems.length, 'canciones'],
-        ['⏱', allItems.reduce((a,b)=>a+(parseInt(b.duration)||0),0), 'minutos'],
         ['📚', songs.length, 'en biblioteca'],
     ].forEach(([icon,val,label]) => {
         grid.appendChild(mkEl('div','stat-box',`
