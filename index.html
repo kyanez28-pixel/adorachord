@@ -4022,8 +4022,7 @@ function renderLibraryInspector(panel) {
     [
         ['🎵', songs.length, 'en biblioteca'],
         ['📅', Object.keys(history).length, 'fechas'],
-        ['▶', allItems.length, 'ejecuciones'],
-        ['⏱', allItems.reduce((a,b)=>a+(parseInt(b.duration)||0),0), 'min total'],
+        ['▶', allItems.length, 'ejecuciones']
     ].forEach(([icon,val,label]) => {
         grid.appendChild(mkEl('div','stat-box',`
             <div class="stat-box-icon">${icon}</div>
@@ -4778,7 +4777,6 @@ function renderStats(display) {
         ['📅', totalServices, 'Servicios'],
         ['▶', totalPlays, 'Reproducciones'],
         ['🎵', uniqueSongs, 'Canciones únicas'],
-        ['⏱', totalMinutes, 'Minutos totales'],
         ['📊', avgPerMonth, 'Promedio / mes'],
         ['📚', songs.length, 'En biblioteca'],
         ['👥', members.length, 'En el equipo'],
