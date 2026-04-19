@@ -15730,6 +15730,97 @@ window.handleUpload = async function(files) {
     }
 };
 
+/* ── patch_v28.js ── */
+// ════════════════════════════════════════════════════════════════════
+//  PATCH v28 — MODO PRESENTACIÓN DESDE INSPECTOR + PINCH TO ZOOM
+// ════════════════════════════════════════════════════════════════════
+(function patchV28() {
+    // 1. Pinch to zoom en modo presentación
+    const presWrap = document.querySelector('.cif-present');
+    if (presWrap) {
+        let _pzDist = 0;
+        let _pzFs = 0;
+        let _pzRatio = 1;
+
+        presWrap.addEventListener('touchstart', e => {
+            if (e.touches.length === 2 && presWrap.classList.contains('open')) {
+                _pzDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                _pzFs = window.cifPresentFs || 18;
+            }
+        });
+
+        presWrap.addEventListener('touchmove', e => {
+            if (e.touches.length === 2 && _pzDist > 0) {
+                e.preventDefault(); // Evitar scroll
+                const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                _pzRatio = dist / _pzDist;
+                
+                // Limit ratio (font size bounds 10 to 40)
+                const maxRatio = 40 / _pzFs;
+                const maxAllowed = Math.max(1, maxRatio);
+                const minRatio = 10 / _pzFs;
+                _pzRatio = Math.max(minRatio, Math.min(maxAllowed, _pzRatio));
+
+                const grid = document.getElementById('_cpres_grid');
+                if (grid) {
+                    grid.style.transform = `scale(${_pzRatio})`;
+                    grid.style.transformOrigin = 'center top';
+                }
+            }
+        }, { passive: false });
+
+        presWrap.addEventListener('touchend', e => {
+            if (_pzRatio !== 1 && e.touches.length < 2) {
+                let newFs = _pzFs * _pzRatio;
+                newFs = Math.max(10, Math.min(40, newFs));
+                window.cifPresentFs = newFs;
+                _pzRatio = 1;
+                _pzDist = 0;
+                
+                const grid = document.getElementById('_cpres_grid');
+                if (grid) grid.style.transform = '';
+
+                const ctrl = document.querySelector('.cpres-size-lbl');
+                if (ctrl) ctrl.textContent = Math.round(newFs / 18 * 100) + '%';
+                
+                window.cifBuildPresentFixed && window.cifBuildPresentFixed();
+            }
+        });
+    }
+
+    // 2. Botón "Modo Presentación" en el inspector
+    function ensurePresentacionBtn() {
+        const panel = document.getElementById('inspector-panel');
+        if (!panel) return;
+        if (panel.querySelector('._v28-present-btn')) return;
+
+        const songId = typeof selectedSongId !== 'undefined' ? selectedSongId : null;
+        if (!songId) return;
+        const s = (typeof songs !== 'undefined' ? songs : []).find(x => x.id === songId);
+        if (!s) return;
+
+        const viewBtn = [...panel.querySelectorAll('button')].find(b => b.textContent.includes('Ver acordes'));
+        if (!viewBtn) return;
+
+        const presBtn = document.createElement('button');
+        presBtn.className = 'btn _v28-present-btn';
+        presBtn.innerHTML = '▶ Modo Presentación';
+        presBtn.style.cssText = 'width:100%;margin-bottom:6px;background:var(--accent);color:white;border:none;';
+        presBtn.onclick = () => {
+            if (typeof cifLoad === 'function') cifLoad(s.id);
+            if (typeof window.cifOpenPresent === 'function') window.cifOpenPresent();
+        };
+
+        viewBtn.parentNode.insertBefore(presBtn, viewBtn);
+    }
+
+    const _origRenderLibIns2 = window.renderLibraryInspector;
+    window.renderLibraryInspector = function(panel) {
+        if (_origRenderLibIns2) _origRenderLibIns2(panel);
+        setTimeout(ensurePresentacionBtn, 65);
+    };
+})();
+
 console.log('✅ Fix v1.0 aplicado: Manejo mejorado de carga de acordes');
 </script>
 </body>
