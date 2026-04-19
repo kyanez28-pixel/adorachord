@@ -13656,33 +13656,9 @@ window.renderCifrado = function(display) {
     const tb = display.querySelector('.cif-top-bar');
     if (!tb) return;
 
-    // Remover duplicados si los hay
+    // Notación fija en americano (toggle oculto)
     tb.querySelectorAll('.cif-not-toggle, .cif-key-display').forEach(el => el.remove());
-
-    const notationGroup = document.createElement('div');
-    notationGroup.className = 'cif-not-toggle';
-    notationGroup.style.marginLeft = 'auto';
-
-    const btnAm = document.createElement('button');
-    btnAm.className = 'cif-not-btn' + (_cifPrefs.notation === 'american' ? ' active' : '');
-    btnAm.textContent = 'ABC';
-    btnAm.onclick = () => {
-        cifSetNotation('american');
-        notationGroup.querySelectorAll('.cif-not-btn').forEach(b => b.classList.remove('active'));
-        btnAm.classList.add('active');
-    };
-
-    const btnLat = document.createElement('button');
-    btnLat.className = 'cif-not-btn' + (_cifPrefs.notation === 'latin' ? ' active' : '');
-    btnLat.textContent = 'DoReMi';
-    btnLat.onclick = () => {
-        cifSetNotation('latin');
-        notationGroup.querySelectorAll('.cif-not-btn').forEach(b => b.classList.remove('active'));
-        btnLat.classList.add('active');
-    };
-
-    notationGroup.appendChild(btnLat);
-    tb.insertBefore(notationGroup, tb.querySelector('.cif-size-ctrl'));
+    cifSetNotation('american');
 };
 
 // 3. Sobrescribir el renderizado de presentación para usar cifFormatChord
