@@ -2025,10 +2025,10 @@
         .attend-panel-body   { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 
         .attend-row {
-            display: flex; align-items: center; gap: 10px;
-            padding: 8px 10px; border-radius: 8px;
+            display: flex; flex-direction: column; gap: 6px;
+            padding: 10px 12px; border-radius: 10px;
             border: 1px solid var(--border); background: var(--panel2);
-            margin-bottom: 6px; transition: border-color 0.15s;
+            margin-bottom: 8px; transition: border-color 0.15s;
         }
 
         .attend-status-btn {
@@ -2064,13 +2064,14 @@
         }
 
         .attend-obs-input {
-            background: transparent; border: none; outline: none;
-            color: var(--dim); font-size: 11px; font-family: 'DM Sans', sans-serif;
-            flex: 1; min-width: 0;
+            background: rgba(0,0,0,0.15); border: 1px solid var(--border); outline: none;
+            color: var(--text); font-size: 11px; font-family: 'DM Sans', sans-serif;
+            width: 100%; padding: 7px 10px; border-radius: 6px; box-sizing: border-box;
+            transition: all 0.2s;
         }
 
         .attend-obs-input::placeholder { color: var(--dim2); }
-        .attend-obs-input:focus { color: var(--text); }
+        .attend-obs-input:focus { border-color: var(--accent); background: var(--panel); }
 
         .attend-summary-bar {
             display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 12px;
@@ -5247,12 +5248,12 @@ let attendDate    = todayStr();
 let attendType    = 'culto';   // 'ensayo' | 'culto'
 
 const STATUS_INFO = {
-    present      : { emoji:'✅', label:'Presente',             cls:'present'      },
-    late         : { emoji:'⏰', label:'Atraso',               cls:'late'         },
-    late_excused : { emoji:'🟡', label:'Atraso Justificado',   cls:'late-excused' },
-    absent       : { emoji:'❌', label:'Inasistencia',         cls:'absent'       },
-    abs_excused  : { emoji:'🔵', label:'Falta Justificada',    cls:'excused'      },
-    none         : { emoji:'○',  label:'Sin registrar',        cls:'none'         },
+    present      : { emoji:'✅', label:'Presente',             short:'Presente',    cls:'present'      },
+    late         : { emoji:'⏰', label:'Atraso',               short:'Atraso',      cls:'late'         },
+    late_excused : { emoji:'🟡', label:'Atraso Justificado',   short:'Atr. Just.',  cls:'late-excused' },
+    absent       : { emoji:'❌', label:'Inasistencia',         short:'Falta',       cls:'absent'       },
+    abs_excused  : { emoji:'🔵', label:'Falta Justificada',    short:'Falt. Just.', cls:'excused'      },
+    none         : { emoji:'○',  label:'Sin registrar',        short:'Sin reg.',    cls:'none'         },
 };
 
 // Devuelve true si el miembro está sancionado (3+ atrasos sin justificar en los últimos 7 días desde 'refDate')
@@ -5375,15 +5376,21 @@ function renderAttendance(display) {
 
             const row = mkEl('div','attend-row' + (sanctioned ? ' sanctioned-row' : ''),'');
             row.innerHTML = `
-                <button class="attend-status-btn ${info.cls}" title="Clic para cambiar estado">${info.emoji}</button>
-                <div class="member-avatar" style="width:30px;height:30px;font-size:11px;flex-shrink:0">${memberInitials(m.name)}</div>
-                <div style="flex:1;min-width:0">
-                    <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.name)}</div>
-                    <div style="font-size:10px;color:var(--dim)">${roleLabel(m.role)}${m.instrument?' · '+esc(m.instrument):''}</div>
-                    ${sanctioned ? `<div style="font-size:10px;color:#ff4040;font-weight:700;font-family:'Syne',sans-serif;margin-top:2px">🚫 SANCIÓN — No puede tocar esta semana</div>` : ''}
+                <div style="display:flex; align-items:center; gap:10px; width:100%;">
+                    <button class="attend-status-btn ${info.cls}" style="flex-shrink:0;width:34px;height:34px;font-size:15px;" title="Clic para cambiar estado">${info.emoji}</button>
+                    <div class="member-avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0">${memberInitials(m.name)}</div>
+                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;">
+                        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(m.name)}</div>
+                        <div style="font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${roleLabel(m.role)}${m.instrument?' · '+esc(m.instrument):''}</div>
+                        ${sanctioned ? `<div style="font-size:10px;color:#ff4040;font-weight:700;font-family:'Syne',sans-serif;margin-top:2px">🚫 SANCIÓN</div>` : ''}
+                    </div>
+                    <div style="width:72px; text-align:right; flex-shrink:0;">
+                        <span class="status-pill ${info.cls}" style="display:inline-block; width:100%; text-align:center; padding: 4px 0; box-sizing:border-box;">${info.short}</span>
+                    </div>
                 </div>
-                <span class="status-pill ${info.cls}">${info.label}</span>
-                <input class="attend-obs-input" placeholder="Observación…" value="${esc(sr.obs||'')}" title="Observaciones">
+                <div style="width:100%; padding-left:44px; box-sizing:border-box;">
+                    <input class="attend-obs-input" placeholder="Añadir observación..." value="${esc(sr.obs||'')}" title="Observaciones">
+                </div>
             `;
             row.querySelector('.attend-status-btn').onclick = () => cycleStatus(attendDate, m.id);
             const obsInput = row.querySelector('.attend-obs-input');
