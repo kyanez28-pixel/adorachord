@@ -572,7 +572,7 @@
         }
 
         .card-img {
-            height: 140px;
+            height: 185px;
             background: #0a0a0a;
             border-radius: 6px;
             overflow: hidden;
@@ -708,11 +708,11 @@
         .artist-card:hover { border-color: rgba(232,87,42,0.4); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
         .artist-card.selected { border-color: var(--accent); background: rgba(232,87,42,0.06); }
         .artist-photo {
-            width: 72px; height: 72px; border-radius: 50%;
+            width: 100px; height: 100px; border-radius: 50%;
             object-fit: cover; margin: 0 auto 10px;
             background: var(--panel2); border: 2px solid var(--border2);
             display: flex; align-items: center; justify-content: center;
-            font-size: 28px; overflow: hidden; transition: border-color 0.2s;
+            font-size: 36px; overflow: hidden; transition: border-color 0.2s;
         }
         .artist-card:hover .artist-photo, .artist-card.selected .artist-photo { border-color: var(--accent); }
         .artist-photo img { width: 100%; height: 100%; object-fit: cover; }
@@ -5877,6 +5877,11 @@ async function uploadImageToStorage(songId, base64DataUrl, type) {
     // type = 'cover' | 'acordes'
     if (!base64DataUrl || !base64DataUrl.startsWith('data:')) return base64DataUrl;
     try {
+        // Guardar siempre en localStorage como fallback (antes de intentar Storage)
+        if (type === 'cover') {
+            try { localStorage.setItem('cover_' + songId, base64DataUrl); } catch(e) {}
+        }
+
         // Convertir base64 a Blob
         const parts   = base64DataUrl.split(',');
         const mime    = parts[0].match(/:(.*?);/)[1];
@@ -5887,19 +5892,25 @@ async function uploadImageToStorage(songId, base64DataUrl, type) {
         const blob    = new Blob([bytes], { type: mime });
         const path    = `${songId}/${type}.${ext}`;
 
-        // Eliminar versión anterior
-        await sb.storage.from('multitracks').remove([path]);
-
+        // Subir a Storage
         const { error } = await sb.storage.from('multitracks').upload(path, blob, {
-            cacheControl: '3600', upsert: true, contentType: mime
+            cacheControl: '31536000', upsert: true, contentType: mime
         });
-        if (error) { console.error('[IMG STORAGE]', error); return base64DataUrl; }
+        if (error) {
+            console.warn('[IMG STORAGE] Upload error (usando localStorage fallback):', error);
+            return base64DataUrl; // devolver base64: dbSaveSong lo filtrará pero localStorage lo tiene
+        }
 
         const { data } = sb.storage.from('multitracks').getPublicUrl(path);
-        return data?.publicUrl || base64DataUrl;
+        const publicUrl = data?.publicUrl || null;
+        if (publicUrl && type === 'cover') {
+            // Upload exitoso → podemos limpiar localStorage
+            try { localStorage.removeItem('cover_' + songId); } catch(e) {}
+        }
+        return publicUrl || base64DataUrl;
     } catch(e) {
-        console.error('[IMG STORAGE] Error:', e);
-        return base64DataUrl; // fallback: devolver base64 original
+        console.error('[IMG STORAGE] Error fatal:', e);
+        return base64DataUrl; // localStorage ya tiene el fallback
     }
 }
 
