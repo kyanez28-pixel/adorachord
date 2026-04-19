@@ -3031,7 +3031,7 @@ function renderLibrary(display) {
     if (chips)  chips.style.display  = libView === 'artists' ? 'none' : '';
     if (sortSel) sortSel.style.display = libView === 'artists' ? 'none' : '';
 
-    if (libView === 'artists') { renderArtistsView(display); return; }
+    if (libView === 'artists') { renderArtistsView(display, filtered); return; }
 
     const q = document.getElementById('search-input').value.toLowerCase().trim();
     let filtered = songs.filter(s => {
@@ -3156,15 +3156,17 @@ function renderLibraryList(display, filtered) {
     display.appendChild(list);
 }
 
-function renderArtistsView(display) {
+function renderArtistsView(display, filteredSongs) {
     if (selectedArtist) {
         renderArtistSongs(display, selectedArtist);
         return;
     }
 
+    const useSongs = filteredSongs || songs;
+
     // Agrupar canciones por artista
     const artistMap = {};
-    songs.forEach(s => {
+    useSongs.forEach(s => {
         const name = (s.author || '').trim() || 'Sin artista';
         if (!artistMap[name]) artistMap[name] = [];
         artistMap[name].push(s);
@@ -3235,15 +3237,15 @@ function renderArtistSongs(display, artistName) {
     // Grid de canciones del artista
     const grid = document.createElement('div');
     grid.className = 'files-grid';
-    renderLibraryGrid(grid, artistSongs);
-    // renderLibraryGrid appends to display, so we need to use it differently
-    grid.innerHTML = '';
+    grid.style.marginTop = '12px';
+
     artistSongs.forEach(s => {
         const imgHtml = s.coverUrl
             ? `<img src="${s.coverUrl}" loading="lazy" alt="${esc(s.name)}" style="object-fit:cover">`
             : s.url
                 ? `<img src="${s.url}" loading="lazy" alt="${esc(s.name)}">`
                 : `<div class="card-no-img"><span>🎵</span><small>${typeLabel(s.type)}</small></div>`;
+
         const card = mkEl('div', `song-card ${selectedSongId===s.id?'selected':''}`, `
             <div class="card-img">
                 ${imgHtml}
