@@ -6989,10 +6989,10 @@ function cifOpenPrefs() {
             viewRow.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
             btn.classList.add('selected');
             // Toggle chord visibility
-            document.querySelectorAll('.cif-wt-chord,.cprev-chord,.cpres-chord').forEach(el=>{
+            document.querySelectorAll('.cif-wt-chord,.cprev-chord,.cpres-chord,.cprev-co,.cpres-co,.cpres-co-chip').forEach(el=>{
                 el.style.display = _cifPrefs.showChords ? '' : 'none';
             });
-            document.querySelectorAll('.cif-wt-text,.cprev-text,.cpres-text').forEach(el=>{
+            document.querySelectorAll('.cif-wt-text,.cprev-text,.cpres-text,.cpres-lyric').forEach(el=>{
                 el.style.display = _cifPrefs.showLyrics ? '' : 'none';
             });
         };
@@ -12582,6 +12582,7 @@ window.cifBuildPresentFixed = function() {
         if (info.chordsOnly) {
             const co = document.createElement('div');
             co.className = 'cpres-co';
+            if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showChords) co.style.display = 'none';
             (sec.coChords || []).filter(Boolean).forEach(ch => {
                 const sp = document.createElement('span');
                 sp.className = 'cpres-co-chip';
@@ -12615,10 +12616,14 @@ window.cifBuildPresentFixed = function() {
                             const sp = document.createElement('span');
                             sp.style.cssText = `display:inline-flex;flex-direction:column;align-items:center;width:${Math.round(fs*.28)}px;flex-shrink:0;`;
                             const ph = document.createElement('span');
+                            ph.className = 'cpres-chord';
                             ph.style.cssText = `display:block;font-size:${cfs}px;visibility:hidden;`;
+                            if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showChords) ph.style.display = 'none';
                             ph.textContent = '\u00a0';
                             const tx = document.createElement('span');
+                            tx.className = 'cpres-text';
                             tx.style.cssText = `display:block;font-size:${fs}px;line-height:1.45;color:#f0ebe3;font-family:'DM Sans',sans-serif;`;
+                            if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showLyrics) tx.style.display = 'none';
                             tx.textContent = ' ';
                             sp.appendChild(ph); sp.appendChild(tx);
                             ldiv.appendChild(sp);
@@ -12636,11 +12641,15 @@ window.cifBuildPresentFixed = function() {
                                 const wt = document.createElement('span');
                                 wt.style.cssText = 'display:inline-flex;flex-direction:column;align-items:center;flex-shrink:0;';
                                 const c = document.createElement('span');
+                                c.className = 'cpres-chord';
                                 c.style.cssText = `display:block;font-family:'Syne',sans-serif;font-size:${cfs}px;font-weight:800;white-space:nowrap;line-height:1.3;padding:0 1px;`;
+                                if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showChords) c.style.display = 'none';
                                 if (entry?.chord) { c.style.color = 'var(--accent)'; c.textContent = entry.chord; }
                                 else { c.style.visibility = 'hidden'; c.textContent = '\u00a0'; }
                                 const t = document.createElement('span');
+                                t.className = 'cpres-text';
                                 t.style.cssText = `display:block;font-size:${fs}px;line-height:1.45;color:#f0ebe3;white-space:pre;padding:0 1px;font-family:'DM Sans',sans-serif;`;
+                                if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showLyrics) t.style.display = 'none';
                                 t.textContent = s;
                                 wt.appendChild(c); wt.appendChild(t);
                                 ldiv.appendChild(wt);
@@ -12655,7 +12664,9 @@ window.cifBuildPresentFixed = function() {
                         const wt = document.createElement('span');
                         wt.style.cssText = `display:inline-flex;flex-direction:column;align-items:center;flex-shrink:0;margin-right:${Math.round(fs*.4)}px;`;
                         const c = document.createElement('span');
+                        c.className = 'cpres-chord';
                         c.style.cssText = `font-family:'Syne',sans-serif;font-size:${cfs}px;font-weight:800;color:var(--accent);`;
+                        if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showChords) c.style.display = 'none';
                         c.textContent = e.chord;
                         wt.appendChild(c);
                         ldiv.appendChild(wt);
@@ -12676,11 +12687,13 @@ window.cifBuildPresentFixed = function() {
                             `display:inline-flex;flex-direction:column;align-items:center;` +
                             `flex-shrink:0;margin-right:${Math.round(fs*.3)}px;`;
                         const c = document.createElement('span');
+                        c.className = 'cpres-chord';
                         c.style.cssText =
                             `font-family:'Syne',sans-serif;font-size:${cfs}px;font-weight:800;` +
                             `color:var(--accent);background:rgba(232,87,42,.13);` +
                             `border:1px solid rgba(232,87,42,.3);border-radius:5px;` +
                             `padding:1px 7px;white-space:nowrap;line-height:1.3;`;
+                        if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showChords) c.style.display = 'none';
                         c.textContent = entry.chord;
                         // Spacer para alinear verticalmente con el texto
                         const ph = document.createElement('span');
