@@ -3031,8 +3031,6 @@ function renderLibrary(display) {
     if (chips)  chips.style.display  = libView === 'artists' ? 'none' : '';
     if (sortSel) sortSel.style.display = libView === 'artists' ? 'none' : '';
 
-    if (libView === 'artists') { renderArtistsView(display, filtered); return; }
-
     const q = document.getElementById('search-input').value.toLowerCase().trim();
     let filtered = songs.filter(s => {
         const matchQ = !q || s.name.toLowerCase().includes(q)
@@ -3043,6 +3041,8 @@ function renderLibrary(display) {
         const matchT = activeType === 'ALL' || s.type === activeType;
         return matchQ && matchL && matchT;
     });
+
+    if (libView === 'artists') { renderArtistsView(display, filtered); return; }
 
     // Ordenar
     filtered = filtered.sort((a,b) => {
