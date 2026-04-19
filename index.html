@@ -3813,6 +3813,16 @@ function renderLibraryInspector(panel) {
 
             // Botones de acción en grid 2x2
             const actions = mkEl('div','mob-actions','');
+
+            // Botón Modo Presentación
+            const bp = mkEl('button','mob-action-btn','');
+            bp.style.background = 'var(--accent)';
+            bp.style.color = 'white';
+            bp.style.gridColumn = '1 / -1';
+            bp.innerHTML = `<span class="mob-btn-icon">▶</span>Modo Presentación`;
+            bp.onclick = () => { cifLoad(s.id); window.cifOpenPresent(); };
+            actions.appendChild(bp);
+
             if (s.url) {
                 const b1 = mkEl('button','mob-action-btn green','');
                 b1.innerHTML = `<span class="mob-btn-icon">🎸</span>Ver acordes`;
