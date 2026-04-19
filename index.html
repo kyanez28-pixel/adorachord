@@ -13719,7 +13719,7 @@ window.cifBuildPresentFixed = function() {
     // Esto es más seguro que reescribir toda la función de v16 que es compleja
     body.querySelectorAll('.cpres-chord, .cpres-co-chip, .cpres-line span').forEach(el => {
         // Solo si parece un acorde (Syne font o clase específica)
-        if (el.style.fontFamily.includes('DM Sans') || el.classList.contains('cpres-chord') || el.classList.contains('cpres-co-chip')) {
+        if (el.classList.contains('cpres-chord') || el.classList.contains('cpres-co-chip')) {
             const originalChord = el.getAttribute('data-original-chord') || el.textContent;
             if (originalChord && originalChord !== '\u00a0' && originalChord.trim()) {
                 if (!el.hasAttribute('data-original-chord')) el.setAttribute('data-original-chord', originalChord);
