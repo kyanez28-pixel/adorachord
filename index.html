@@ -7104,16 +7104,7 @@ function renderCifrado(display) {
     selWrap.appendChild(sel);
     tb.appendChild(selWrap);
 
-    // Undo / Redo
-    const btnUndo = document.createElement('button');
-    btnUndo.className='cif-tbtn undo-btn2'; btnUndo.title='Deshacer (Ctrl+Z)';
-    btnUndo.textContent='↩'; btnUndo.disabled=!cifUndoStack.length;
-    btnUndo.onclick=cifUndo; tb.appendChild(btnUndo);
 
-    const btnRedo = document.createElement('button');
-    btnRedo.className='cif-tbtn undo-btn2'; btnRedo.title='Rehacer (Ctrl+Y)';
-    btnRedo.textContent='↪'; btnRedo.disabled=!cifRedoStack.length;
-    btnRedo.onclick=cifRedo; tb.appendChild(btnRedo);
 
     if (cifSongId) {
         const btnSave=document.createElement('button');
