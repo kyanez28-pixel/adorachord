@@ -7082,6 +7082,7 @@ function renderCifrado(display) {
         if (opt && opt.dataset.id && opt.dataset.id !== cifSongId) {
             cifLoad(opt.dataset.id);
             this.blur();
+            refreshUI();
         }
     });
     sel.addEventListener('focus', function() { this.value = ''; });
