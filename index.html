@@ -3548,9 +3548,11 @@ function renderRegistro(display) {
             `;
 
             item.querySelector('.setlist-thumb').onclick = () => { if(s.url) openFull(s); };
-            item.querySelector('.setlist-title').onclick = () => { 
-                selectedSongId = s.id; 
-                renderLibraryInspector(document.getElementById('inspector-panel'));
+            item.querySelector('.setlist-title').onclick = () => {
+                selectedSongId = s.id;
+                const panel = document.getElementById('inspector-panel');
+                panel.innerHTML = ''; // limpiar antes para evitar contenido anterior
+                renderLibraryInspector(panel);
                 document.getElementById('inspector-aside').classList.add('open');
             };
             item.querySelector('.setlist-remove').onclick = () => removeFromHistory(i);
