@@ -5246,6 +5246,7 @@ document.getElementById('singer-modal').addEventListener('click', function(e) {
 let attendance    = {};
 let attendDate    = todayStr();
 let attendType    = 'culto';   // 'ensayo' | 'culto'
+let attendMobileTab = 'reg';   // 'reg' | 'hist'
 
 const STATUS_INFO = {
     present      : { emoji:'✅', label:'Presente',             short:'Presente',    cls:'present'      },
@@ -5471,13 +5472,24 @@ function renderAttendance(display) {
 
     // ── TABS MÓVIL ──
     const aTabs = mkEl('div','attend-mobile-tabs','');
-    const aTabReg  = mkEl('button','attend-mobile-tab active','📋 Registro');
+    const aTabReg  = mkEl('button','attend-mobile-tab','📋 Registro');
     const aTabHist = mkEl('button','attend-mobile-tab','📅 Historial');
+    
+    if (attendMobileTab === 'hist') {
+        aTabHist.classList.add('active');
+        left.classList.add('mobile-hidden');
+    } else {
+        aTabReg.classList.add('active');
+        right.classList.add('mobile-hidden');
+    }
+
     aTabReg.onclick = () => {
+        attendMobileTab = 'reg';
         aTabReg.classList.add('active'); aTabHist.classList.remove('active');
         left.classList.remove('mobile-hidden'); right.classList.add('mobile-hidden');
     };
     aTabHist.onclick = () => {
+        attendMobileTab = 'hist';
         aTabHist.classList.add('active'); aTabReg.classList.remove('active');
         right.classList.remove('mobile-hidden'); left.classList.add('mobile-hidden');
     };
