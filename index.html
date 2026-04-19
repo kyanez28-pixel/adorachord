@@ -9695,22 +9695,7 @@ window.renderCifradoInspector = function(panel) {
     });
     wrap.appendChild(stats);
 
-    // ── Acordes usados
-    if (allChords.size > 0) {
-        const chordBar = document.createElement('div');
-        chordBar.style.cssText = 'padding:8px 14px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;flex-wrap:wrap;gap:4px;align-items:center;';
-        const lbl = document.createElement('span');
-        lbl.style.cssText = 'font-size:8px;color:rgba(255,255,255,.3);font-family:Syne,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-right:4px;';
-        lbl.textContent = 'Acordes:';
-        chordBar.appendChild(lbl);
-        [...allChords].sort().forEach(ch => {
-            const c = document.createElement('span');
-            c.style.cssText = 'font-family:Syne,sans-serif;font-size:10px;font-weight:800;color:var(--accent);background:rgba(232,87,42,.1);border:1px solid rgba(232,87,42,.2);border-radius:4px;padding:1px 6px;';
-            c.textContent = ch;
-            chordBar.appendChild(c);
-        });
-        wrap.appendChild(chordBar);
-    }
+    // Acordes usados: oculto
 
     // ── Acciones rápidas
     const actions = document.createElement('div');
@@ -10030,22 +10015,7 @@ window.renderCifradoInspector = function(panel) {
     });
     wrap.appendChild(statsRow);
 
-    // ── Acordes usados ──
-    if (allChords.size > 0) {
-        const chordBar = document.createElement('div');
-        chordBar.style.cssText = 'padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;flex-wrap:wrap;gap:4px;align-items:center;';
-        const lbl = document.createElement('span');
-        lbl.style.cssText = 'font-size:8px;color:rgba(255,255,255,.3);font-family:Syne,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.6px;flex-shrink:0;margin-right:2px;';
-        lbl.textContent = 'En uso:';
-        chordBar.appendChild(lbl);
-        [...allChords].sort().forEach(ch => {
-            const c = document.createElement('span');
-            c.style.cssText = 'font-family:Syne,sans-serif;font-size:10px;font-weight:800;color:var(--accent);background:rgba(232,87,42,.1);border:1px solid rgba(232,87,42,.22);border-radius:4px;padding:1px 6px;white-space:nowrap;';
-            c.textContent = ch;
-            chordBar.appendChild(c);
-        });
-        wrap.appendChild(chordBar);
-    }
+    // En uso: oculto
 
     // ── Acciones ──
     const actions = document.createElement('div');
