@@ -3015,7 +3015,7 @@ function renderMain() {
     else if (viewMode === 'STATS')      renderStats(display);
     else if (viewMode === 'TEAM')       renderTeam(display);
     else if (viewMode === 'ATTENDANCE') renderAttendance(display);
-    else if (viewMode === 'CIFRADO')    renderCifrado(display);
+    else if (viewMode === 'CIFRADO')    window.renderCifrado(display);
 }
 
 function renderLibrary(display) {
@@ -3764,7 +3764,7 @@ function renderInspector() {
     else if (viewMode === 'STATS')      renderStatsInspector(panel);
     else if (viewMode === 'TEAM')       renderTeamInspector(panel);
     else if (viewMode === 'ATTENDANCE') renderAttendanceInspector(panel);
-    else if (viewMode === 'CIFRADO')    renderCifradoInspector(panel);
+    else if (viewMode === 'CIFRADO')    window.renderCifradoInspector(panel);
 }
 
 function renderLibraryInspector(panel) {
