@@ -13361,13 +13361,12 @@ document.head.appendChild(st);
 console.log('✅ Patch v23: visual — controles a la derecha, handle alineado');
 
 
-/* ── patch_seed.js ── */
-
-// ════════════════════════════════════════════════════════════════════
-//  PATCH SEED — Insertar datos en Supabase nuevo al primer arranque
-//  Solo corre una vez (localStorage flag 'adorachord_seeded_v2')
-// ════════════════════════════════════════════════════════════════════
+/* ── patch_seed.js — ELIMINADO (migración ya completada) ── */
+// El seed fue removido permanentemente. Los datos se gestionan
+// exclusivamente desde Supabase. No re-insertar al arranque.
 (function seedNewSupabase() {
+// SEED DESACTIVADO — retornar inmediatamente sin hacer nada
+return;
 
 if (localStorage.getItem('adorachord_seeded_v2')) {
     console.log('[SEED] Ya sembrado, skip');
