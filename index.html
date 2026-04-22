@@ -5794,8 +5794,9 @@ async function loadFromSupabase() {
             youtube: r.youtube||'', letter: r.letter||'', url: r.url||'',
             multitrack: r.multitrack||false,
             cifrado: r.cifrado || null,  // Keep as raw string; cifLoad will parse it
-            // Preferir Supabase, si no hay → buscar en localStorage
+            // Preferir Supabase, si no hay → buscar en localStorage (backups)
             coverUrl:  r.cover_url  || localStorage.getItem('cover_'+r.id) || null,
+            url:       r.url        || localStorage.getItem('acordes_'+r.id) || '', 
             audioUrl:  r.audio_url  || null,
             audioData: null,   // migrado a Storage, no se usa base64
             driveUrl:  r.drive_url  || null
@@ -5912,6 +5913,9 @@ async function uploadImageToStorage(songId, base64DataUrl, type) {
         if (type === 'cover') {
             try { localStorage.setItem('cover_' + songId, base64DataUrl); } catch(e) {}
         }
+        if (type === 'acordes') {
+            try { localStorage.setItem('acordes_' + songId, base64DataUrl); } catch(e) {}
+        }
 
         // Convertir base64 a Blob
         const parts   = base64DataUrl.split(',');
@@ -5934,9 +5938,12 @@ async function uploadImageToStorage(songId, base64DataUrl, type) {
 
         const { data } = sb.storage.from('multitracks').getPublicUrl(path);
         const publicUrl = data?.publicUrl || null;
-        if (publicUrl && type === 'cover') {
-            // Upload exitoso → podemos limpiar localStorage
-            try { localStorage.removeItem('cover_' + songId); } catch(e) {}
+        if (publicUrl) {
+            // Upload exitoso → podemos limpiar localStorage del tipo correspondiente
+            try { 
+                if (type === 'cover') localStorage.removeItem('cover_' + songId);
+                if (type === 'acordes') localStorage.removeItem('acordes_' + songId);
+            } catch(e) {}
         }
         return publicUrl || base64DataUrl;
     } catch(e) {
@@ -15477,7 +15484,9 @@ if (typeof _origDbSaveSongFixed === 'undefined') {
             audio_url: safeAudioUrl,
             audio_data: null,
             compass: song.compass||'',
-            duration_str: song.durationStr||''
+            duration_str: song.durationStr||'',
+            drive_url: song.driveUrl || null,
+            cifrado: song.cifrado || null
         });
         
         syncDone(error);
@@ -15492,7 +15501,8 @@ window.dbSaveSong = async function(song) {
     if (window._pendingAcordesUrlForSave !== undefined && window._pendingAcordesUrlForSave !== null) {
         song.url = window._pendingAcordesUrlForSave;
     }
-    window._pendingAcordesUrlForSave = undefined;
+    // No limpiar aquí el pending, dejar que lo haga el saveModal original en su callback finish()
+    // o el siguiente parche en la cadena. Pero para mayor seguridad, solo lo asignamos.
     return _origDbSaveSongFixed(song);
 };
 
