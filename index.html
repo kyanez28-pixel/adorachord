@@ -5536,22 +5536,54 @@ function renderAttendanceInspector(panel) {
         const pct = tot ? Math.round((pr + lt + ltEx + absEx) / tot * 100) : 0;
         const sanctioned = getMemberSanction(m.id, attendDate);
 
+        const roleIcons = {
+            'musico': '🎸',
+            'cantante': '🎤',
+            'tecnico': '🎧',
+            'director': '🎼'
+        };
+        const rIcon = roleIcons[m.role] || '👤';
+        const mRoleText = m.instrument || m.role || 'Miembro';
+        const colorPct = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : '#ff6060';
+
         sec.innerHTML += `
-            <div style="padding:7px 0;border-bottom:1px solid var(--border)${sanctioned?';background:rgba(255,60,60,0.05);border-radius:6px;padding:7px 6px':''};">
-                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-                    <span style="font-size:12px;font-weight:600">${esc(m.name)} ${sanctioned?'<span style="font-size:9px;background:#ff4040;color:#fff;padding:1px 5px;border-radius:4px;font-family:Syne,sans-serif;font-weight:800">🚫 SANCIÓN</span>':''}</span>
-                    <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'}">${pct}%</span>
+            <div style="background:rgba(255,255,255,0.02); border:1px solid ${sanctioned ? 'rgba(255,60,60,0.3)' : 'var(--border)'}; border-radius:12px; padding:12px; margin-bottom:12px; position:relative; overflow:hidden; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='var(--border2)';" onmouseout="this.style.transform='translateY(0)';this.style.background='rgba(255,255,255,0.02)';this.style.borderColor='${sanctioned ? 'rgba(255,60,60,0.3)' : 'var(--border)'}';">
+                
+                <!-- Progreso en la base -->
+                <div style="position:absolute; bottom:0; left:0; height:3px; width:100%; background:var(--panel2);">
+                    <div style="height:100%; width:${pct}%; background:linear-gradient(90deg, ${colorPct}88, ${colorPct}); border-radius:0 2px 2px 0; transition:width 0.8s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px ${colorPct}66;"></div>
                 </div>
-                <div style="display:flex;gap:4px;flex-wrap:wrap">
-                    ${pr    ?`<span class="status-pill present">✅${pr}</span>`:''}
-                    ${lt    ?`<span class="status-pill late">⏰${lt} atr.</span>`:''}
-                    ${ltEx  ?`<span class="status-pill late-excused">🟡${ltEx} at.j.</span>`:''}
-                    ${ab    ?`<span class="status-pill absent">❌${ab} fal.</span>`:''}
-                    ${absEx ?`<span class="status-pill excused">🔵${absEx} f.j.</span>`:''}
-                    ${!tot  ?`<span class="status-pill none">Sin datos</span>`:''}
+
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+                    <!-- Avatar -->
+                    <div style="width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,0.04); display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
+                        ${rIcon}
+                    </div>
+                    
+                    <!-- Info -->
+                    <div style="flex:1; min-width:0;">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span style="font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:'Syne', sans-serif;">${esc(m.name)}</span>
+                            ${sanctioned ? '<span style="font-size:8px; background:rgba(255,60,60,0.15); color:#ff6060; padding:2px 6px; border-radius:10px; font-family:\'Syne\',sans-serif; font-weight:800; border:1px solid rgba(255,60,60,0.3); text-transform:uppercase; letter-spacing:0.5px;">Sanción</span>' : ''}
+                        </div>
+                        <div style="font-size:10px; color:var(--dim); margin-top:2px; text-transform:capitalize;">${esc(mRoleText)}</div>
+                    </div>
+
+                    <!-- Porcentaje -->
+                    <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center;">
+                        <span style="font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:${colorPct}; text-shadow: 0 0 12px ${colorPct}44;">${pct}%</span>
+                        <span style="font-size:8px; color:var(--dim2); text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">Asistencia</span>
+                    </div>
                 </div>
-                <div style="margin-top:5px;background:var(--panel2);border-radius:4px;height:4px;overflow:hidden">
-                    <div style="height:100%;width:${pct}%;background:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'};border-radius:4px;transition:width 0.4s"></div>
+
+                <!-- Pastillas -->
+                <div style="display:flex; gap:5px; flex-wrap:wrap; padding-top:8px; border-top:1px dashed rgba(255,255,255,0.05);">
+                    ${pr    ?`<span class="status-pill present" style="font-size:10px; padding:3px 7px;">✅ ${pr} pres.</span>`:''}
+                    ${lt    ?`<span class="status-pill late" style="font-size:10px; padding:3px 7px;">⏰ ${lt} atr.</span>`:''}
+                    ${ltEx  ?`<span class="status-pill late-excused" style="font-size:10px; padding:3px 7px;">🟡 ${ltEx} at.j.</span>`:''}
+                    ${ab    ?`<span class="status-pill absent" style="font-size:10px; padding:3px 7px;">❌ ${ab} fal.</span>`:''}
+                    ${absEx ?`<span class="status-pill excused" style="font-size:10px; padding:3px 7px;">🔵 ${absEx} f.j.</span>`:''}
+                    ${!tot  ?`<span class="status-pill none" style="font-size:10px; padding:3px 7px;">Sin registros</span>`:''}
                 </div>
             </div>`;
     });
