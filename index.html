@@ -5310,8 +5310,21 @@ function cycleStatus(date, memberId) {
         const idx = order.indexOf(rec.status);
         rec.status = order[(idx + 1) % order.length];
     }
+    
+    // Guardar scroll position
+    const mainBody = document.querySelector('.attend-panel-body');
+    const scrollMain = mainBody ? mainBody.scrollTop : 0;
+    const insScroll = document.querySelector('.ins-scroll');
+    const scrollIns = insScroll ? insScroll.scrollTop : 0;
+
     renderMain();
     renderInspector();
+
+    // Restaurar scroll position
+    const newMainBody = document.querySelector('.attend-panel-body');
+    if (newMainBody) newMainBody.scrollTop = scrollMain;
+    const newInsScroll = document.querySelector('.ins-scroll');
+    if (newInsScroll) newInsScroll.scrollTop = scrollIns;
 }
 
 function setAttendObs(date, memberId, obs) {
@@ -5319,6 +5332,16 @@ function setAttendObs(date, memberId, obs) {
     const rec = attendance[date].records.find(r => r.memberId === memberId);
     if (rec) rec.obs = obs;
     else attendance[date].records.push({ memberId, status:'none', obs });
+
+    // Guardar scroll position
+    const mainBody = document.querySelector('.attend-panel-body');
+    const scrollMain = mainBody ? mainBody.scrollTop : 0;
+
+    renderMain();
+
+    // Restaurar scroll position
+    const newMainBody = document.querySelector('.attend-panel-body');
+    if (newMainBody) newMainBody.scrollTop = scrollMain;
 }
 
 function renderAttendance(display) {
