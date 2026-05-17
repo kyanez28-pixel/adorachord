@@ -5311,18 +5311,27 @@ function cycleStatus(date, memberId) {
         rec.status = order[(idx + 1) % order.length];
     }
     
-    // Guardar scroll position
-    const mainBody = document.querySelector('.attend-panel-body');
-    const scrollMain = mainBody ? mainBody.scrollTop : 0;
+    // Guardar scroll positions
+    const display = document.getElementById('main-display');
+    const scrollDisplay = display ? display.scrollTop : 0;
+    
+    const panels = document.querySelectorAll('.attend-panel-body');
+    const scrollP1 = panels[0] ? panels[0].scrollTop : 0;
+    const scrollP2 = panels[1] ? panels[1].scrollTop : 0;
+    
     const insScroll = document.querySelector('.ins-scroll');
     const scrollIns = insScroll ? insScroll.scrollTop : 0;
 
     renderMain();
     renderInspector();
 
-    // Restaurar scroll position
-    const newMainBody = document.querySelector('.attend-panel-body');
-    if (newMainBody) newMainBody.scrollTop = scrollMain;
+    // Restaurar scroll positions
+    if (display) display.scrollTop = scrollDisplay;
+    
+    const newPanels = document.querySelectorAll('.attend-panel-body');
+    if (newPanels[0]) newPanels[0].scrollTop = scrollP1;
+    if (newPanels[1]) newPanels[1].scrollTop = scrollP2;
+    
     const newInsScroll = document.querySelector('.ins-scroll');
     if (newInsScroll) newInsScroll.scrollTop = scrollIns;
 }
@@ -5333,15 +5342,22 @@ function setAttendObs(date, memberId, obs) {
     if (rec) rec.obs = obs;
     else attendance[date].records.push({ memberId, status:'none', obs });
 
-    // Guardar scroll position
-    const mainBody = document.querySelector('.attend-panel-body');
-    const scrollMain = mainBody ? mainBody.scrollTop : 0;
+    // Guardar scroll positions
+    const display = document.getElementById('main-display');
+    const scrollDisplay = display ? display.scrollTop : 0;
+    
+    const panels = document.querySelectorAll('.attend-panel-body');
+    const scrollP1 = panels[0] ? panels[0].scrollTop : 0;
+    const scrollP2 = panels[1] ? panels[1].scrollTop : 0;
 
     renderMain();
 
-    // Restaurar scroll position
-    const newMainBody = document.querySelector('.attend-panel-body');
-    if (newMainBody) newMainBody.scrollTop = scrollMain;
+    // Restaurar scroll positions
+    if (display) display.scrollTop = scrollDisplay;
+    
+    const newPanels = document.querySelectorAll('.attend-panel-body');
+    if (newPanels[0]) newPanels[0].scrollTop = scrollP1;
+    if (newPanels[1]) newPanels[1].scrollTop = scrollP2;
 }
 
 function renderAttendance(display) {
