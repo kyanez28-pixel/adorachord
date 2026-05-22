@@ -5418,11 +5418,12 @@ function renderAttendance(display) {
     foot.appendChild(waBtn);
     if (rec.records.length) {
         const clr = mkEl('button','inline-btn-ghost','🗑 Limpiar');
-        clr.onclick = () => {
+        clr.onclick = async () => {
             if (!confirm(`¿Limpiar registro de ${fmtDate(attendDate)}?`)) return;
             snapshot(`Limpiar asistencia ${fmtDate(attendDate)}`);
             delete attendance[attendDate];
             renderMain(); renderInspector();
+            await dbClearAttendance(attendDate);
         };
         foot.appendChild(clr);
     }
