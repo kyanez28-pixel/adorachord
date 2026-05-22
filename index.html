@@ -3491,7 +3491,7 @@ function renderRegistro(display) {
                 <span class="setlist-num">${i+1}</span>
                 <div class="setlist-thumb" title="Ver acordes">${thumbHtml}</div>
                 <div class="setlist-info">
-                    <b>${esc(s.name)}</b>
+                    <b class="setlist-title" style="cursor:pointer;" title="Ver/Editar Información">${esc(s.name)}</b>
                     <div class="setlist-tags">
                         ${s.author ? `<span style="font-size:10px;color:var(--dim)">${esc(s.author)}</span>` : ''}
                         ${s.key ? `<span class="tag tag-key" style="font-size:8px">${esc(s.key)}</span>` : ''}
@@ -3504,6 +3504,13 @@ function renderRegistro(display) {
             `;
 
             item.querySelector('.setlist-thumb').onclick = () => { if(s.url) openFull(s); };
+            item.querySelector('.setlist-title').onclick = () => {
+                selectedSongId = s.id;
+                const panel = document.getElementById('inspector-panel');
+                panel.innerHTML = '';
+                renderLibraryInspector(panel);
+                document.getElementById('inspector-aside').classList.add('open');
+            };
             item.querySelector('.setlist-remove').onclick = () => removeFromHistory(i);
 
             // ── Drag Notion-style ──
