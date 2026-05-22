@@ -6269,9 +6269,46 @@ window.cycleStatus = function(date, memberId) {
         newStatus = order[(idx + 1) % order.length];
         rec.status = newStatus;
     }
-    // Render BEFORE the async call so UI updates instantly without waiting for Supabase
-    renderMain(); renderInspector();
-    // Sync to Supabase in background — won't block or break UI
+
+    // ── Actualización quirúrgica para evitar resetear scroll y parpadeos ──
+    const info = STATUS_INFO[newStatus] || STATUS_INFO.none;
+    const row  = document.querySelector(`.attend-row[data-member-id="${memberId}"]`);
+
+    if (row) {
+        // Actualizar botón de estado
+        const btn = row.querySelector('.attend-status-btn');
+        if (btn) {
+            btn.className = `attend-status-btn ${info.cls}`;
+            btn.textContent = info.emoji;
+        }
+        // Actualizar pill de estado
+        const pill = row.querySelector('.status-pill');
+        if (pill) {
+            pill.className = `status-pill ${info.cls}`;
+            pill.textContent = info.label;
+        }
+
+        // Actualizar barra de contadores (presentes / tarde / ausentes)
+        const statsBar = document.getElementById('attend-stats-bar');
+        if (statsBar) {
+            const r2      = attendance[date] || { records: [] };
+            const present = r2.records.filter(r => r.status === 'present').length;
+            const late    = r2.records.filter(r => r.status === 'late').length;
+            const absent  = r2.records.filter(r => r.status === 'absent').length;
+            const pills   = statsBar.querySelectorAll('.status-pill');
+            if (pills[0]) pills[0].textContent = `${present} presentes`;
+            if (pills[1]) pills[1].textContent = `${late} tarde`;
+            if (pills[2]) pills[2].textContent = `${absent} ausentes`;
+        }
+    } else {
+        // Fallback: redibujar completo si la fila no está visible
+        renderMain();
+    }
+
+    // Actualizar el panel inspector lateral de estadísticas
+    renderInspector();
+
+    // Guardar en Supabase en segundo plano
     const obsVal = attendance[date].records.find(r => r.memberId === memberId)?.obs || '';
     const typeVal = attendance[date].type || attendType;
     dbSaveAttendance(date, memberId, newStatus, obsVal, typeVal);
