@@ -2029,21 +2029,23 @@
         }
 
         .attend-status-btn:hover { transform: scale(1.1); }
-        .attend-status-btn.present  { background: rgba(62,207,142,0.2);  border-color: var(--green);  }
-        .attend-status-btn.late     { background: rgba(240,192,64,0.2);  border-color: var(--yellow); }
-        .attend-status-btn.absent   { background: rgba(255,60,60,0.2);   border-color: #ff6060; }
-        .attend-status-btn.excused  { background: rgba(77,158,255,0.2);  border-color: var(--blue); }
+        .attend-status-btn.present      { background: rgba(62,207,142,0.2);  border-color: var(--green);  }
+        .attend-status-btn.late         { background: rgba(240,192,64,0.2);  border-color: var(--yellow); }
+        .attend-status-btn.late-excused { background: rgba(255,210,0,0.2);   border-color: #f5c518; }
+        .attend-status-btn.absent       { background: rgba(255,60,60,0.2);   border-color: #ff6060; }
+        .attend-status-btn.excused      { background: rgba(77,158,255,0.2);  border-color: var(--blue); }
 
         .status-pill {
             font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 700;
             padding: 2px 8px; border-radius: 20px; white-space: nowrap;
         }
 
-        .status-pill.present  { background: rgba(62,207,142,0.15);  color: var(--green); }
-        .status-pill.late     { background: rgba(240,192,64,0.15);  color: var(--yellow); }
-        .status-pill.absent   { background: rgba(255,60,60,0.12);   color: #ff6060; }
-        .status-pill.excused  { background: rgba(77,158,255,0.12);  color: var(--blue); }
-        .status-pill.none     { background: rgba(255,255,255,0.05); color: var(--dim2); }
+        .status-pill.present      { background: rgba(62,207,142,0.15);  color: var(--green); }
+        .status-pill.late         { background: rgba(240,192,64,0.15);  color: var(--yellow); }
+        .status-pill.late-excused { background: rgba(255,210,0,0.15);   color: #f5c518; }
+        .status-pill.absent       { background: rgba(255,60,60,0.12);   color: #ff6060; }
+        .status-pill.excused      { background: rgba(77,158,255,0.12);  color: var(--blue); }
+        .status-pill.none         { background: rgba(255,255,255,0.05); color: var(--dim2); }
 
         .attend-obs-input {
             background: transparent; border: none; outline: none;
@@ -5246,17 +5248,18 @@ document.getElementById('singer-modal').addEventListener('click', function(e) {
 // ══════════════════════════════════════════════
 //  ASISTENCIA — ESTADO
 // ══════════════════════════════════════════════
-// attendance: { "YYYY-MM-DD": { type:'ensayo'|'culto', records:[{memberId, status:'present'|'late'|'absent'|'excused', obs:''}] } }
+// attendance: { "YYYY-MM-DD": { type:'ensayo'|'culto', records:[{memberId, status:'present'|'late'|'late_excused'|'absent'|'abs_excused'|'none', obs:''}] } }
 let attendance    = {};
 let attendDate    = todayStr();
 let attendType    = 'culto';   // 'ensayo' | 'culto'
 
 const STATUS_INFO = {
-    present : { emoji:'✅', label:'Presente',    cls:'present'  },
-    late    : { emoji:'⏰', label:'Tarde',        cls:'late'     },
-    absent  : { emoji:'❌', label:'Inasistencia', cls:'absent'   },
-    excused : { emoji:'🔵', label:'Justificado',  cls:'excused'  },
-    none    : { emoji:'○',  label:'Sin registrar',cls:'none'     },
+    present      : { emoji:'✅', label:'Presente',           cls:'present'      },
+    late         : { emoji:'⏰', label:'Atraso',             cls:'late'         },
+    late_excused : { emoji:'🟡', label:'Atraso Justificado', cls:'late-excused' },
+    absent       : { emoji:'❌', label:'Inasistencia',       cls:'absent'       },
+    abs_excused  : { emoji:'🔵', label:'Falta Justificada',  cls:'excused'      },
+    none         : { emoji:'○',  label:'Sin registrar',      cls:'none'         },
 };
 
 function getAttendRecord(date) {
@@ -5271,7 +5274,7 @@ function getMemberStatus(date, memberId) {
 function cycleStatus(date, memberId) {
     snapshot(`Cambiar asistencia`);
     if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
-    const order = ['present','late','absent','excused','none'];
+    const order = ['present','late','late_excused','absent','abs_excused','none'];
     const rec   = attendance[date].records.find(r => r.memberId === memberId);
     if (!rec) {
         attendance[date].records.push({ memberId, status:'present', obs:'' });
@@ -5280,7 +5283,7 @@ function cycleStatus(date, memberId) {
         rec.status = order[(idx + 1) % order.length];
     }
 
-    // ── Actualización quirúrgica: solo el fila afectada, sin resetear scroll ──
+    // ── Actualización quirúrgica: solo la fila afectada, sin resetear scroll ──
     const newRec  = attendance[date].records.find(r => r.memberId === memberId);
     const newSt   = newRec ? newRec.status : 'none';
     const info    = STATUS_INFO[newSt] || STATUS_INFO.none;
@@ -5356,14 +5359,18 @@ function renderAttendance(display) {
     const rec  = getAttendRecord(attendDate);
     const present = rec.records.filter(r=>r.status==='present').length;
     const late    = rec.records.filter(r=>r.status==='late').length;
+    const lateEx  = rec.records.filter(r=>r.status==='late_excused').length;
     const absent  = rec.records.filter(r=>r.status==='absent').length;
+    const absEx   = rec.records.filter(r=>r.status==='abs_excused').length;
 
     left.appendChild(mkEl('div','attend-panel-header',`
         <span class="reg-panel-title">📋 ${attendType==='culto'?'⛪ Culto':'🎸 Ensayo'} — ${fmtDate(attendDate)}</span>
-        <div id="attend-stats-bar" style="display:flex;gap:6px">
-            <span class="status-pill present">${present} presentes</span>
-            <span class="status-pill late">${late} tarde</span>
-            <span class="status-pill absent">${absent} ausentes</span>
+        <div id="attend-stats-bar" style="display:flex;gap:4px;flex-wrap:wrap">
+            <span class="status-pill present">${present} pres.</span>
+            ${late   ? `<span class="status-pill late">${late} atraso</span>` : ''}
+            ${lateEx ? `<span class="status-pill late-excused">${lateEx} at.just.</span>` : ''}
+            ${absent ? `<span class="status-pill absent">${absent} falta</span>` : ''}
+            ${absEx  ? `<span class="status-pill excused">${absEx} f.just.</span>` : ''}
         </div>
     `));
 
@@ -5499,12 +5506,19 @@ function renderAttendanceInspector(panel) {
     }
 
     members.forEach(m => {
-        let pr=0, lt=0, ab=0, ex=0, tot=0;
+        let pr=0, lt=0, ltEx=0, ab=0, absEx=0, tot=0;
         Object.values(attendance).forEach(d => {
             const r = d.records.find(x => x.memberId===m.id);
-            if (r) { tot++; if(r.status==='present')pr++; else if(r.status==='late')lt++; else if(r.status==='absent')ab++; else if(r.status==='excused')ex++; }
+            if (r && r.status !== 'none') {
+                tot++;
+                if(r.status==='present')          pr++;
+                else if(r.status==='late')         lt++;
+                else if(r.status==='late_excused') ltEx++;
+                else if(r.status==='absent')       ab++;
+                else if(r.status==='abs_excused')  absEx++;
+            }
         });
-        const pct = tot ? Math.round((pr+lt)/tot*100) : 0;
+        const pct = tot ? Math.round((pr+ltEx)/tot*100) : 0;
 
         sec.innerHTML += `
             <div style="padding:7px 0;border-bottom:1px solid var(--border)">
@@ -5513,11 +5527,12 @@ function renderAttendanceInspector(panel) {
                     <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'}">${pct}%</span>
                 </div>
                 <div style="display:flex;gap:4px;flex-wrap:wrap">
-                    ${pr?`<span class="status-pill present">✅${pr}</span>`:''}
-                    ${lt?`<span class="status-pill late">⏰${lt}</span>`:''}
-                    ${ab?`<span class="status-pill absent">❌${ab}</span>`:''}
-                    ${ex?`<span class="status-pill excused">🔵${ex}</span>`:''}
-                    ${!tot?`<span class="status-pill none">Sin datos</span>`:''}
+                    ${pr   ?`<span class="status-pill present">✅${pr}</span>`:''}
+                    ${lt   ?`<span class="status-pill late">⏰${lt}</span>`:''}
+                    ${ltEx ?`<span class="status-pill late-excused">🟡${ltEx}</span>`:''}
+                    ${ab   ?`<span class="status-pill absent">❌${ab}</span>`:''}
+                    ${absEx?`<span class="status-pill excused">🔵${absEx}</span>`:''}
+                    ${!tot ?`<span class="status-pill none">Sin datos</span>`:''}
                 </div>
                 <div style="margin-top:5px;background:var(--panel2);border-radius:4px;height:4px;overflow:hidden">
                     <div style="height:100%;width:${pct}%;background:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'};border-radius:4px;transition:width 0.4s"></div>
@@ -5534,8 +5549,10 @@ function renderAttendanceInspector(panel) {
     [
         ['📅', Object.keys(attendance).length, 'sesiones'],
         ['✅', allRec.filter(r=>r.status==='present').length, 'presentes'],
-        ['⏰', allRec.filter(r=>r.status==='late').length, 'tardanzas'],
+        ['⏰', allRec.filter(r=>r.status==='late').length, 'atrasos'],
+        ['🟡', allRec.filter(r=>r.status==='late_excused').length, 'atr.just.'],
         ['❌', allRec.filter(r=>r.status==='absent').length, 'ausencias'],
+        ['🔵', allRec.filter(r=>r.status==='abs_excused').length, 'f.just.'],
     ].forEach(([icon,val,label]) => {
         grid.appendChild(mkEl('div','stat-box',`<div class="stat-box-icon">${icon}</div><div class="stat-box-val">${val}</div><div class="stat-box-label">${label}</div>`));
     });
@@ -6258,7 +6275,7 @@ window.assignSinger = function(songId, memberId) {
 const _origCycleStatus = cycleStatus;
 window.cycleStatus = function(date, memberId) {
     if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
-    const order = ['present','late','absent','excused','none'];
+    const order = ['present','late','late_excused','absent','abs_excused','none'];
     const rec   = attendance[date].records.find(r => r.memberId === memberId);
     let newStatus;
     if (!rec) {
@@ -6288,17 +6305,21 @@ window.cycleStatus = function(date, memberId) {
             pill.textContent = info.label;
         }
 
-        // Actualizar barra de contadores (presentes / tarde / ausentes)
+        // Reconstruir barra de contadores completa con todos los estados
         const statsBar = document.getElementById('attend-stats-bar');
         if (statsBar) {
-            const r2      = attendance[date] || { records: [] };
-            const present = r2.records.filter(r => r.status === 'present').length;
-            const late    = r2.records.filter(r => r.status === 'late').length;
-            const absent  = r2.records.filter(r => r.status === 'absent').length;
-            const pills   = statsBar.querySelectorAll('.status-pill');
-            if (pills[0]) pills[0].textContent = `${present} presentes`;
-            if (pills[1]) pills[1].textContent = `${late} tarde`;
-            if (pills[2]) pills[2].textContent = `${absent} ausentes`;
+            const r2    = attendance[date] || { records: [] };
+            const pres  = r2.records.filter(r => r.status === 'present').length;
+            const lt    = r2.records.filter(r => r.status === 'late').length;
+            const ltEx  = r2.records.filter(r => r.status === 'late_excused').length;
+            const ab    = r2.records.filter(r => r.status === 'absent').length;
+            const abEx  = r2.records.filter(r => r.status === 'abs_excused').length;
+            statsBar.innerHTML =
+                `<span class="status-pill present">${pres} pres.</span>` +
+                (lt   ? `<span class="status-pill late">${lt} atraso</span>` : '') +
+                (ltEx ? `<span class="status-pill late-excused">${ltEx} at.just.</span>` : '') +
+                (ab   ? `<span class="status-pill absent">${ab} falta</span>` : '') +
+                (abEx ? `<span class="status-pill excused">${abEx} f.just.</span>` : '');
         }
     } else {
         // Fallback: redibujar completo si la fila no está visible
