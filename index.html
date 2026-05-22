@@ -16,7 +16,7 @@
     <meta name="description" content="Gestión de equipo de alabanza y canciones">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg: #0C0B0A;
@@ -108,15 +108,15 @@
             /* Inspector → oculto por defecto, se abre como panel inferior */
             .inspector {
                 position: fixed;
-                bottom: -110%; /* Iniciar más abajo para ocultar bien */
+                bottom: -100%;
                 left: 0; right: 0;
-                height: 100%;
-                height: 100dvh;
-                border-radius: 0;
-                border: none;
+                height: 92vh;
+                border-radius: 20px 20px 0 0;
+                border-left: none;
+                border-top: 1px solid var(--border);
                 z-index: 6500;
-                transition: bottom 0.28s cubic-bezier(0.4,0,0.2,1);
-                box-shadow: none;
+                transition: bottom 0.32s cubic-bezier(0.4,0,0.2,1);
+                box-shadow: 0 -12px 60px rgba(0,0,0,0.7);
                 background: var(--sidebar);
                 display: flex;
                 flex-direction: column;
@@ -124,23 +124,16 @@
 
             .inspector.open { bottom: 0; }
 
-            /* Ya no hay handle de arrastrar para móviles, tenemos botón Volver */
-            .inspector::before { display: none; }
-            
-            .inspector-mobile-header {
-                display: flex; align-items: center; justify-content: space-between;
-                padding: 12px 16px; border-bottom: 1px solid var(--border);
-                background: var(--panel2); flex-shrink: 0;
+            /* Handle */
+            .inspector::before {
+                content: '';
+                display: block;
+                width: 36px; height: 4px;
+                background: var(--border2);
+                border-radius: 2px;
+                margin: 12px auto 0;
+                flex-shrink: 0;
             }
-            .ins-mob-back-btn {
-                background: rgba(232,87,42,0.1); color: var(--accent);
-                border: 1px solid rgba(232,87,42,0.25); border-radius: 20px;
-                padding: 7px 15px; font-family: 'Syne', sans-serif; font-size: 11px;
-                font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;
-                transition: all 0.2s;
-            }
-            .ins-mob-back-btn:hover { background: rgba(232,87,42,0.18); }
-            .ins-mob-back-btn:active { transform: scale(0.96); }
 
             /* Scroll dentro del inspector móvil */
             .inspector .ins-scroll {
@@ -572,7 +565,7 @@
         }
 
         .card-img {
-            height: 185px;
+            height: 140px;
             background: #0a0a0a;
             border-radius: 6px;
             overflow: hidden;
@@ -708,11 +701,11 @@
         .artist-card:hover { border-color: rgba(232,87,42,0.4); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
         .artist-card.selected { border-color: var(--accent); background: rgba(232,87,42,0.06); }
         .artist-photo {
-            width: 100px; height: 100px; border-radius: 50%;
+            width: 72px; height: 72px; border-radius: 50%;
             object-fit: cover; margin: 0 auto 10px;
             background: var(--panel2); border: 2px solid var(--border2);
             display: flex; align-items: center; justify-content: center;
-            font-size: 36px; overflow: hidden; transition: border-color 0.2s;
+            font-size: 28px; overflow: hidden; transition: border-color 0.2s;
         }
         .artist-card:hover .artist-photo, .artist-card.selected .artist-photo { border-color: var(--accent); }
         .artist-photo img { width: 100%; height: 100%; object-fit: cover; }
@@ -1161,8 +1154,6 @@
             min-height: 0;
             overflow: hidden;
         }
-
-        .inspector-mobile-header { display: none; }
 
         .ins-scroll {
             flex: 1;
@@ -1769,7 +1760,7 @@
         .month-count { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 800; color: var(--accent); }
 
         /* ── TEAM VIEW ── */
-        .team-layout { display: grid; grid-template-columns: 1fr; gap: 14px; height: 100%; overflow: hidden; }
+        .team-layout { display: grid; grid-template-columns: 1fr 340px; gap: 14px; height: 100%; overflow: hidden; }
         .team-panel { display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; min-height: 0; }
         .team-panel-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
         .team-panel-body   { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
@@ -2025,10 +2016,10 @@
         .attend-panel-body   { flex: 1; overflow-y: auto; padding: 10px; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 
         .attend-row {
-            display: flex; flex-direction: column; gap: 6px;
-            padding: 10px 12px; border-radius: 10px;
+            display: flex; align-items: center; gap: 10px;
+            padding: 8px 10px; border-radius: 8px;
             border: 1px solid var(--border); background: var(--panel2);
-            margin-bottom: 8px; transition: border-color 0.15s;
+            margin-bottom: 6px; transition: border-color 0.15s;
         }
 
         .attend-status-btn {
@@ -2038,40 +2029,30 @@
         }
 
         .attend-status-btn:hover { transform: scale(1.1); }
-        .attend-status-btn.present      { background: rgba(62,207,142,0.2);  border-color: var(--green);  }
-        .attend-status-btn.late         { background: rgba(240,192,64,0.2);  border-color: var(--yellow); }
-        .attend-status-btn.late-excused { background: rgba(255,210,0,0.2);   border-color: #f5c518; }
-        .attend-status-btn.absent       { background: rgba(255,60,60,0.2);   border-color: #ff6060; }
-        .attend-status-btn.excused      { background: rgba(77,158,255,0.2);  border-color: var(--blue); }
+        .attend-status-btn.present  { background: rgba(62,207,142,0.2);  border-color: var(--green);  }
+        .attend-status-btn.late     { background: rgba(240,192,64,0.2);  border-color: var(--yellow); }
+        .attend-status-btn.absent   { background: rgba(255,60,60,0.2);   border-color: #ff6060; }
+        .attend-status-btn.excused  { background: rgba(77,158,255,0.2);  border-color: var(--blue); }
 
         .status-pill {
             font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 700;
             padding: 2px 8px; border-radius: 20px; white-space: nowrap;
         }
 
-        .status-pill.present      { background: rgba(62,207,142,0.15);  color: var(--green); }
-        .status-pill.late         { background: rgba(240,192,64,0.15);  color: var(--yellow); }
-        .status-pill.late-excused { background: rgba(255,210,0,0.15);   color: #f5c518; }
-        .status-pill.absent       { background: rgba(255,60,60,0.12);   color: #ff6060; }
-        .status-pill.excused      { background: rgba(77,158,255,0.12);  color: var(--blue); }
-        .status-pill.none         { background: rgba(255,255,255,0.05); color: var(--dim2); }
-
-        .sanctioned-row {
-            border-left: 3px solid #ff4040 !important;
-            padding-left: 8px;
-            background: rgba(255,60,60,0.04);
-            border-radius: 6px;
-        }
+        .status-pill.present  { background: rgba(62,207,142,0.15);  color: var(--green); }
+        .status-pill.late     { background: rgba(240,192,64,0.15);  color: var(--yellow); }
+        .status-pill.absent   { background: rgba(255,60,60,0.12);   color: #ff6060; }
+        .status-pill.excused  { background: rgba(77,158,255,0.12);  color: var(--blue); }
+        .status-pill.none     { background: rgba(255,255,255,0.05); color: var(--dim2); }
 
         .attend-obs-input {
-            background: rgba(0,0,0,0.15); border: 1px solid var(--border); outline: none;
-            color: var(--text); font-size: 11px; font-family: 'DM Sans', sans-serif;
-            width: 100%; padding: 7px 10px; border-radius: 6px; box-sizing: border-box;
-            transition: all 0.2s;
+            background: transparent; border: none; outline: none;
+            color: var(--dim); font-size: 11px; font-family: 'DM Sans', sans-serif;
+            flex: 1; min-width: 0;
         }
 
         .attend-obs-input::placeholder { color: var(--dim2); }
-        .attend-obs-input:focus { border-color: var(--accent); background: var(--panel); }
+        .attend-obs-input:focus { color: var(--text); }
 
         .attend-summary-bar {
             display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 12px;
@@ -2137,7 +2118,7 @@
         .cif-sec-ctrl .del-sec:hover { color:#ff6060; }
         .cif-sec-body { padding:10px 14px 12px; display:flex; flex-direction:column; gap:0; }
         .cif-co-line { display:flex; flex-wrap:wrap; align-items:center; gap:6px 10px; padding:4px 0; min-height:34px; }
-        .cif-co-chip { font-family:'DM Sans',sans-serif; font-size:var(--caf); font-weight:700; font-style:normal; color:var(--accent); background:rgba(232,87,42,.1); border:1px solid rgba(232,87,42,.25); border-radius:6px; padding:3px 10px; cursor:pointer; transition:all .12s; letter-spacing:0.02em; }
+        .cif-co-chip { font-family:'Syne',sans-serif; font-size:var(--caf); font-weight:800; color:var(--accent); background:rgba(232,87,42,.1); border:1px solid rgba(232,87,42,.25); border-radius:6px; padding:3px 10px; cursor:pointer; transition:all .12s; }
         .cif-co-chip:hover { background:rgba(232,87,42,.25); }
         .cif-co-add { background:none; border:1px dashed rgba(232,87,42,.3); color:var(--dim); border-radius:6px; padding:3px 10px; font-size:11px; cursor:pointer; font-family:'Syne',sans-serif; font-weight:600; transition:all .12s; }
         .cif-co-add:hover { border-color:var(--accent); color:var(--accent); }
@@ -2148,7 +2129,7 @@
         .cif-token-row { display:flex; flex-wrap:wrap; align-items:flex-end; }
         .cif-wt { display:inline-flex; flex-direction:column; align-items:flex-start; cursor:pointer; position:relative; border-radius:3px; transition:background .1s; }
         .cif-wt:not(.sp):hover { background:rgba(232,87,42,.09); }
-        .cif-wt-chord { font-family:'DM Sans',sans-serif; font-size:var(--caf); font-weight:700; font-style:normal; color:var(--accent); white-space:nowrap; line-height:1.35; min-height:18px; padding:1px 2px; border-radius:3px; display:block; letter-spacing:0.02em; }
+        .cif-wt-chord { font-family:'Syne',sans-serif; font-size:var(--caf); font-weight:800; color:var(--accent); white-space:nowrap; line-height:1.35; min-height:18px; padding:1px 2px; border-radius:3px; display:block; }
         .cif-wt-chord.has { background:rgba(232,87,42,.12); border:1px solid rgba(232,87,42,.25); cursor:pointer; }
         .cif-wt-chord.has:hover { background:rgba(232,87,42,.28); }
         .cif-wt-chord.empty { opacity:0; pointer-events:none; }
@@ -2178,11 +2159,11 @@
         .cprev-lbl { font-family:'Syne',sans-serif; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.6px; padding:2px 8px; border-radius:20px; display:inline-block; margin-bottom:8px; }
         .cprev-line { display:flex; flex-wrap:wrap; align-items:flex-end; margin-bottom:2px; }
         .cprev-wt { display:inline-flex; flex-direction:column; align-items:flex-start; }
-        .cprev-chord { font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; font-style:normal; color:var(--accent); white-space:nowrap; min-height:15px; line-height:1.3; letter-spacing:0.02em; }
+        .cprev-chord { font-family:'Syne',sans-serif; font-size:11px; font-weight:800; color:var(--accent); white-space:nowrap; min-height:15px; line-height:1.3; }
         .cprev-chord.empty { opacity:0; }
-        .cprev-text { font-family: var(--cif-font, inherit); font-size:12px; color:var(--text); white-space:pre; line-height:1.55; }
+        .cprev-text { font-size:12px; color:var(--text); white-space:pre; line-height:1.55; }
         .cprev-co { display:flex; flex-wrap:wrap; gap:8px; padding:3px 0; }
-        .cprev-co-chip { font-family:'DM Sans',sans-serif; font-size:11px; font-weight:700; font-style:normal; color:var(--accent); letter-spacing:0.02em; }
+        .cprev-co-chip { font-family:'Syne',sans-serif; font-size:11px; font-weight:800; color:var(--accent); }
         .cif-present { position:fixed; inset:0; background:#060606; z-index:12000; display:none; flex-direction:column; }
         .cif-present.open { display:flex; }
         .cif-present-hdr { display:flex; align-items:center; justify-content:space-between; padding:12px 24px; border-bottom:1px solid rgba(255,255,255,.08); flex-shrink:0; }
@@ -2192,32 +2173,15 @@
         .cif-pctrl-btn:hover { background:rgba(255,255,255,.16); }
         .cif-pctrl-lbl { color:rgba(255,255,255,.5); font-size:12px; min-width:40px; text-align:center; }
         .cif-present-body { flex:1; overflow-y:auto; padding:36px 56px; }
-        /* Botón flotante de salida para móvil */
-        .cif-exit-fab { display:none; position:fixed; bottom:24px; right:20px; z-index:12100;
-            background:#E8572A; color:#fff; border:none; border-radius:50px;
-            padding:12px 20px; font-size:15px; font-family:'Syne',sans-serif; font-weight:700;
-            box-shadow:0 4px 20px rgba(232,87,42,0.6); cursor:pointer; 
-            align-items:center; gap:8px; transition:all .2s; }
-        .cif-exit-fab:active { transform:scale(0.95); }
-        @media (max-width: 600px) {
-            .cif-present-hdr { padding:8px 12px; flex-wrap:wrap; gap:6px; }
-            .cif-present-song { font-size:13px; }
-            .cif-present-ctrl { gap:4px; }
-            .cif-pctrl-btn { padding:5px 10px; font-size:12px; }
-            .cif-pctrl-lbl { font-size:11px; min-width:32px; }
-            .cif-exit-text { display:none; } /* Ocultar texto "Salir", solo mostrar ✕ */
-            .cif-present-body { padding:20px 16px; }
-            .cif-exit-fab { display:flex; }
-        }
         .cpres-sec { margin-bottom:32px; }
         .cpres-badge { font-family:'Syne',sans-serif; font-weight:700; text-transform:uppercase; letter-spacing:.8px; padding:3px 12px; border-radius:20px; display:inline-block; margin-bottom:12px; }
         .cpres-line { display:flex; flex-wrap:wrap; align-items:flex-end; margin-bottom:4px; }
         .cpres-wt { display:inline-flex; flex-direction:column; align-items:flex-start; }
-        .cpres-chord { font-family:'DM Sans',sans-serif; font-weight:700; font-style:normal; color:var(--accent); white-space:nowrap; line-height:1.3; letter-spacing:0.03em; }
+        .cpres-chord { font-family:'Syne',sans-serif; font-weight:800; color:var(--accent); white-space:nowrap; line-height:1.3; }
         .cpres-chord.empty { opacity:0; }
         .cpres-text { font-family:'DM Sans',sans-serif; color:#f0ebe3; white-space:pre; line-height:1.45; }
         .cpres-co { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:6px; }
-        .cpres-co-chip { font-family:'DM Sans',sans-serif; font-weight:700; font-style:normal; color:var(--accent); letter-spacing:0.03em; }
+        .cpres-co-chip { font-family:'Syne',sans-serif; font-weight:800; color:var(--accent); }
         .cif-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:200px; gap:12px; padding:40px; text-align:center; }
         .cif-empty-ico { font-size:42px; opacity:.3; }
         .cif-empty-txt { color:var(--dim); font-size:13px; line-height:1.7; max-width:280px; }
@@ -2533,12 +2497,10 @@
             <button class="cif-pctrl-btn" onclick="cifPresentZoom(-2)">A−</button>
             <span class="cif-pctrl-lbl" id="cif-present-zoom">100%</span>
             <button class="cif-pctrl-btn" onclick="cifPresentZoom(+2)">A+</button>
-            <button class="cif-pctrl-btn" onclick="cifClosePresent()" style="margin-left:8px">✕ <span class="cif-exit-text">Salir</span></button>
+            <button class="cif-pctrl-btn" onclick="cifClosePresent()" style="margin-left:8px">✕ Salir</button>
         </div>
     </div>
     <div class="cif-present-body" id="cif-present-body"></div>
-    <!-- Botón flotante Salir para móvil -->
-    <button class="cif-exit-fab" onclick="cifClosePresent()">✕ Salir</button>
 </div>
 
 <!-- Sidebar backdrop (móvil) -->
@@ -2631,13 +2593,6 @@
 
     <!-- INSPECTOR -->
     <aside class="inspector" id="inspector-aside">
-        <div class="inspector-mobile-header" id="ins-mob-header">
-            <button class="ins-mob-back-btn" onclick="closeInspector()">
-                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-                VOLVER
-            </button>
-            <span style="font-family:'Syne',sans-serif; font-size:11px; font-weight:800; color:var(--text); letter-spacing:1px; opacity:0.8">INFO</span>
-        </div>
         <div class="ins-scroll" id="inspector-panel"></div>
     </aside>
 </div>
@@ -3015,7 +2970,7 @@ function renderMain() {
     else if (viewMode === 'STATS')      renderStats(display);
     else if (viewMode === 'TEAM')       renderTeam(display);
     else if (viewMode === 'ATTENDANCE') renderAttendance(display);
-    else if (viewMode === 'CIFRADO')    window.renderCifrado(display);
+    else if (viewMode === 'CIFRADO')    renderCifrado(display);
 }
 
 function renderLibrary(display) {
@@ -3032,6 +2987,8 @@ function renderLibrary(display) {
     if (chips)  chips.style.display  = libView === 'artists' ? 'none' : '';
     if (sortSel) sortSel.style.display = libView === 'artists' ? 'none' : '';
 
+    if (libView === 'artists') { renderArtistsView(display); return; }
+
     const q = document.getElementById('search-input').value.toLowerCase().trim();
     let filtered = songs.filter(s => {
         const matchQ = !q || s.name.toLowerCase().includes(q)
@@ -3042,8 +2999,6 @@ function renderLibrary(display) {
         const matchT = activeType === 'ALL' || s.type === activeType;
         return matchQ && matchL && matchT;
     });
-
-    if (libView === 'artists') { renderArtistsView(display, filtered); return; }
 
     // Ordenar
     filtered = filtered.sort((a,b) => {
@@ -3157,17 +3112,15 @@ function renderLibraryList(display, filtered) {
     display.appendChild(list);
 }
 
-function renderArtistsView(display, filteredSongs) {
+function renderArtistsView(display) {
     if (selectedArtist) {
         renderArtistSongs(display, selectedArtist);
         return;
     }
 
-    const useSongs = filteredSongs || songs;
-
     // Agrupar canciones por artista
     const artistMap = {};
-    useSongs.forEach(s => {
+    songs.forEach(s => {
         const name = (s.author || '').trim() || 'Sin artista';
         if (!artistMap[name]) artistMap[name] = [];
         artistMap[name].push(s);
@@ -3238,15 +3191,15 @@ function renderArtistSongs(display, artistName) {
     // Grid de canciones del artista
     const grid = document.createElement('div');
     grid.className = 'files-grid';
-    grid.style.marginTop = '12px';
-
+    renderLibraryGrid(grid, artistSongs);
+    // renderLibraryGrid appends to display, so we need to use it differently
+    grid.innerHTML = '';
     artistSongs.forEach(s => {
         const imgHtml = s.coverUrl
             ? `<img src="${s.coverUrl}" loading="lazy" alt="${esc(s.name)}" style="object-fit:cover">`
             : s.url
                 ? `<img src="${s.url}" loading="lazy" alt="${esc(s.name)}">`
                 : `<div class="card-no-img"><span>🎵</span><small>${typeLabel(s.type)}</small></div>`;
-
         const card = mkEl('div', `song-card ${selectedSongId===s.id?'selected':''}`, `
             <div class="card-img">
                 ${imgHtml}
@@ -3503,7 +3456,7 @@ function renderRegistro(display) {
     leftPanel.appendChild(mkEl('div','reg-panel-header',`
         <span class="reg-panel-title">📋 Setlist</span>
         <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--accent)">
-            ${dayList.length} tema${dayList.length!==1?'s':''} · ${secToDurStr(total)}
+            ${dayList.length} tema${dayList.length!==1?'s':''} · ${total} min
         </span>
     `));
 
@@ -3538,7 +3491,7 @@ function renderRegistro(display) {
                 <span class="setlist-num">${i+1}</span>
                 <div class="setlist-thumb" title="Ver acordes">${thumbHtml}</div>
                 <div class="setlist-info">
-                    <b class="setlist-title" style="cursor:pointer;" title="Ver/Editar Información">${esc(s.name)}</b>
+                    <b>${esc(s.name)}</b>
                     <div class="setlist-tags">
                         ${s.author ? `<span style="font-size:10px;color:var(--dim)">${esc(s.author)}</span>` : ''}
                         ${s.key ? `<span class="tag tag-key" style="font-size:8px">${esc(s.key)}</span>` : ''}
@@ -3546,18 +3499,11 @@ function renderRegistro(display) {
                         ${singerHtml}
                     </div>
                 </div>
-                ${s.duration ? `<span class="setlist-dur">${secToDurStr(s.duration)}</span>` : ''}
+                ${s.duration ? `<span class="setlist-dur">${s.duration}m</span>` : ''}
                 <button class="setlist-remove" title="Quitar">×</button>
             `;
 
             item.querySelector('.setlist-thumb').onclick = () => { if(s.url) openFull(s); };
-            item.querySelector('.setlist-title').onclick = () => {
-                selectedSongId = s.id;
-                const panel = document.getElementById('inspector-panel');
-                panel.innerHTML = ''; // limpiar antes para evitar contenido anterior
-                renderLibraryInspector(panel);
-                document.getElementById('inspector-aside').classList.add('open');
-            };
             item.querySelector('.setlist-remove').onclick = () => removeFromHistory(i);
 
             // ── Drag Notion-style ──
@@ -3637,14 +3583,14 @@ function renderRegistro(display) {
     }
 
     if (total > 0) {
-        const totEl = mkEl('span','',`<span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--dim);margin-left:auto">${secToDurStr(total)}</span>`);
+        const totEl = mkEl('span','',`<span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--dim);margin-left:auto">${total} min</span>`);
         lFoot.appendChild(totEl);
     }
 
     leftPanel.appendChild(lFoot);
 
     // ── Picker derecho ──
-    const rightPanel = mkEl('div','reg-panel mobile-hidden','');
+    const rightPanel = mkEl('div','reg-panel','');
     rightPanel.appendChild(mkEl('div','reg-panel-header',`
         <span class="reg-panel-title">🎵 Agregar canciones</span>
         <span style="font-size:10px;color:var(--dim)">${songs.length} en biblioteca</span>
@@ -3764,7 +3710,7 @@ function renderInspector() {
     else if (viewMode === 'STATS')      renderStatsInspector(panel);
     else if (viewMode === 'TEAM')       renderTeamInspector(panel);
     else if (viewMode === 'ATTENDANCE') renderAttendanceInspector(panel);
-    else if (viewMode === 'CIFRADO')    window.renderCifradoInspector(panel);
+    else if (viewMode === 'CIFRADO')    renderCifradoInspector(panel);
 }
 
 function renderLibraryInspector(panel) {
@@ -3813,16 +3759,6 @@ function renderLibraryInspector(panel) {
 
             // Botones de acción en grid 2x2
             const actions = mkEl('div','mob-actions','');
-
-            // Botón Modo Presentación
-            const bp = mkEl('button','mob-action-btn','');
-            bp.style.background = 'var(--accent)';
-            bp.style.color = 'white';
-            bp.style.gridColumn = '1 / -1';
-            bp.innerHTML = `<span class="mob-btn-icon">▶</span>Modo Presentación`;
-            bp.onclick = () => { cifLoad(s.id); window.cifOpenPresent(); };
-            actions.appendChild(bp);
-
             if (s.url) {
                 const b1 = mkEl('button','mob-action-btn green','');
                 b1.innerHTML = `<span class="mob-btn-icon">🎸</span>Ver acordes`;
@@ -4022,7 +3958,8 @@ function renderLibraryInspector(panel) {
     [
         ['🎵', songs.length, 'en biblioteca'],
         ['📅', Object.keys(history).length, 'fechas'],
-        ['▶', allItems.length, 'ejecuciones']
+        ['▶', allItems.length, 'ejecuciones'],
+        ['⏱', allItems.reduce((a,b)=>a+(parseInt(b.duration)||0),0), 'min total'],
     ].forEach(([icon,val,label]) => {
         grid.appendChild(mkEl('div','stat-box',`
             <div class="stat-box-icon">${icon}</div>
@@ -4054,7 +3991,7 @@ function renderRegistroInspector(panel) {
                         <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;
                                color:${regDate===date?'var(--accent)':'var(--text)'}">
                                ${fmtDate(date)}</span>
-
+                        <span style="font-size:10px;color:var(--dim)">${mins}m</span>
                     </div>
                     <div style="font-size:10px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
                         ${items.map(x => x.name).join(' · ')}
@@ -4074,6 +4011,7 @@ function renderRegistroInspector(panel) {
     [
         ['📅', Object.keys(history).length, 'servicios'],
         ['▶', allItems.length, 'canciones'],
+        ['⏱', allItems.reduce((a,b)=>a+(parseInt(b.duration)||0),0), 'minutos'],
         ['📚', songs.length, 'en biblioteca'],
     ].forEach(([icon,val,label]) => {
         grid.appendChild(mkEl('div','stat-box',`
@@ -4106,8 +4044,6 @@ function secToDurStr(sec) {
     const s = sec % 60;
     return `${m}:${String(s).padStart(2,'0')}`;
 }
-
-
 
 function clearAudio() {
     const ap = document.getElementById('mt-audio-preview');
@@ -4777,6 +4713,7 @@ function renderStats(display) {
         ['📅', totalServices, 'Servicios'],
         ['▶', totalPlays, 'Reproducciones'],
         ['🎵', uniqueSongs, 'Canciones únicas'],
+        ['⏱', totalMinutes, 'Minutos totales'],
         ['📊', avgPerMonth, 'Promedio / mes'],
         ['📚', songs.length, 'En biblioteca'],
         ['👥', members.length, 'En el equipo'],
@@ -5000,7 +4937,59 @@ function renderTeam(display) {
     }
     leftPanel.appendChild(lBody);
 
+    // ── Historial de asignaciones (archivo) ──
+    const rightPanel = mkEl('div','team-panel','');
+    rightPanel.appendChild(mkEl('div','team-panel-header',`
+        <span class="reg-panel-title">📋 Archivo de asignaciones</span>
+        <span style="font-size:10px;color:var(--dim)">${Object.keys(singerAssignments).length} fechas</span>
+    `));
+
+    const rBody = mkEl('div','team-panel-body','');
+
+    const dates = Object.keys(singerAssignments).sort().reverse();
+    if (!dates.length) {
+        rBody.appendChild(mkEl('div','empty-state',`
+            <div class="empty-icon">📋</div>
+            <p style="font-size:12px">Sin asignaciones archivadas</p>
+            <p style="font-size:11px;color:var(--dim2)">Asigna cantantes en el Registro de Fechas</p>
+        `));
+    } else {
+        dates.forEach(date => {
+            const assignments = singerAssignments[date];
+            const dayList = history[date] || [];
+            const singers = new Set();
+            Object.values(assignments).forEach(mid => {
+                const mem = members.find(m=>m.id===mid);
+                if (mem) singers.add(mem.name.split(' ')[0]);
+            });
+
+            const row = mkEl('div','',`
+                <div style="padding:10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.13s;border-radius:6px">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                        <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--accent)">${fmtDate(date)}</span>
+                        <span style="font-size:10px;color:var(--dim)">${dayList.length} canciones</span>
+                    </div>
+                    <div style="font-size:11px;color:var(--dim)">🎤 ${singers.size ? [...singers].join(', ') : 'Sin cantantes asignados'}</div>
+                    <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:3px">
+                        ${dayList.slice(0,4).map(s => {
+                            const mid = assignments[s.id];
+                            const mem = mid ? members.find(m=>m.id===mid) : null;
+                            return `<div style="font-size:10px;background:var(--panel2);border:1px solid var(--border);border-radius:5px;padding:2px 7px;white-space:nowrap">
+                                ${esc(s.name)}${mem?` <span style="color:var(--purple)">· ${esc(mem.name.split(' ')[0])}</span>`:''}
+                            </div>`;
+                        }).join('')}
+                        ${dayList.length > 4 ? `<span style="font-size:10px;color:var(--dim2)">+${dayList.length-4} más</span>` : ''}
+                    </div>
+                </div>
+            `);
+            row.querySelector('div').onclick = () => { switchView('SETLISTS'); setRegDate(date); };
+            rBody.appendChild(row);
+        });
+    }
+
+    rightPanel.appendChild(rBody);
     layout.appendChild(leftPanel);
+    layout.appendChild(rightPanel);
     display.appendChild(layout);
 }
 
@@ -5250,45 +5239,18 @@ document.getElementById('singer-modal').addEventListener('click', function(e) {
 // ══════════════════════════════════════════════
 //  ASISTENCIA — ESTADO
 // ══════════════════════════════════════════════
-// attendance: { "YYYY-MM-DD": { type:'ensayo'|'culto', records:[{memberId, status:'present'|'late'|'absent'|'excused'|'late_excused'|'abs_excused', obs:''}] } }
+// attendance: { "YYYY-MM-DD": { type:'ensayo'|'culto', records:[{memberId, status:'present'|'late'|'absent'|'excused', obs:''}] } }
 let attendance    = {};
 let attendDate    = todayStr();
 let attendType    = 'culto';   // 'ensayo' | 'culto'
-let attendMobileTab = 'reg';   // 'reg' | 'hist'
 
 const STATUS_INFO = {
-    present      : { emoji:'✅', label:'Presente',             short:'Presente',    cls:'present'      },
-    late         : { emoji:'⏰', label:'Atraso',               short:'Atraso',      cls:'late'         },
-    late_excused : { emoji:'🟡', label:'Atraso Justificado',   short:'Atr. Just.',  cls:'late-excused' },
-    absent       : { emoji:'❌', label:'Inasistencia',         short:'Falta',       cls:'absent'       },
-    abs_excused  : { emoji:'🔵', label:'Falta Justificada',    short:'Falt. Just.', cls:'excused'      },
-    none         : { emoji:'○',  label:'Sin registrar',        short:'Sin reg.',    cls:'none'         },
+    present : { emoji:'✅', label:'Presente',    cls:'present'  },
+    late    : { emoji:'⏰', label:'Tarde',        cls:'late'     },
+    absent  : { emoji:'❌', label:'Inasistencia', cls:'absent'   },
+    excused : { emoji:'🔵', label:'Justificado',  cls:'excused'  },
+    none    : { emoji:'○',  label:'Sin registrar',cls:'none'     },
 };
-
-// Devuelve true si el miembro está sancionado (3+ atrasos sin justificar en los últimos 7 días desde 'refDate')
-function getMemberSanction(memberId, refDate) {
-    const ref = new Date(refDate);
-    // Contar atrasos sin justificar en los últimos 7 días naturales
-    let lateCount = 0;
-    Object.entries(attendance).forEach(([date, d]) => {
-        const diff = (ref - new Date(date)) / 86400000;
-        if (diff >= 0 && diff < 7) {
-            const r = d.records.find(x => x.memberId === memberId);
-            if (r && r.status === 'late') lateCount++;
-        }
-    });
-    return lateCount >= 3;
-}
-
-// Devuelve el total de atrasos sin justificar en historial completo para badge
-function getMemberLateCount(memberId) {
-    let n = 0;
-    Object.values(attendance).forEach(d => {
-        const r = d.records.find(x => x.memberId === memberId);
-        if (r && r.status === 'late') n++;
-    });
-    return n;
-}
 
 function getAttendRecord(date) {
     return attendance[date] || { type: attendType, records: [] };
@@ -5302,7 +5264,7 @@ function getMemberStatus(date, memberId) {
 function cycleStatus(date, memberId) {
     snapshot(`Cambiar asistencia`);
     if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
-    const order = ['present','late','late_excused','absent','abs_excused','none'];
+    const order = ['present','late','absent','excused','none'];
     const rec   = attendance[date].records.find(r => r.memberId === memberId);
     if (!rec) {
         attendance[date].records.push({ memberId, status:'present', obs:'' });
@@ -5310,30 +5272,8 @@ function cycleStatus(date, memberId) {
         const idx = order.indexOf(rec.status);
         rec.status = order[(idx + 1) % order.length];
     }
-    
-    // Guardar scroll positions
-    const display = document.getElementById('main-display');
-    const scrollDisplay = display ? display.scrollTop : 0;
-    
-    const panels = document.querySelectorAll('.attend-panel-body');
-    const scrollP1 = panels[0] ? panels[0].scrollTop : 0;
-    const scrollP2 = panels[1] ? panels[1].scrollTop : 0;
-    
-    const insScroll = document.querySelector('.ins-scroll');
-    const scrollIns = insScroll ? insScroll.scrollTop : 0;
-
     renderMain();
     renderInspector();
-
-    // Restaurar scroll positions
-    if (display) display.scrollTop = scrollDisplay;
-    
-    const newPanels = document.querySelectorAll('.attend-panel-body');
-    if (newPanels[0]) newPanels[0].scrollTop = scrollP1;
-    if (newPanels[1]) newPanels[1].scrollTop = scrollP2;
-    
-    const newInsScroll = document.querySelector('.ins-scroll');
-    if (newInsScroll) newInsScroll.scrollTop = scrollIns;
 }
 
 function setAttendObs(date, memberId, obs) {
@@ -5341,23 +5281,6 @@ function setAttendObs(date, memberId, obs) {
     const rec = attendance[date].records.find(r => r.memberId === memberId);
     if (rec) rec.obs = obs;
     else attendance[date].records.push({ memberId, status:'none', obs });
-
-    // Guardar scroll positions
-    const display = document.getElementById('main-display');
-    const scrollDisplay = display ? display.scrollTop : 0;
-    
-    const panels = document.querySelectorAll('.attend-panel-body');
-    const scrollP1 = panels[0] ? panels[0].scrollTop : 0;
-    const scrollP2 = panels[1] ? panels[1].scrollTop : 0;
-
-    renderMain();
-
-    // Restaurar scroll positions
-    if (display) display.scrollTop = scrollDisplay;
-    
-    const newPanels = document.querySelectorAll('.attend-panel-body');
-    if (newPanels[0]) newPanels[0].scrollTop = scrollP1;
-    if (newPanels[1]) newPanels[1].scrollTop = scrollP2;
 }
 
 function renderAttendance(display) {
@@ -5388,20 +5311,16 @@ function renderAttendance(display) {
     // ── Panel izquierdo: Registro del día ──
     const left = mkEl('div','attend-panel','');
     const rec  = getAttendRecord(attendDate);
-    const present     = rec.records.filter(r=>r.status==='present').length;
-    const late        = rec.records.filter(r=>r.status==='late').length;
-    const lateEx      = rec.records.filter(r=>r.status==='late_excused').length;
-    const absent      = rec.records.filter(r=>r.status==='absent').length;
-    const absEx       = rec.records.filter(r=>r.status==='abs_excused').length;
+    const present = rec.records.filter(r=>r.status==='present').length;
+    const late    = rec.records.filter(r=>r.status==='late').length;
+    const absent  = rec.records.filter(r=>r.status==='absent').length;
 
     left.appendChild(mkEl('div','attend-panel-header',`
         <span class="reg-panel-title">📋 ${attendType==='culto'?'⛪ Culto':'🎸 Ensayo'} — ${fmtDate(attendDate)}</span>
-        <div style="display:flex;gap:4px;flex-wrap:wrap">
-            <span class="status-pill present">${present} pres.</span>
-            ${late    ? `<span class="status-pill late">${late} atraso</span>` : ''}
-            ${lateEx  ? `<span class="status-pill late-excused">${lateEx} at.just.</span>` : ''}
-            ${absent  ? `<span class="status-pill absent">${absent} aus.</span>` : ''}
-            ${absEx   ? `<span class="status-pill excused">${absEx} f.just.</span>` : ''}
+        <div style="display:flex;gap:6px">
+            <span class="status-pill present">${present} presentes</span>
+            <span class="status-pill late">${late} tarde</span>
+            <span class="status-pill absent">${absent} ausentes</span>
         </div>
     `));
 
@@ -5418,27 +5337,19 @@ function renderAttendance(display) {
         lBody.appendChild(lbl);
 
         members.forEach(m => {
-            const sr       = getMemberStatus(attendDate, m.id);
-            const info     = STATUS_INFO[sr.status] || STATUS_INFO.none;
-            const sanctioned = getMemberSanction(m.id, attendDate);
+            const sr   = getMemberStatus(attendDate, m.id);
+            const info = STATUS_INFO[sr.status] || STATUS_INFO.none;
 
-            const row = mkEl('div','attend-row' + (sanctioned ? ' sanctioned-row' : ''),'');
+            const row = mkEl('div','attend-row','');
             row.innerHTML = `
-                <div style="display:flex; align-items:center; gap:10px; width:100%;">
-                    <button class="attend-status-btn ${info.cls}" style="flex-shrink:0;width:34px;height:34px;font-size:15px;" title="Clic para cambiar estado">${info.emoji}</button>
-                    <div class="member-avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0">${memberInitials(m.name)}</div>
-                    <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;">
-                        <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(m.name)}</div>
-                        <div style="font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${roleLabel(m.role)}${m.instrument?' · '+esc(m.instrument):''}</div>
-                        ${sanctioned ? `<div style="font-size:10px;color:#ff4040;font-weight:700;font-family:'Syne',sans-serif;margin-top:2px">🚫 SANCIÓN</div>` : ''}
-                    </div>
-                    <div style="width:72px; text-align:right; flex-shrink:0;">
-                        <span class="status-pill ${info.cls}" style="display:inline-block; width:100%; text-align:center; padding: 4px 0; box-sizing:border-box;">${info.short}</span>
-                    </div>
+                <button class="attend-status-btn ${info.cls}" title="Clic para cambiar estado">${info.emoji}</button>
+                <div class="member-avatar" style="width:30px;height:30px;font-size:11px;flex-shrink:0">${memberInitials(m.name)}</div>
+                <div style="flex:1;min-width:0">
+                    <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.name)}</div>
+                    <div style="font-size:10px;color:var(--dim)">${roleLabel(m.role)}${m.instrument?' · '+esc(m.instrument):''}</div>
                 </div>
-                <div style="width:100%; padding-left:44px; box-sizing:border-box;">
-                    <input class="attend-obs-input" placeholder="Añadir observación..." value="${esc(sr.obs||'')}" title="Observaciones">
-                </div>
+                <span class="status-pill ${info.cls}">${info.label}</span>
+                <input class="attend-obs-input" placeholder="Observación…" value="${esc(sr.obs||'')}" title="Observaciones">
             `;
             row.querySelector('.attend-status-btn').onclick = () => cycleStatus(attendDate, m.id);
             const obsInput = row.querySelector('.attend-obs-input');
@@ -5460,7 +5371,6 @@ function renderAttendance(display) {
             if (!confirm(`¿Limpiar registro de ${fmtDate(attendDate)}?`)) return;
             snapshot(`Limpiar asistencia ${fmtDate(attendDate)}`);
             delete attendance[attendDate];
-            if (typeof dbClearAttendance === 'function') dbClearAttendance(attendDate);
             renderMain(); renderInspector();
         };
         foot.appendChild(clr);
@@ -5489,9 +5399,7 @@ function renderAttendance(display) {
             const total   = members.length;
             const pres    = d.records.filter(r=>r.status==='present').length;
             const lt      = d.records.filter(r=>r.status==='late').length;
-            const ltEx    = d.records.filter(r=>r.status==='late_excused').length;
             const abs     = d.records.filter(r=>r.status==='absent').length;
-            const absEx   = d.records.filter(r=>r.status==='abs_excused').length;
 
             const row = mkEl('div','attend-history-row','');
             row.innerHTML = `
@@ -5503,11 +5411,9 @@ function renderAttendance(display) {
                     <span style="font-size:10px;color:var(--dim)">${d.records.length}/${total}</span>
                 </div>
                 <div style="display:flex;gap:5px;flex-wrap:wrap">
-                    ${pres  ?`<span class="status-pill present">✅ ${pres}</span>`:''}
-                    ${lt    ?`<span class="status-pill late">⏰ ${lt}</span>`:''}
-                    ${ltEx  ?`<span class="status-pill late-excused">🟡 ${ltEx}</span>`:''}
-                    ${abs   ?`<span class="status-pill absent">❌ ${abs}</span>`:''}
-                    ${absEx ?`<span class="status-pill excused">🔵 ${absEx}</span>`:''}
+                    ${pres?`<span class="status-pill present">✅ ${pres}</span>`:''}
+                    ${lt  ?`<span class="status-pill late">⏰ ${lt}</span>`:''}
+                    ${abs ?`<span class="status-pill absent">❌ ${abs}</span>`:''}
                 </div>
             `;
             row.onclick = () => setAttendDate(date);
@@ -5519,24 +5425,13 @@ function renderAttendance(display) {
 
     // ── TABS MÓVIL ──
     const aTabs = mkEl('div','attend-mobile-tabs','');
-    const aTabReg  = mkEl('button','attend-mobile-tab','📋 Registro');
+    const aTabReg  = mkEl('button','attend-mobile-tab active','📋 Registro');
     const aTabHist = mkEl('button','attend-mobile-tab','📅 Historial');
-    
-    if (attendMobileTab === 'hist') {
-        aTabHist.classList.add('active');
-        left.classList.add('mobile-hidden');
-    } else {
-        aTabReg.classList.add('active');
-        right.classList.add('mobile-hidden');
-    }
-
     aTabReg.onclick = () => {
-        attendMobileTab = 'reg';
         aTabReg.classList.add('active'); aTabHist.classList.remove('active');
         left.classList.remove('mobile-hidden'); right.classList.add('mobile-hidden');
     };
     aTabHist.onclick = () => {
-        attendMobileTab = 'hist';
         aTabHist.classList.add('active'); aTabReg.classList.remove('active');
         right.classList.remove('mobile-hidden'); left.classList.add('mobile-hidden');
     };
@@ -5560,69 +5455,28 @@ function renderAttendanceInspector(panel) {
     }
 
     members.forEach(m => {
-        let pr=0, lt=0, ltEx=0, ab=0, absEx=0, tot=0;
+        let pr=0, lt=0, ab=0, ex=0, tot=0;
         Object.values(attendance).forEach(d => {
             const r = d.records.find(x => x.memberId===m.id);
-            if (r) {
-                tot++;
-                if(r.status==='present')     pr++;
-                else if(r.status==='late')         lt++;
-                else if(r.status==='late_excused') ltEx++;
-                else if(r.status==='absent')       ab++;
-                else if(r.status==='abs_excused')  absEx++;
-            }
+            if (r) { tot++; if(r.status==='present')pr++; else if(r.status==='late')lt++; else if(r.status==='absent')ab++; else if(r.status==='excused')ex++; }
         });
-        const pct = tot ? Math.round((pr) / tot * 100) : 0;
-        const sanctioned = getMemberSanction(m.id, attendDate);
-
-        const roleIcons = {
-            'musico': '🎸',
-            'cantante': '🎤',
-            'tecnico': '🎧',
-            'director': '🎼'
-        };
-        const rIcon = roleIcons[m.role] || '👤';
-        const mRoleText = m.instrument || m.role || 'Miembro';
-        const colorPct = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--yellow)' : '#ff6060';
+        const pct = tot ? Math.round((pr+lt)/tot*100) : 0;
 
         sec.innerHTML += `
-            <div style="background:rgba(255,255,255,0.02); border:1px solid ${sanctioned ? 'rgba(255,60,60,0.3)' : 'var(--border)'}; border-radius:12px; padding:12px; margin-bottom:12px; position:relative; overflow:hidden; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)';this.style.background='rgba(255,255,255,0.04)';this.style.borderColor='var(--border2)';" onmouseout="this.style.transform='translateY(0)';this.style.background='rgba(255,255,255,0.02)';this.style.borderColor='${sanctioned ? 'rgba(255,60,60,0.3)' : 'var(--border)'}';">
-                
-                <!-- Progreso en la base -->
-                <div style="position:absolute; bottom:0; left:0; height:3px; width:100%; background:var(--panel2);">
-                    <div style="height:100%; width:${pct}%; background:linear-gradient(90deg, ${colorPct}88, ${colorPct}); border-radius:0 2px 2px 0; transition:width 0.8s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px ${colorPct}66;"></div>
+            <div style="padding:7px 0;border-bottom:1px solid var(--border)">
+                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+                    <span style="font-size:12px;font-weight:600">${esc(m.name)}</span>
+                    <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'}">${pct}%</span>
                 </div>
-
-                <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
-                    <!-- Avatar -->
-                    <div style="width:40px; height:40px; border-radius:10px; background:rgba(255,255,255,0.04); display:flex; align-items:center; justify-content:center; font-size:20px; border:1px solid rgba(255,255,255,0.08); flex-shrink:0;">
-                        ${rIcon}
-                    </div>
-                    
-                    <!-- Info -->
-                    <div style="flex:1; min-width:0;">
-                        <div style="display:flex; align-items:center; gap:6px;">
-                            <span style="font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-family:'Syne', sans-serif;">${esc(m.name)}</span>
-                            ${sanctioned ? '<span style="font-size:8px; background:rgba(255,60,60,0.15); color:#ff6060; padding:2px 6px; border-radius:10px; font-family:\'Syne\',sans-serif; font-weight:800; border:1px solid rgba(255,60,60,0.3); text-transform:uppercase; letter-spacing:0.5px;">Sanción</span>' : ''}
-                        </div>
-                        <div style="font-size:10px; color:var(--dim); margin-top:2px; text-transform:capitalize;">${esc(mRoleText)}</div>
-                    </div>
-
-                    <!-- Porcentaje -->
-                    <div style="display:flex; flex-direction:column; align-items:flex-end; justify-content:center;">
-                        <span style="font-family:'Syne',sans-serif; font-size:16px; font-weight:800; color:${colorPct}; text-shadow: 0 0 12px ${colorPct}44;">${pct}%</span>
-                        <span style="font-size:8px; color:var(--dim2); text-transform:uppercase; font-weight:700; letter-spacing:0.5px;">Puntualidad</span>
-                    </div>
+                <div style="display:flex;gap:4px;flex-wrap:wrap">
+                    ${pr?`<span class="status-pill present">✅${pr}</span>`:''}
+                    ${lt?`<span class="status-pill late">⏰${lt}</span>`:''}
+                    ${ab?`<span class="status-pill absent">❌${ab}</span>`:''}
+                    ${ex?`<span class="status-pill excused">🔵${ex}</span>`:''}
+                    ${!tot?`<span class="status-pill none">Sin datos</span>`:''}
                 </div>
-
-                <!-- Pastillas -->
-                <div style="display:flex; gap:5px; flex-wrap:wrap; padding-top:8px; border-top:1px dashed rgba(255,255,255,0.05);">
-                    ${pr    ?`<span class="status-pill present" style="font-size:10px; padding:3px 7px;">✅ ${pr} pres.</span>`:''}
-                    ${lt    ?`<span class="status-pill late" style="font-size:10px; padding:3px 7px;">⏰ ${lt} atr.</span>`:''}
-                    ${ltEx  ?`<span class="status-pill late-excused" style="font-size:10px; padding:3px 7px;">🟡 ${ltEx} at.j.</span>`:''}
-                    ${ab    ?`<span class="status-pill absent" style="font-size:10px; padding:3px 7px;">❌ ${ab} fal.</span>`:''}
-                    ${absEx ?`<span class="status-pill excused" style="font-size:10px; padding:3px 7px;">🔵 ${absEx} f.j.</span>`:''}
-                    ${!tot  ?`<span class="status-pill none" style="font-size:10px; padding:3px 7px;">Sin registros</span>`:''}
+                <div style="margin-top:5px;background:var(--panel2);border-radius:4px;height:4px;overflow:hidden">
+                    <div style="height:100%;width:${pct}%;background:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'};border-radius:4px;transition:width 0.4s"></div>
                 </div>
             </div>`;
     });
@@ -5636,10 +5490,8 @@ function renderAttendanceInspector(panel) {
     [
         ['📅', Object.keys(attendance).length, 'sesiones'],
         ['✅', allRec.filter(r=>r.status==='present').length, 'presentes'],
-        ['⏰', allRec.filter(r=>r.status==='late').length, 'atrasos'],
-        ['🟡', allRec.filter(r=>r.status==='late_excused').length, 'atr.just.'],
+        ['⏰', allRec.filter(r=>r.status==='late').length, 'tardanzas'],
         ['❌', allRec.filter(r=>r.status==='absent').length, 'ausencias'],
-        ['🔵', allRec.filter(r=>r.status==='abs_excused').length, 'f.just.'],
     ].forEach(([icon,val,label]) => {
         grid.appendChild(mkEl('div','stat-box',`<div class="stat-box-icon">${icon}</div><div class="stat-box-val">${val}</div><div class="stat-box-label">${label}</div>`));
     });
@@ -5865,9 +5717,8 @@ async function loadFromSupabase() {
             youtube: r.youtube||'', letter: r.letter||'', url: r.url||'',
             multitrack: r.multitrack||false,
             cifrado: r.cifrado || null,  // Keep as raw string; cifLoad will parse it
-            // Preferir Supabase, si no hay → buscar en localStorage (backups)
+            // Preferir Supabase, si no hay → buscar en localStorage
             coverUrl:  r.cover_url  || localStorage.getItem('cover_'+r.id) || null,
-            url:       r.url        || localStorage.getItem('acordes_'+r.id) || '', 
             audioUrl:  r.audio_url  || null,
             audioData: null,   // migrado a Storage, no se usa base64
             driveUrl:  r.drive_url  || null
@@ -5980,14 +5831,6 @@ async function uploadImageToStorage(songId, base64DataUrl, type) {
     // type = 'cover' | 'acordes'
     if (!base64DataUrl || !base64DataUrl.startsWith('data:')) return base64DataUrl;
     try {
-        // Guardar siempre en localStorage como fallback (antes de intentar Storage)
-        if (type === 'cover') {
-            try { localStorage.setItem('cover_' + songId, base64DataUrl); } catch(e) {}
-        }
-        if (type === 'acordes') {
-            try { localStorage.setItem('acordes_' + songId, base64DataUrl); } catch(e) {}
-        }
-
         // Convertir base64 a Blob
         const parts   = base64DataUrl.split(',');
         const mime    = parts[0].match(/:(.*?);/)[1];
@@ -5998,28 +5841,19 @@ async function uploadImageToStorage(songId, base64DataUrl, type) {
         const blob    = new Blob([bytes], { type: mime });
         const path    = `${songId}/${type}.${ext}`;
 
-        // Subir a Storage
+        // Eliminar versión anterior
+        await sb.storage.from('multitracks').remove([path]);
+
         const { error } = await sb.storage.from('multitracks').upload(path, blob, {
-            cacheControl: '31536000', upsert: true, contentType: mime
+            cacheControl: '3600', upsert: true, contentType: mime
         });
-        if (error) {
-            console.warn('[IMG STORAGE] Upload error (usando localStorage fallback):', error);
-            return base64DataUrl; // devolver base64: dbSaveSong lo filtrará pero localStorage lo tiene
-        }
+        if (error) { console.error('[IMG STORAGE]', error); return base64DataUrl; }
 
         const { data } = sb.storage.from('multitracks').getPublicUrl(path);
-        const publicUrl = data?.publicUrl || null;
-        if (publicUrl) {
-            // Upload exitoso → podemos limpiar localStorage del tipo correspondiente
-            try { 
-                if (type === 'cover') localStorage.removeItem('cover_' + songId);
-                if (type === 'acordes') localStorage.removeItem('acordes_' + songId);
-            } catch(e) {}
-        }
-        return publicUrl || base64DataUrl;
+        return data?.publicUrl || base64DataUrl;
     } catch(e) {
-        console.error('[IMG STORAGE] Error fatal:', e);
-        return base64DataUrl; // localStorage ya tiene el fallback
+        console.error('[IMG STORAGE] Error:', e);
+        return base64DataUrl; // fallback: devolver base64 original
     }
 }
 
@@ -6380,7 +6214,7 @@ window.assignSinger = function(songId, memberId) {
 const _origCycleStatus = cycleStatus;
 window.cycleStatus = function(date, memberId) {
     if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
-    const order = ['present','late','late_excused','absent','abs_excused','none'];
+    const order = ['present','late','absent','excused','none'];
     const rec   = attendance[date].records.find(r => r.memberId === memberId);
     let newStatus;
     if (!rec) {
@@ -6391,16 +6225,6 @@ window.cycleStatus = function(date, memberId) {
         newStatus = order[(idx + 1) % order.length];
         rec.status = newStatus;
     }
-    // Sanction check: warn if 3+ unexcused lates this week
-    const lateCount = Object.entries(attendance).filter(([d,day]) => {
-        const ref = new Date(date); const dt = new Date(d);
-        const diff = (ref - dt) / 86400000;
-        return diff >= 0 && diff < 7;
-    }).reduce((acc, [,day]) => {
-        const r = day.records.find(x => x.memberId === memberId);
-        return acc + (r && r.status === 'late' ? 1 : 0);
-    }, 0);
-    if (lateCount >= 3) toast('⚠️ 3 atrasos sin justificar — SANCIÓN: no puede tocar esta semana');
     // Render BEFORE the async call so UI updates instantly without waiting for Supabase
     renderMain(); renderInspector();
     // Sync to Supabase in background — won't block or break UI
@@ -6595,16 +6419,6 @@ function cifTransposeAll(semitones) {
     }
     
     renderCifradoEditor();
-    
-    // Actualizar el indicador de tono en la barra de herramientas
-    const kd = document.getElementById('cif-key-display');
-    if (kd) {
-        const sCurrent = songs.find(x => x.id === cifSongId);
-        kd.textContent = sCurrent && sCurrent.key 
-            ? (typeof cifFormatChord === 'function' ? cifFormatChord(sCurrent.key) : sCurrent.key)
-            : '—';
-    }
-    if (typeof window._cifUpdateTopBanner === 'function') window._cifUpdateTopBanner();
     toast(`🔀 Transpuesto ${semitones > 0 ? '+' : ''}${semitones} semitono${Math.abs(semitones)!==1?'s':''}`);
 }
 
@@ -7075,10 +6889,10 @@ function cifOpenPrefs() {
             viewRow.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
             btn.classList.add('selected');
             // Toggle chord visibility
-            document.querySelectorAll('.cif-wt-chord,.cprev-chord,.cpres-chord,.cprev-co,.cpres-co,.cpres-co-chip').forEach(el=>{
+            document.querySelectorAll('.cif-wt-chord,.cprev-chord,.cpres-chord').forEach(el=>{
                 el.style.display = _cifPrefs.showChords ? '' : 'none';
             });
-            document.querySelectorAll('.cif-wt-text,.cprev-text,.cpres-text,.cpres-lyric').forEach(el=>{
+            document.querySelectorAll('.cif-wt-text,.cprev-text,.cpres-text').forEach(el=>{
                 el.style.display = _cifPrefs.showLyrics ? '' : 'none';
             });
         };
@@ -7137,52 +6951,25 @@ function renderCifrado(display) {
     const tb = document.createElement('div');
     tb.className = 'cif-top-bar';
 
-    const selWrap = document.createElement('div');
-    selWrap.style.cssText = 'position:relative; flex:1; min-width:160px; max-width:300px;';
-
-    const sel = document.createElement('input');
+    const sel = document.createElement('select');
     sel.className = 'cif-song-sel';
-    sel.setAttribute('list', 'cif-songs-data');
-    sel.placeholder = '🔍 Buscar canción...';
-    sel.style.width = '100%';
-    sel.style.boxSizing = 'border-box';
+    sel.innerHTML = '<option value="">— Selecciona una canción —</option>' +
+        [...songs].sort((a,b)=>a.name.localeCompare(b.name)).map(s=>
+            `<option value="${s.id}" ${s.id===cifSongId?'selected':''}>${esc(s.name)}${s.author?' · '+esc(s.author):''}</option>`
+        ).join('');
+    sel.onchange = ()=>cifLoad(sel.value);
+    tb.appendChild(sel);
 
-    let dl = document.getElementById('cif-songs-data');
-    if (!dl) {
-        dl = document.createElement('datalist');
-        dl.id = 'cif-songs-data';
-        document.body.appendChild(dl);
-    }
-    dl.innerHTML = [...songs].sort((a,b)=>a.name.localeCompare(b.name)).map(s=>
-        `<option value="${esc(s.name)}${s.author?' · '+esc(s.author):''}" data-id="${s.id}"></option>`
-    ).join('');
+    // Undo / Redo
+    const btnUndo = document.createElement('button');
+    btnUndo.className='cif-tbtn undo-btn2'; btnUndo.title='Deshacer (Ctrl+Z)';
+    btnUndo.textContent='↩'; btnUndo.disabled=!cifUndoStack.length;
+    btnUndo.onclick=cifUndo; tb.appendChild(btnUndo);
 
-    const textOf = (s) => `${s.name}${s.author ? ' · ' + s.author : ''}`;
-    if (cifSongId) {
-        const s = songs.find(x => x.id === cifSongId);
-        if (s) sel.value = textOf(s);
-    }
-
-    sel.addEventListener('input', function() {
-        const opt = [...dl.options].find(o => o.value === this.value);
-        if (opt && opt.dataset.id && opt.dataset.id !== cifSongId) {
-            cifLoad(opt.dataset.id);
-            this.blur();
-            refreshUI();
-        }
-    });
-    sel.addEventListener('focus', function() { this.value = ''; });
-    sel.addEventListener('blur', function() {
-        if (cifSongId) {
-            const s = songs.find(x => x.id === cifSongId);
-            if (s && !this.value) this.value = textOf(s);
-        }
-    });
-
-    selWrap.appendChild(sel);
-    tb.appendChild(selWrap);
-
-
+    const btnRedo = document.createElement('button');
+    btnRedo.className='cif-tbtn undo-btn2'; btnRedo.title='Rehacer (Ctrl+Y)';
+    btnRedo.textContent='↪'; btnRedo.disabled=!cifRedoStack.length;
+    btnRedo.onclick=cifRedo; tb.appendChild(btnRedo);
 
     if (cifSongId) {
         const btnSave=document.createElement('button');
@@ -7842,7 +7629,6 @@ function cifRenderPreview() {
         if (isChordOnly) {
             const co = document.createElement('div');
             co.className = 'cprev-co';
-            if (!_cifPrefs.showChords) co.style.display = 'none';
             (sec.coChords||[]).forEach(ch => {
                 const s = document.createElement('span');
                 s.className = 'cprev-co-chip'; s.textContent = cifFormatChord(ch);
@@ -7876,7 +7662,6 @@ function buildPreviewLine(line, map, wtCls, chordCls, textCls) {
             const wt = document.createElement('span');
             wt.className = wtCls;
             const t = document.createElement('span'); t.className = textCls; t.textContent = lyric.slice(i,j);
-            if (!_cifPrefs.showLyrics) t.style.display = 'none';
             wt.appendChild(t);
             row.appendChild(wt);
             i = j;
@@ -7889,9 +7674,7 @@ function buildPreviewLine(line, map, wtCls, chordCls, textCls) {
             const c = document.createElement('span');
             c.className = chordCls + (entry ? '' : ' empty');
             c.textContent = entry ? cifFormatChord(entry.chord) : '\u00a0';
-            if (!_cifPrefs.showChords) c.style.display = 'none';
             const t = document.createElement('span'); t.className = textCls; t.textContent = lyric.slice(i,j);
-            if (!_cifPrefs.showLyrics) t.style.display = 'none';
             wt.appendChild(c); wt.appendChild(t);
             row.appendChild(wt);
             i = j;
@@ -7901,8 +7684,7 @@ function buildPreviewLine(line, map, wtCls, chordCls, textCls) {
     if (!lyric.trim() && map.length) {
         map.forEach(entry => {
             const wt = document.createElement('span'); wt.className = wtCls;
-            const c = document.createElement('span'); c.className = chordCls; c.textContent = cifFormatChord(entry.chord);
-            if (!_cifPrefs.showChords) c.style.display = 'none';
+            const c = document.createElement('span'); c.className = chordCls; c.textContent = entry.chord;
             wt.appendChild(c); row.appendChild(wt);
         });
     }
@@ -8851,49 +8633,14 @@ window.renderCifrado = function(display) {
     const tb = document.createElement('div');
     tb.className = 'cif-top-bar';
 
-    const selWrap = document.createElement('div');
-    selWrap.style.cssText = 'position:relative; flex:1; min-width:160px; max-width:300px;';
-
-    const sel = document.createElement('input');
+    const sel = document.createElement('select');
     sel.className = 'cif-song-sel';
-    sel.setAttribute('list', 'cif-songs-data');
-    sel.placeholder = '🔍 Buscar canción...';
-    sel.style.width = '100%';
-    sel.style.boxSizing = 'border-box';
-
-    let dl = document.getElementById('cif-songs-data');
-    if (!dl) {
-        dl = document.createElement('datalist');
-        dl.id = 'cif-songs-data';
-        document.body.appendChild(dl);
-    }
-    dl.innerHTML = [...songs].sort((a,b)=>a.name.localeCompare(b.name)).map(s=>
-        `<option value="${esc(s.name)}${s.author?' · '+esc(s.author):''}" data-id="${s.id}"></option>`
-    ).join('');
-
-    const textOf = (s) => `${s.name}${s.author ? ' · ' + s.author : ''}`;
-    if (cifSongId) {
-        const s = songs.find(x => x.id === cifSongId);
-        if (s) sel.value = textOf(s);
-    }
-
-    sel.addEventListener('input', function() {
-        const opt = [...dl.options].find(o => o.value === this.value);
-        if (opt && opt.dataset.id && opt.dataset.id !== cifSongId) {
-            cifLoad(opt.dataset.id);
-            this.blur();
-        }
-    });
-    sel.addEventListener('focus', function() { this.value = ''; });
-    sel.addEventListener('blur', function() {
-        if (cifSongId) {
-            const s = songs.find(x => x.id === cifSongId);
-            if (s && !this.value) this.value = textOf(s);
-        }
-    });
-
-    selWrap.appendChild(sel);
-    tb.appendChild(selWrap);
+    sel.innerHTML = '<option value="">— Selecciona una canción —</option>' +
+        [...songs].sort((a,b) => a.name.localeCompare(b.name)).map(s =>
+            `<option value="${s.id}" ${s.id === cifSongId ? 'selected' : ''}>${esc(s.name)}${s.author ? ' · ' + esc(s.author) : ''}</option>`
+        ).join('');
+    sel.onchange = () => cifLoad(sel.value);
+    tb.appendChild(sel);
 
     const btnUndo = document.createElement('button');
     btnUndo.className = 'cif-tbtn'; btnUndo.title = 'Deshacer (Ctrl+Z)';
@@ -8938,22 +8685,6 @@ window.renderCifrado = function(display) {
         <span class="cif-size-lbl" id="cif-chord-size-lbl">${window.cifChordSize||13}</span>
         <button class="cif-size-btn" onclick="cifAdjSize('chord',1)">+</button>`;
     tb.appendChild(sc2);
-    
-    // Controles de Transposición
-    if (cifSongId) {
-        const sc3 = document.createElement('div'); sc3.className = 'cif-size-ctrl trans-grp'; sc3.title = 'Transponer';
-        sc3.innerHTML = `<span class="cif-size-lbl" style="font-size:9px;opacity:.7;color:var(--accent)">TONO</span>
-            <button class="cif-size-btn" onclick="if(typeof cifTransposeAll==='function') cifTransposeAll(-1)" style="font-size:16px">−</button>
-            <span class="cif-size-lbl cif-key-display" id="cif-key-display" title="Haz clic para transponer" style="font-size:12px;font-weight:800;color:#fff;cursor:pointer;padding:0 2px">${(() => { const s = songs.find(x=>x.id===cifSongId); return s && s.key ? (typeof cifFormatChord==='function'?cifFormatChord(s.key):s.key) : '—'; })()}</span>
-            <button class="cif-size-btn" onclick="if(typeof cifTransposeAll==='function') cifTransposeAll(1)" style="font-size:16px">+</button>`;
-        tb.appendChild(sc3);
-        
-        setTimeout(() => {
-            const kd = document.getElementById('cif-key-display');
-            if (kd) kd.onclick = (e) => { e.stopPropagation(); if(typeof window.cifOpenTransposerPopup==='function') window.cifOpenTransposerPopup(kd); };
-        }, 50);
-    }
-
     wrap.appendChild(tb);
 
     // Body
@@ -9298,7 +9029,7 @@ console.log('✅ AdoraChord Cifrado PATCH applied — all 11 fixes active');
 .cif-wt.sp .cif-wt-chord { display: none !important; }
 
 .cif-wt-chord {
-    font-family: 'DM Sans', sans-serif !important;
+    font-family: 'Syne', sans-serif !important;
     font-size: var(--caf, 13px) !important;
     font-weight: 800 !important;
     color: var(--accent) !important;
@@ -9621,7 +9352,7 @@ console.log('✅ AdoraChord Cifrado PATCH applied — all 11 fixes active');
     align-items: center !important;
 }
 .cif-co-chip {
-    font-family: 'DM Sans', sans-serif !important;
+    font-family: 'Syne', sans-serif !important;
     font-size: var(--caf, 13px) !important;
     font-weight: 800 !important;
     color: var(--accent) !important;
@@ -9764,7 +9495,22 @@ window.renderCifradoInspector = function(panel) {
     });
     wrap.appendChild(stats);
 
-    // Acordes usados: oculto
+    // ── Acordes usados
+    if (allChords.size > 0) {
+        const chordBar = document.createElement('div');
+        chordBar.style.cssText = 'padding:8px 14px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;flex-wrap:wrap;gap:4px;align-items:center;';
+        const lbl = document.createElement('span');
+        lbl.style.cssText = 'font-size:8px;color:rgba(255,255,255,.3);font-family:Syne,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-right:4px;';
+        lbl.textContent = 'Acordes:';
+        chordBar.appendChild(lbl);
+        [...allChords].sort().forEach(ch => {
+            const c = document.createElement('span');
+            c.style.cssText = 'font-family:Syne,sans-serif;font-size:10px;font-weight:800;color:var(--accent);background:rgba(232,87,42,.1);border:1px solid rgba(232,87,42,.2);border-radius:4px;padding:1px 6px;';
+            c.textContent = ch;
+            chordBar.appendChild(c);
+        });
+        wrap.appendChild(chordBar);
+    }
 
     // ── Acciones rápidas
     const actions = document.createElement('div');
@@ -9970,7 +9716,7 @@ console.log('✅ AdoraChord PRO UI v4 — inspector activo, layout pro');
 /* PREVIEW EN INSPECTOR: sílabas también pegadas */
 .cif-ins-wt { display: inline-flex !important; flex-direction: column !important; align-items: center !important; flex-shrink: 0 !important; padding: 0 !important; }
 .cif-ins-text { white-space: pre !important; padding: 0 1px !important; letter-spacing: 0 !important; font-size: 10px !important; line-height: 1.45 !important; display: block !important; color: rgba(255,255,255,.78) !important; }
-.cif-ins-chord { font-family: 'DM Sans',sans-serif !important; font-size: 9px !important; font-weight: 800 !important; color: var(--accent) !important; white-space: nowrap !important; min-height: 12px !important; line-height: 1.25 !important; display: block !important; padding: 0 1px !important; }
+.cif-ins-chord { font-family: 'Syne',sans-serif !important; font-size: 9px !important; font-weight: 800 !important; color: var(--accent) !important; white-space: nowrap !important; min-height: 12px !important; line-height: 1.25 !important; display: block !important; padding: 0 1px !important; }
 .cif-ins-chord.empty { opacity: 0 !important; }
 .cif-ins-line { display: flex !important; flex-wrap: wrap !important; align-items: flex-end !important; gap: 0 !important; margin-bottom: 5px !important; }
 
@@ -10084,7 +9830,22 @@ window.renderCifradoInspector = function(panel) {
     });
     wrap.appendChild(statsRow);
 
-    // En uso: oculto
+    // ── Acordes usados ──
+    if (allChords.size > 0) {
+        const chordBar = document.createElement('div');
+        chordBar.style.cssText = 'padding:8px 12px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;flex-wrap:wrap;gap:4px;align-items:center;';
+        const lbl = document.createElement('span');
+        lbl.style.cssText = 'font-size:8px;color:rgba(255,255,255,.3);font-family:Syne,sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.6px;flex-shrink:0;margin-right:2px;';
+        lbl.textContent = 'En uso:';
+        chordBar.appendChild(lbl);
+        [...allChords].sort().forEach(ch => {
+            const c = document.createElement('span');
+            c.style.cssText = 'font-family:Syne,sans-serif;font-size:10px;font-weight:800;color:var(--accent);background:rgba(232,87,42,.1);border:1px solid rgba(232,87,42,.22);border-radius:4px;padding:1px 6px;white-space:nowrap;';
+            c.textContent = ch;
+            chordBar.appendChild(c);
+        });
+        wrap.appendChild(chordBar);
+    }
 
     // ── Acciones ──
     const actions = document.createElement('div');
@@ -10287,7 +10048,7 @@ s.textContent = `
 }
 
 .cif-wt-chord {
-    font-family: 'DM Sans', sans-serif !important;
+    font-family: 'Syne', sans-serif !important;
     font-size: var(--caf, 13px) !important;
     font-weight: 800 !important;
     color: var(--accent) !important;
@@ -12629,7 +12390,6 @@ window.cifBuildPresentFixed = function() {
         if (info.chordsOnly) {
             const co = document.createElement('div');
             co.className = 'cpres-co';
-            if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showChords) co.style.display = 'none';
             (sec.coChords || []).filter(Boolean).forEach(ch => {
                 const sp = document.createElement('span');
                 sp.className = 'cpres-co-chip';
@@ -12663,14 +12423,10 @@ window.cifBuildPresentFixed = function() {
                             const sp = document.createElement('span');
                             sp.style.cssText = `display:inline-flex;flex-direction:column;align-items:center;width:${Math.round(fs*.28)}px;flex-shrink:0;`;
                             const ph = document.createElement('span');
-                            ph.className = 'cpres-chord';
                             ph.style.cssText = `display:block;font-size:${cfs}px;visibility:hidden;`;
-                            if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showChords) ph.style.display = 'none';
                             ph.textContent = '\u00a0';
                             const tx = document.createElement('span');
-                            tx.className = 'cpres-text';
                             tx.style.cssText = `display:block;font-size:${fs}px;line-height:1.45;color:#f0ebe3;font-family:'DM Sans',sans-serif;`;
-                            if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showLyrics) tx.style.display = 'none';
                             tx.textContent = ' ';
                             sp.appendChild(ph); sp.appendChild(tx);
                             ldiv.appendChild(sp);
@@ -12688,15 +12444,11 @@ window.cifBuildPresentFixed = function() {
                                 const wt = document.createElement('span');
                                 wt.style.cssText = 'display:inline-flex;flex-direction:column;align-items:center;flex-shrink:0;';
                                 const c = document.createElement('span');
-                                c.className = 'cpres-chord';
-                                c.style.cssText = `display:block;font-family:'DM Sans',sans-serif;font-size:${cfs}px;font-weight:800;white-space:nowrap;line-height:1.3;padding:0 1px;`;
-                                if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showChords) c.style.display = 'none';
+                                c.style.cssText = `display:block;font-family:'Syne',sans-serif;font-size:${cfs}px;font-weight:800;white-space:nowrap;line-height:1.3;padding:0 1px;`;
                                 if (entry?.chord) { c.style.color = 'var(--accent)'; c.textContent = entry.chord; }
                                 else { c.style.visibility = 'hidden'; c.textContent = '\u00a0'; }
                                 const t = document.createElement('span');
-                                t.className = 'cpres-text';
                                 t.style.cssText = `display:block;font-size:${fs}px;line-height:1.45;color:#f0ebe3;white-space:pre;padding:0 1px;font-family:'DM Sans',sans-serif;`;
-                                if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showLyrics) t.style.display = 'none';
                                 t.textContent = s;
                                 wt.appendChild(c); wt.appendChild(t);
                                 ldiv.appendChild(wt);
@@ -12711,9 +12463,7 @@ window.cifBuildPresentFixed = function() {
                         const wt = document.createElement('span');
                         wt.style.cssText = `display:inline-flex;flex-direction:column;align-items:center;flex-shrink:0;margin-right:${Math.round(fs*.4)}px;`;
                         const c = document.createElement('span');
-                        c.className = 'cpres-chord';
-                        c.style.cssText = `font-family:'DM Sans',sans-serif;font-size:${cfs}px;font-weight:800;color:var(--accent);`;
-                        if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showChords) c.style.display = 'none';
+                        c.style.cssText = `font-family:'Syne',sans-serif;font-size:${cfs}px;font-weight:800;color:var(--accent);`;
                         c.textContent = e.chord;
                         wt.appendChild(c);
                         ldiv.appendChild(wt);
@@ -12734,13 +12484,11 @@ window.cifBuildPresentFixed = function() {
                             `display:inline-flex;flex-direction:column;align-items:center;` +
                             `flex-shrink:0;margin-right:${Math.round(fs*.3)}px;`;
                         const c = document.createElement('span');
-                        c.className = 'cpres-chord';
                         c.style.cssText =
-                            `font-family:'DM Sans',sans-serif;font-size:${cfs}px;font-weight:800;` +
+                            `font-family:'Syne',sans-serif;font-size:${cfs}px;font-weight:800;` +
                             `color:var(--accent);background:rgba(232,87,42,.13);` +
                             `border:1px solid rgba(232,87,42,.3);border-radius:5px;` +
                             `padding:1px 7px;white-space:nowrap;line-height:1.3;`;
-                        if (typeof _cifPrefs !== 'undefined' && !_cifPrefs.showChords) c.style.display = 'none';
                         c.textContent = entry.chord;
                         // Spacer para alinear verticalmente con el texto
                         const ph = document.createElement('span');
@@ -13439,12 +13187,13 @@ document.head.appendChild(st);
 console.log('✅ Patch v23: visual — controles a la derecha, handle alineado');
 
 
-/* ── patch_seed.js — ELIMINADO (migración ya completada) ── */
-// El seed fue removido permanentemente. Los datos se gestionan
-// exclusivamente desde Supabase. No re-insertar al arranque.
+/* ── patch_seed.js ── */
+
+// ════════════════════════════════════════════════════════════════════
+//  PATCH SEED — Insertar datos en Supabase nuevo al primer arranque
+//  Solo corre una vez (localStorage flag 'adorachord_seeded_v2')
+// ════════════════════════════════════════════════════════════════════
 (function seedNewSupabase() {
-// SEED DESACTIVADO — retornar inmediatamente sin hacer nada
-return;
 
 if (localStorage.getItem('adorachord_seeded_v2')) {
     console.log('[SEED] Ya sembrado, skip');
@@ -13724,9 +13473,51 @@ window.renderCifrado = function(display) {
     const tb = display.querySelector('.cif-top-bar');
     if (!tb) return;
 
-    // Notación fija en americano (toggle oculto)
+    // Remover duplicados si los hay
     tb.querySelectorAll('.cif-not-toggle, .cif-key-display').forEach(el => el.remove());
-    cifSetNotation('american');
+
+    const notationGroup = document.createElement('div');
+    notationGroup.className = 'cif-not-toggle';
+    notationGroup.style.marginLeft = 'auto';
+
+    const btnAm = document.createElement('button');
+    btnAm.className = 'cif-not-btn' + (_cifPrefs.notation === 'american' ? ' active' : '');
+    btnAm.textContent = 'ABC';
+    btnAm.onclick = () => {
+        cifSetNotation('american');
+        notationGroup.querySelectorAll('.cif-not-btn').forEach(b => b.classList.remove('active'));
+        btnAm.classList.add('active');
+    };
+
+    const btnLat = document.createElement('button');
+    btnLat.className = 'cif-not-btn' + (_cifPrefs.notation === 'latin' ? ' active' : '');
+    btnLat.textContent = 'DoReMi';
+    btnLat.onclick = () => {
+        cifSetNotation('latin');
+        notationGroup.querySelectorAll('.cif-not-btn').forEach(b => b.classList.remove('active'));
+        btnLat.classList.add('active');
+    };
+
+    notationGroup.appendChild(btnAm);
+    notationGroup.appendChild(btnLat);
+    tb.insertBefore(notationGroup, tb.querySelector('.cif-size-ctrl'));
+
+    // Indicador de tonalidad cerca de los botones de transposición
+    if (cifSongId) {
+        const s = songs.find(x => x.id === cifSongId);
+        if (s && s.key) {
+            const keyDisp = document.createElement('div');
+            keyDisp.className = 'cif-key-display';
+            keyDisp.textContent = cifFormatChord(s.key);
+            keyDisp.title = 'Tonalidad actual';
+            
+            // Insertar antes de los controles de transposición
+            const transCtrl = [...tb.querySelectorAll('.cif-size-ctrl')].find(c => c.title.includes('Transponer'));
+            if (transCtrl) {
+                transCtrl.parentNode.insertBefore(keyDisp, transCtrl);
+            }
+        }
+    }
 };
 
 // 3. Sobrescribir el renderizado de presentación para usar cifFormatChord
@@ -13741,7 +13532,7 @@ window.cifBuildPresentFixed = function() {
     // Esto es más seguro que reescribir toda la función de v16 que es compleja
     body.querySelectorAll('.cpres-chord, .cpres-co-chip, .cpres-line span').forEach(el => {
         // Solo si parece un acorde (Syne font o clase específica)
-        if (el.classList.contains('cpres-chord') || el.classList.contains('cpres-co-chip')) {
+        if (el.style.fontFamily.includes('Syne') || el.classList.contains('cpres-chord') || el.classList.contains('cpres-co-chip')) {
             const originalChord = el.getAttribute('data-original-chord') || el.textContent;
             if (originalChord && originalChord !== '\u00a0' && originalChord.trim()) {
                 if (!el.hasAttribute('data-original-chord')) el.setAttribute('data-original-chord', originalChord);
@@ -13956,180 +13747,29 @@ console.log('✅ Patch v26: Nomenclatura Latina y Transposición Robusta integra
 
 var GVURL = ''; // Se auto-configurará buscando modelos compatibles
 
-var GPROMPT = `Eres un experto en transcripción de hojas de acordes musicales. Analiza CUIDADOSAMENTE esta imagen y extrae TODO el contenido en formato JSON.
+var GPROMPT = 'Analiza esta imagen de una hoja de acordes musicales y extrae la información en JSON estricto.\n\nReglas:\n1. Extrae TODAS las secciones (Intro, Verso, Coro, Puente, Outro, etc.)\n2. Secciones con letra: extrae cada línea con los acordes y el índice de palabra (0-based) sobre el que va el acorde.\n3. Secciones sin letra (Intro, Instrumental, Outro): lista solo los acordes.\n4. Tipos válidos: intro, verse, prechorus, chorus, bridge, instrumental, outro, tag\n5. Detecta la tonalidad si aparece.\n\nResponde ÚNICAMENTE con JSON válido exactamente así:\n{"key":"G","bpm":120,"sections":[{"type":"intro","label":"Intro","chordsOnly":true,"chords":["G","D","Em","C"]},{"type":"verse","label":"Verso 1","chordsOnly":false,"lines":[{"lyric":"En mi corazón","chords":[{"word":0,"chord":"G"},{"word":2,"chord":"D"}]}]}]}\n\nIMPORTANTE: Escapa cualquier comilla doble interna usando backslash (\\") y NUNCA dejes comas sueltas al final de un objeto o arreglo (no trailing commas). Responde SOLO JSON sin markdown.';
 
-MAPEO DE SECCIONES (nombren en español → tipo JSON):
-- INTRO → "intro" (chordsOnly: true)
-- VERSO, ESTROFA, VERSE → "verse" (chordsOnly: false) 
-- PRE-CORO, PRECORO → "prechorus" (chordsOnly: false)
-- CORO, CHORUS → "chorus" (chordsOnly: false)
-- PUENTE, BRIDGE → "bridge" (chordsOnly: false)
-- ESTRIBILLO → "tag" (chordsOnly: false)
-- SOLO, INSTRUMENTAL → "instrumental" (chordsOnly: true)
-- OUTRO, FINAL → "outro" (chordsOnly: false)
-
-REGLAS CRÍTICAS DE EXTRACCIÓN:
-1. Para secciones CON letra (chordsOnly: false): extrae CADA línea de letra con sus acordes indicando en qué PALABRA (índice 0-based) va cada acorde.
-2. Para secciones SOLO ACORDES (chordsOnly: true): extrae los acordes en el array "chords". NUNCA dejes este array vacío si hay acordes en la imagen.
-3. NUNCA dejes una sección completamente vacía. Si hay acordes encima de palabras, inclúyelos.
-4. Incluye la tonalidad de la canción en "key" con modo mayor/menor (ej: "C#m", "G", "Bbm").
-5. El índice "word" es 0-based: primera palabra = 0, segunda = 1, etc.
-
-FORMATO DE RESPUESTA (JSON PURO, SIN MARKDOWN, SIN comentarios):
-{
-  "key": "C#m",
-  "bpm": 0,
-  "sections": [
-    {
-      "type": "intro",
-      "label": "Intro",
-      "chordsOnly": true,
-      "chords": ["C#m", "G#m", "A", "C#m", "B"],
-      "lines": []
-    },
-    {
-      "type": "verse",
-      "label": "Estrofa",
-      "chordsOnly": false,
-      "chords": [],
-      "lines": [
-        {
-          "lyric": "En mi corazón hay un clamor",
-          "chords": [
-            {"word": 0, "chord": "C#m"},
-            {"word": 4, "chord": "G#m"}
-          ]
-        },
-        {
-          "lyric": "deseo insaciable",
-          "chords": [
-            {"word": 0, "chord": "A"}
-          ]
-        }
-      ]
-    },
-    {
-      "type": "chorus",
-      "label": "Coro",
-      "chordsOnly": false,
-      "chords": [],
-      "lines": [
-        {
-          "lyric": "Llena hoy mi lámpara Señor",
-          "chords": [
-            {"word": 0, "chord": "C#m"},
-            {"word": 4, "chord": "B"}
-          ]
-        }
-      ]
-    }
-  ]
-}
-
-REGLAS DE FORMATO JSON:
-- NO incluyas markdown (sin \`\`\`json)
-- NO incluyas comas al final de arrays u objetos
-- Escapa comillas internas con backslash
-- Para el campo "key": incluye si es mayor o menor (ej: "C#m" para C# menor, "G" para G mayor)
-- Responde SOLO con el JSON, nada más`;
-
-
-// ── Inyectar botones 📸 IA y 📝 OCR en toolbar ───────────────────────────
+// ── Inyectar botón 📸 IA en toolbar ───────────────────────────
 var _origRenderCif = window.renderCifrado;
-var _buttonsInjected = false;
-
-function injectButtons() {
-    if (_buttonsInjected) return;
-    
-    try {
-        // Buscar la barra de herramientas
-        var tb = document.querySelector('.cif-top-bar') || document.querySelector('.cif-top-ban');
-        
-        if (!tb) {
-            console.warn('⏳ Esperando a que aparezca la barra de herramientas...');
-            return false;
-        }
-        
-        if (tb.querySelector('.cif-tbtn-ia')) {
-            console.log('✓ Botones IA/OCR ya existen');
-            _buttonsInjected = true;
-            return true;
-        }
-        
-        var songId = (typeof cifSongId !== 'undefined') ? cifSongId : (typeof window.selectedSongId !== 'undefined' ? window.selectedSongId : null);
-        if (!songId) {
-            console.warn('⏳ Esperando songId...');
-            return false;
-        }
-        
-        console.log('✓ Inyectando botones IA y OCR en:', tb);
-        
-        // Botón IA
-        var btnIA = document.createElement('button');
-        btnIA.className = 'cif-tbtn-ia';
-        btnIA.title = 'Importar cifrado desde imagen con IA PRO (Gemini)';
-        btnIA.textContent = '📸 IA';
-        btnIA.style.cssText = 'margin-left:8px;';
-        btnIA.onclick = function() { window.cifOpenImageImport(); };
-        
-        // Botón OCR
-        var btnOCR = document.createElement('button');
-        btnOCR.className = 'cif-tbtn-ia cif-tbtn-ocr';
-        btnOCR.title = 'Extraer texto de imagen con OCR';
-        btnOCR.textContent = '📝 OCR';
-        btnOCR.style.cssText = 'margin-left:4px;';
-        btnOCR.onclick = function() { window.cifOpenOCRImport(); };
-        
-        // Insertar botones
-        var firstBtn = tb.querySelector('.cif-tbtn, .undo-btn2, button');
-        if (firstBtn) {
-            tb.insertBefore(btnIA, firstBtn);
-            tb.insertBefore(btnOCR, firstBtn);
-        } else {
-            tb.appendChild(btnIA);
-            tb.appendChild(btnOCR);
-        }
-        
-        console.log('✅ Botones IA y OCR agregados exitosamente');
-        _buttonsInjected = true;
-        return true;
-        
-    } catch(err) {
-        console.error('❌ Error al inyectar botones:', err);
-        return false;
-    }
-}
-
-// Intentar inyectar botones múltiples veces
-function tryInjectButtons(attempts, delay) {
-    var attempt = 0;
-    var interval = setInterval(function() {
-        attempt++;
-        console.log('🔄 Intento ' + attempt + ' de ' + attempts + ' para inyectar botones...');
-        
-        if (injectButtons()) {
-            clearInterval(interval);
-            console.log('✅ Botones inyectados exitosamente en intento ' + attempt);
-        } else if (attempt >= attempts) {
-            clearInterval(interval);
-            console.warn('⚠️ No se pudieron inyectar los botones después de ' + attempts + ' intentos');
-        }
-    }, delay);
-}
-
 window.renderCifrado = function(display) {
-    // Llamar a la función original
-    if (_origRenderCif) {
-        try {
-            _origRenderCif(display);
-        } catch(e) {
-            console.warn('Error en renderCifrado original:', e);
+    _origRenderCif && _origRenderCif(display);
+    setTimeout(function() {
+        var tb = display ? display.querySelector('.cif-top-bar') : document.querySelector('.cif-top-bar');
+        if (!tb || tb.querySelector('.cif-tbtn-ia')) return;
+        var songId = (typeof cifSongId !== 'undefined') ? cifSongId : null;
+        if (!songId) return;
+        var btn = document.createElement('button');
+        btn.className = 'cif-tbtn-ia';
+        btn.title = 'Importar cifrado desde imagen con IA (Gemini)';
+        btn.textContent = '📸 IA';
+        btn.onclick = function() { window.cifOpenImageImport(); };
+        var undoBtns = tb.querySelectorAll('.cif-tbtn, .undo-btn2');
+        if (undoBtns && undoBtns.length) {
+            tb.insertBefore(btn, undoBtns[0]);
+        } else {
+            tb.appendChild(btn);
         }
-    }
-    
-    // Resetear flag e intentar inyectar botones
-    _buttonsInjected = false;
-    tryInjectButtons(10, 200); // 10 intentos cada 200ms = 2 segundos total
+    }, 150);
 };
 
 // ── Modal principal ───────────────────────────────────────────
@@ -14269,18 +13909,10 @@ window.cifOpenImageImport = function() {
         if (!imgB64) { if (typeof toast === 'function') toast('⚠ Sube una imagen primero'); return; }
         localStorage.setItem('gemini_api_key', apiKey);
         anBtn.disabled = true;
-        anBtn.innerHTML = '<span class="cif-spin"></span> Analizando con IA PRO…';
+        anBtn.innerHTML = '<span class="cif-spin"></span> Analizando con IA…';
         resDiv.style.display = 'none';
         try {
-            parsed = await callGeminiWithRetry(imgB64, imgMime, apiKey, 3, function(attempt, max, status) {
-                if (status === 'analyzing') {
-                    anBtn.innerHTML = '<span class="cif-spin"></span> IA PRO (Intento ' + attempt + '/' + max + ')';
-                } else if (status === 'retrying') {
-                    anBtn.innerHTML = '<span class="cif-spin"></span> Reintentando…';
-                } else if (status === 'success') {
-                    anBtn.innerHTML = '✓ Análisis completado';
-                }
-            });
+            parsed = await callGemini(imgB64, imgMime, apiKey);
             showResults(resDiv, parsed);
             resDiv.style.display = 'block';
             impBtn.disabled = false;
@@ -14302,50 +13934,6 @@ window.cifOpenImageImport = function() {
 };
 
 // ── Llamada a Gemini Vision ────────────────────────────────────
-// ── Llamada a Gemini Vision con REINTENTOS AUTOMÁTICOS ────────────────────────────────────
-async function callGeminiWithRetry(b64, mime, key, maxRetries = 3, progressCallback) {
-    var lastError = null;
-    
-    for (var attempt = 1; attempt <= maxRetries; attempt++) {
-        try {
-            if (progressCallback) progressCallback(attempt, maxRetries, 'analyzing');
-            console.log('🤖 Intento ' + attempt + ' de ' + maxRetries + ' - Analizando imagen con IA...');
-            var result = await callGemini(b64, mime, key);
-            
-            // Validar que el resultado tenga secciones
-            if (!result || !result.sections || result.sections.length === 0) {
-                throw new Error('La IA no detectó ninguna sección en la imagen');
-            }
-            
-            console.log('✅ IA respondió correctamente con ' + result.sections.length + ' secciones');
-            if (progressCallback) progressCallback(attempt, maxRetries, 'success');
-            return result;
-            
-        } catch (error) {
-            lastError = error;
-            console.warn('⚠️ Intento ' + attempt + ' falló:', error.message);
-            
-            // Si es error de API Key, no reintentar
-            if (error.message.includes('API') || error.message.includes('key') || error.message.includes('401') || error.message.includes('403')) {
-                if (progressCallback) progressCallback(attempt, maxRetries, 'error');
-                throw error;
-            }
-            
-            // Si no es el último intento, esperar antes de reintentar
-            if (attempt < maxRetries) {
-                var waitTime = attempt * 1000; // 1s, 2s, 3s
-                console.log('⏳ Esperando ' + (waitTime/1000) + 's antes de reintentar...');
-                if (progressCallback) progressCallback(attempt, maxRetries, 'retrying');
-                await new Promise(function(resolve) { setTimeout(resolve, waitTime); });
-            }
-        }
-    }
-    
-    // Si llegamos aquí, todos los intentos fallaron
-    if (progressCallback) progressCallback(maxRetries, maxRetries, 'failed');
-    throw new Error('La IA falló después de ' + maxRetries + ' intentos. Último error: ' + (lastError ? lastError.message : 'Desconocido'));
-}
-
 async function callGemini(b64, mime, key) {
     if (!GVURL) {
         try {
@@ -14424,21 +14012,8 @@ async function callGemini(b64, mime, key) {
         var e = await resp.json().catch(function() { return {}; });
         throw new Error((e.error && e.error.message) || 'HTTP ' + resp.status);
     }
-    var j;
-    try {
-        j = await resp.json();
-    } catch(jsonErr) {
-        console.error('Error parseando respuesta de Gemini:', jsonErr);
-        throw new Error('La API devolvió una respuesta inválida. Verifica tu API Key y conexión.');
-    }
-    
+    var j = await resp.json();
     var txt = (j.candidates && j.candidates[0] && j.candidates[0].content && j.candidates[0].content.parts && j.candidates[0].content.parts[0] && j.candidates[0].content.parts[0].text) || '';
-    
-    if (!txt) {
-        console.error('Respuesta vacía de Gemini:', j);
-        throw new Error('La IA no devolvió ningún resultado. Intenta con una imagen más clara o verifica tu API Key.');
-    }
-    
     var firstBrace = txt.indexOf('{');
     var lastBrace = txt.lastIndexOf('}');
     if (firstBrace !== -1 && lastBrace !== -1) { txt = txt.substring(firstBrace, lastBrace + 1); }
@@ -14450,20 +14025,6 @@ async function callGemini(b64, mime, key) {
     clean = clean.replace(/\]\s*\[/g, '], [');
     clean = clean.replace(/\}\s*"/g, '}, "');
     clean = clean.replace(/"\s*\{/g, '", {');
-    
-    // Intentar reparar JSON truncado
-    if (clean && !clean.endsWith('}')) {
-        console.warn('JSON parece truncado, intentando reparar...');
-        // Contar llaves abiertas vs cerradas
-        var openBraces = (clean.match(/\{/g) || []).length;
-        var closeBraces = (clean.match(/\}/g) || []).length;
-        var openBrackets = (clean.match(/\[/g) || []).length;
-        var closeBrackets = (clean.match(/\]/g) || []).length;
-        
-        // Agregar llaves/corchetes faltantes
-        for (var i = 0; i < (openBrackets - closeBrackets); i++) clean += ']';
-        for (var i = 0; i < (openBraces - closeBraces); i++) clean += '}';
-    }
 
     try { 
         return JSON.parse(clean); 
@@ -14480,7 +14041,6 @@ async function callGemini(b64, mime, key) {
         }
         var msg = 'Error en formato de la IA: ' + ex.message + ctx;
         if (clean.length > 7000) msg += '\n\n(La respuesta es inusualmente larga, puede que el modelo haya cortado el texto al llegar al límite).';
-        msg += '\n\nIntenta con una imagen más simple o clara.';
         throw new Error(msg); 
     }
 }
@@ -14561,7 +14121,7 @@ function showResults(container, data) {
 }
 
 // ── Importar al editor ─────────────────────────────────────────
-window.importToEditor = function importToEditor(data) {
+function importToEditor(data) {
     if (typeof cifSongId === 'undefined' || !cifSongId) {
         if (typeof toast === 'function') toast('⚠ Selecciona una canción primero');
         return;
@@ -14625,436 +14185,12 @@ window.importToEditor = function importToEditor(data) {
 
     var n = newSecs.length;
     if (typeof toast === 'function') toast('✅ Importadas ' + n + ' sección' + (n !== 1 ? 'es' : '') + ' desde imagen');
-};
+}
 
 })();
 console.log('✅ Patch v27: Importar cifrado desde imagen con Gemini Vision');
 </script>
 
-<script>
-// ════════════════════════════════════════════════════════════════════════════
-// NUEVO SISTEMA: OCR + Procesamiento Local (INLINE)
-// ════════════════════════════════════════════════════════════════════════════
-(function patchOCR() {
-    'use strict';
-
-    // Modal OCR
-    window.cifOpenOCRImport = function() {
-        document.getElementById('cif-ocr-overlay') && document.getElementById('cif-ocr-overlay').remove();
-
-        var imgB64 = null, imgMime = 'image/jpeg', extractedText = '';
-
-        var ov = document.createElement('div');
-        ov.id = 'cif-ocr-overlay';
-        ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;';
-
-        var box = document.createElement('div');
-        box.style.cssText = 'background:#1A1917;border:1px solid #252320;border-radius:16px;width:100%;max-width:900px;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;';
-        ov.appendChild(box);
-
-        var hdr = document.createElement('div');
-        hdr.style.cssText = 'padding:20px;border-bottom:1px solid #252320;display:flex;align-items:center;justify-content:space-between;';
-        hdr.innerHTML = '<div style="font-family:Syne,sans-serif;font-size:18px;font-weight:700;color:#F0EBE3;"><span style="font-size:24px">📝</span> Extraer texto con OCR</div>';
-        
-        var closeBtn = document.createElement('button');
-        closeBtn.textContent = '✕';
-        closeBtn.style.cssText = 'background:none;border:none;color:#7A6E65;font-size:24px;cursor:pointer;padding:0;width:32px;height:32px;border-radius:6px;transition:all 0.15s;';
-        closeBtn.onmouseover = function() { this.style.background = 'rgba(255,255,255,0.05)'; this.style.color = '#F0EBE3'; };
-        closeBtn.onmouseout = function() { this.style.background = 'none'; this.style.color = '#7A6E65'; };
-        closeBtn.onclick = function() { ov.remove(); };
-        hdr.appendChild(closeBtn);
-        box.appendChild(hdr);
-
-        var body = document.createElement('div');
-        body.style.cssText = 'padding:20px;overflow-y:auto;flex:1;';
-        box.appendChild(body);
-
-        var info = document.createElement('div');
-        info.style.cssText = 'background:rgba(77,158,255,0.1);border:1px solid rgba(77,158,255,0.3);border-radius:10px;padding:14px;margin-bottom:16px;font-size:13px;color:#4D9EFF;line-height:1.6;';
-        info.innerHTML = '<strong>💡 Sistema OCR con Gemini Vision:</strong><br>1. Sube una imagen con acordes y letra<br>2. Gemini extraerá todo el texto automáticamente<br>3. Revisa y edita el texto si es necesario<br>4. Importa para estructurarlo al editor';
-        body.appendChild(info);
-
-        var keyWrap = document.createElement('div');
-        keyWrap.style.cssText = 'margin-bottom:16px;';
-        keyWrap.innerHTML = '<label style="display:block;font-size:12px;font-weight:600;color:#7A6E65;margin-bottom:6px;">🔑 API Key de Gemini (Google AI Studio)</label>';
-        
-        var keyInput = document.createElement('input');
-        keyInput.type = 'password';
-        keyInput.placeholder = 'Ingresa tu API Key de aistudio.google.com';
-        keyInput.style.cssText = 'width:100%;background:#222120;border:1px solid #2E2B28;color:#F0EBE3;padding:10px 14px;border-radius:8px;font-size:13px;font-family:inherit;outline:none;';
-        // Reusar la misma key que el modal de IA
-        keyInput.value = localStorage.getItem('gemini_api_key') || localStorage.getItem('google_vision_api_key') || '';
-        keyInput.onfocus = function() { this.style.borderColor = 'rgba(232,87,42,0.4)'; };
-        keyInput.onblur = function() { this.style.borderColor = '#2E2B28'; };
-        keyWrap.appendChild(keyInput);
-        
-        var keyHelp = document.createElement('div');
-        keyHelp.style.cssText = 'font-size:11px;color:#7A6E65;margin-top:4px;';
-        keyHelp.innerHTML = 'Obtén tu key gratuita en: <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:#4D9EFF;">aistudio.google.com</a>';
-        keyWrap.appendChild(keyHelp);
-        body.appendChild(keyWrap);
-
-        var fileWrap = document.createElement('div');
-        fileWrap.style.cssText = 'margin-bottom:16px;';
-        
-        var fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = 'image/*';
-        fileInput.style.display = 'none';
-        
-        var fileBtn = document.createElement('button');
-        fileBtn.textContent = '📁 Seleccionar imagen';
-        fileBtn.style.cssText = 'width:100%;background:#E8572A;color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:Syne,sans-serif;';
-        fileBtn.onmouseover = function() { this.style.background = '#FF7A4D'; };
-        fileBtn.onmouseout = function() { this.style.background = '#E8572A'; };
-        fileBtn.onclick = function() { fileInput.click(); };
-        
-        fileWrap.appendChild(fileInput);
-        fileWrap.appendChild(fileBtn);
-        body.appendChild(fileWrap);
-
-        var preview = document.createElement('div');
-        preview.style.cssText = 'margin-bottom:16px;display:none;';
-        var previewImg = document.createElement('img');
-        previewImg.style.cssText = 'width:100%;max-height:300px;object-fit:contain;border-radius:8px;background:#0a0a0a;';
-        preview.appendChild(previewImg);
-        body.appendChild(preview);
-
-        var resultWrap = document.createElement('div');
-        resultWrap.style.cssText = 'display:none;margin-top:16px;';
-        
-        var resultLabel = document.createElement('label');
-        resultLabel.style.cssText = 'display:block;font-size:12px;font-weight:600;color:#7A6E65;margin-bottom:6px;';
-        resultLabel.textContent = '📄 Texto extraído (puedes editarlo):';
-        resultWrap.appendChild(resultLabel);
-        
-        var resultText = document.createElement('textarea');
-        resultText.style.cssText = 'width:100%;height:300px;background:#222120;border:1px solid #2E2B28;color:#F0EBE3;padding:12px;border-radius:8px;font-size:12px;font-family:Courier New,monospace;resize:vertical;outline:none;line-height:1.6;';
-        resultText.placeholder = 'El texto extraído aparecerá aquí...';
-        resultText.onfocus = function() { this.style.borderColor = 'rgba(232,87,42,0.4)'; };
-        resultText.onblur = function() { this.style.borderColor = '#2E2B28'; };
-        resultWrap.appendChild(resultText);
-        body.appendChild(resultWrap);
-
-        var btnWrap = document.createElement('div');
-        btnWrap.style.cssText = 'display:flex;gap:10px;margin-top:16px;';
-        
-        var extractBtn = document.createElement('button');
-        extractBtn.textContent = '🔍 Extraer texto';
-        extractBtn.disabled = true;
-        extractBtn.style.cssText = 'flex:1;background:#4D9EFF;color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:Syne,sans-serif;opacity:0.5;';
-        
-        var importBtn = document.createElement('button');
-        importBtn.textContent = '✓ Importar al editor';
-        importBtn.disabled = true;
-        importBtn.style.cssText = 'flex:1;background:#3ECF8E;color:#fff;border:none;padding:12px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:Syne,sans-serif;opacity:0.5;';
-        
-        btnWrap.appendChild(extractBtn);
-        btnWrap.appendChild(importBtn);
-        body.appendChild(btnWrap);
-
-        fileInput.onchange = function(e) {
-            var file = e.target.files[0];
-            if (!file) return;
-            
-            var reader = new FileReader();
-            reader.onload = function(ev) {
-                imgB64 = ev.target.result.split(',')[1];
-                imgMime = file.type;
-                previewImg.src = ev.target.result;
-                preview.style.display = 'block';
-                extractBtn.disabled = false;
-                extractBtn.style.opacity = '1';
-                extractBtn.onmouseover = function() { this.style.background = '#6BB0FF'; };
-                extractBtn.onmouseout = function() { this.style.background = '#4D9EFF'; };
-                fileBtn.textContent = '✓ Imagen cargada - Cambiar';
-            };
-            reader.readAsDataURL(file);
-        };
-
-        extractBtn.onclick = async function() {
-            var apiKey = keyInput.value.trim();
-            if (!apiKey) {
-                alert('Por favor ingresa tu API Key de Gemini (aistudio.google.com)');
-                keyInput.focus();
-                return;
-            }
-            
-            // Guardar key tanto para OCR como para IA
-            localStorage.setItem('gemini_api_key', apiKey);
-            localStorage.setItem('google_vision_api_key', apiKey);
-            
-            extractBtn.disabled = true;
-            extractBtn.textContent = '⏳ Extrayendo texto...';
-            
-            try {
-                // Usar Gemini Vision para extraer texto (sin restricción de referer)
-                var MODELS = [
-                    'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-flash',
-                    'gemini-1.5-flash-8b', 'gemini-1.5-pro'
-                ];
-                var lastErr = null;
-                var text = null;
-                
-                for (var mi = 0; mi < MODELS.length && !text; mi++) {
-                    try {
-                        var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + MODELS[mi] + ':generateContent?key=' + apiKey;
-                        var resp = await fetch(url, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                contents: [{ parts: [
-                                    { text: 'Extrae TODO el texto que ves en esta imagen tal como aparece. Incluye nombres de secciones (INTRO, VERSO, CORO, etc.), letras de canciones y acordes musicales (como C#m, G#m, A, B, etc.). Preserva el orden y estructura visual. Responde SOLO con el texto extraído, sin comentarios adicionales.' },
-                                    { inline_data: { mime_type: imgMime, data: imgB64 } }
-                                ]}],
-                                generationConfig: { temperature: 0 }
-                            })
-                        });
-                        if (!resp.ok) {
-                            var errD = await resp.json().catch(function(){return {};});
-                            throw new Error(errD.error && errD.error.message ? errD.error.message : 'HTTP ' + resp.status);
-                        }
-                        var d = await resp.json();
-                        var candidate = d.candidates && d.candidates[0];
-                        text = candidate && candidate.content && candidate.content.parts && candidate.content.parts[0] && candidate.content.parts[0].text;
-                        if (!text) throw new Error('Respuesta vacía');
-                    } catch(e) { lastErr = e; text = null; }
-                }
-                
-                if (!text) throw lastErr || new Error('No se pudo extraer texto');
-                
-                extractedText = text;
-                resultText.value = text;
-                resultWrap.style.display = 'block';
-                importBtn.disabled = false;
-                importBtn.style.opacity = '1';
-                importBtn.onmouseover = function() { this.style.background = '#5EDDA5'; };
-                importBtn.onmouseout = function() { this.style.background = '#3ECF8E'; };
-                extractBtn.textContent = '✓ Texto extraído';
-                extractBtn.style.background = '#3ECF8E';
-                
-                resultWrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            } catch(err) {
-                alert('Error al extraer texto: ' + err.message + '\n\nVerifica que tu API Key de Gemini sea válida (aistudio.google.com/app/apikey)');
-                extractBtn.disabled = false;
-                extractBtn.textContent = '🔍 Extraer texto';
-            }
-        };
-
-        importBtn.onclick = function() {
-            var text = resultText.value.trim();
-            if (!text) {
-                alert('No hay texto para importar');
-                return;
-            }
-            
-            try {
-                // Parsear el texto extraído
-                var structured = parseChordText(text);
-                
-                // Importar al editor usando la función existente
-                if (typeof window.importToEditor === 'function') {
-                    window.importToEditor(structured);
-                    ov.remove();
-                    if (typeof toast === 'function') {
-                        toast('✓ Acordes importados correctamente desde OCR');
-                    } else {
-                        alert('✓ Acordes importados correctamente desde OCR');
-                    }
-                } else {
-                    throw new Error('Función de importación no disponible');
-                }
-            } catch(err) {
-                alert('Error al procesar el texto: ' + err.message + '\n\nPuedes copiar el texto manualmente y pegarlo en el editor.');
-                console.error('Error al importar:', err);
-            }
-        };
-        
-        // Función para parsear texto a estructura de acordes
-        function parseChordText(text) {
-            var lines = text.split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
-            var result = { key: '', bpm: 0, sections: [] };
-            var currentSection = null;
-            var lastWasEmpty = false;
-            
-            // Detectar tonalidad y BPM
-            for (var i = 0; i < Math.min(10, lines.length); i++) {
-                var line = lines[i];
-                var keyMatch = line.match(/(?:tono|key|tonalidad)[:\s]*([A-G][#b]?m?)/i);
-                if (keyMatch) result.key = keyMatch[1];
-                var bpmMatch = line.match(/(?:bpm|tempo)[:\s]*(\d+)/i);
-                if (bpmMatch) result.bpm = parseInt(bpmMatch[1]);
-            }
-            
-            // Función auxiliar para detectar si una línea es solo acordes
-            function isChordLine(line) {
-                // Ignorar líneas muy largas (probablemente letra)
-                if (line.length > 80) return false;
-                
-                // Patrón mejorado para acordes
-                var chordPattern = /^([A-G][#b]?m?(sus|maj|min|dim|aug|add|\d)*[\s\/]*)+$/;
-                return chordPattern.test(line);
-            }
-            
-            // Función auxiliar para extraer acordes de una línea
-            function extractChords(line) {
-                var matches = line.match(/[A-G][#b]?m?(sus|maj|min|dim|aug|add|\d)*/g);
-                return matches || [];
-            }
-            
-            // Procesar líneas
-            for (var i = 0; i < lines.length; i++) {
-                var line = lines[i];
-                
-                // Ignorar líneas de título/artista/créditos
-                if (line.length > 100 || /[-–—].*[-–—]/.test(line) || /\d{3}/.test(line)) {
-                    // Guardar sección actual si existe
-                    if (currentSection && (currentSection.lines.length > 0 || currentSection.chords.length > 0)) {
-                        result.sections.push(currentSection);
-                        currentSection = null;
-                    }
-                    continue;
-                }
-                
-                // Detectar sección
-                var sectionMatch = line.match(/^[\[\(]?(intro|verso|estrofa|coro|chorus|puente|bridge|outro|instrumental|solo|pre-?coro|pre-?chorus)[\s\d]*[\]\)]?:?$/i);
-                if (sectionMatch) {
-                    if (currentSection && (currentSection.lines.length > 0 || currentSection.chords.length > 0)) {
-                        result.sections.push(currentSection);
-                    }
-                    var type = sectionMatch[1].toLowerCase().replace(/-/g, '');
-                    if (type === 'estrofa') type = 'verse';
-                    if (type === 'verso') type = 'verse';
-                    if (type === 'coro' || type === 'chorus') type = 'chorus';
-                    if (type === 'puente' || type === 'bridge') type = 'bridge';
-                    if (type === 'precoro' || type === 'prechorus') type = 'prechorus';
-                    
-                    currentSection = {
-                        type: type,
-                        label: line.replace(/[\[\]\(\):]/g, '').trim(),
-                        chordsOnly: false,
-                        chords: [],
-                        lines: []
-                    };
-                    continue;
-                }
-                
-                // Detectar líneas como "Intro E Am F E7" (sección con acordes)
-                var introMatch = line.match(/^(intro|outro|instrumental|solo)\s+([A-G][#b]?.*)/i);
-                if (introMatch) {
-                    if (currentSection && (currentSection.lines.length > 0 || currentSection.chords.length > 0)) {
-                        result.sections.push(currentSection);
-                    }
-                    var type = introMatch[1].toLowerCase();
-                    var chordsPart = introMatch[2];
-                    currentSection = {
-                        type: type,
-                        label: introMatch[1].charAt(0).toUpperCase() + introMatch[1].slice(1),
-                        chordsOnly: true,
-                        chords: extractChords(chordsPart),
-                        lines: []
-                    };
-                    continue;
-                }
-                
-                // Si no hay sección, crear una por defecto
-                if (!currentSection) {
-                    currentSection = {
-                        type: 'verse',
-                        label: 'Verso 1',
-                        chordsOnly: false,
-                        chords: [],
-                        lines: []
-                    };
-                }
-                
-                // Detectar si es línea de acordes
-                if (isChordLine(line)) {
-                    var chords = extractChords(line);
-                    
-                    // Verificar si la siguiente línea es letra
-                    if (i + 1 < lines.length && !isChordLine(lines[i + 1]) && lines[i + 1].length > 3 && !/^[\[\(]?(intro|verso|estrofa|coro|chorus|puente|bridge|outro)/.test(lines[i + 1])) {
-                        var lyricLine = lines[i + 1];
-                        i++; // Saltar la siguiente línea
-                        
-                        // Mapear acordes a posición en el texto basado en espacios
-                        var chordPositions = [];
-                        var originalLine = line; // Línea original con espacios
-                        var currentPos = 0;
-                        
-                        for (var j = 0; j < chords.length; j++) {
-                            var chordIndex = originalLine.indexOf(chords[j], currentPos);
-                            if (chordIndex !== -1) {
-                                // Encontrar la palabra más cercana a esta posición
-                                var wordIndex = 0;
-                                var charCount = 0;
-                                var words = lyricLine.split(/\s+/);
-                                
-                                for (var w = 0; w < words.length; w++) {
-                                    if (charCount >= chordIndex) {
-                                        wordIndex = w;
-                                        break;
-                                    }
-                                    charCount += words[w].length + 1; // +1 por el espacio
-                                }
-                                
-                                chordPositions.push({ word: wordIndex, chord: chords[j] });
-                                currentPos = chordIndex + chords[j].length;
-                            }
-                        }
-                        
-                        currentSection.lines.push({
-                            lyric: lyricLine,
-                            chords: chordPositions
-                        });
-                    } else {
-                        // Solo acordes, sin letra (para intros, instrumentales)
-                        if (currentSection.chordsOnly || currentSection.type === 'intro' || currentSection.type === 'outro' || currentSection.type === 'instrumental') {
-                            currentSection.chords = currentSection.chords.concat(chords);
-                        } else {
-                            // Si no es una sección solo de acordes, crear línea vacía con acordes
-                            currentSection.lines.push({
-                                lyric: '',
-                                chords: chords.map(function(c, idx) { return { word: idx, chord: c }; })
-                            });
-                        }
-                    }
-                } else if (line.length > 2) {
-                    // Línea de letra sin acordes
-                    currentSection.lines.push({
-                        lyric: line,
-                        chords: []
-                    });
-                }
-            }
-            
-            // Agregar última sección
-            if (currentSection && (currentSection.lines.length > 0 || currentSection.chords.length > 0)) {
-                result.sections.push(currentSection);
-            }
-            
-            // Si no hay secciones, crear una por defecto con todo el texto
-            if (result.sections.length === 0) {
-                result.sections.push({
-                    type: 'verse',
-                    label: 'Verso 1',
-                    chordsOnly: false,
-                    chords: [],
-                    lines: lines.filter(function(l) { return l.length > 2; }).map(function(l) { 
-                        return { lyric: l, chords: [] }; 
-                    })
-                });
-            }
-            
-            return result;
-        }
-
-        document.body.appendChild(ov);
-    };
-
-})();
-console.log('✅ Patch OCR: Sistema de extracción de texto con Google Cloud Vision');
-</script>
 
 <!-- ═══════════════════════════════════════════════════════
      DASHBOARD HOME
@@ -15422,7 +14558,7 @@ console.log('✅ Patch OCR: Sistema de extracción de texto con Google Cloud Vis
             btn.className = 'cif-trans-key' + (getNoteIndex(currentKey) === getNoteIndex(k) ? ' active' : '');
             
             // Si la canción es menor, mostrar opciones menores en el texto visual
-            const isMinor = /m$/.test(currentKey.trim());
+            const isMinor = currentKey.toLowerCase().includes('m');
             const targetKeyName = isMinor ? k + 'm' : k;
             const label = _cifPrefs.notation === 'latin' ? (LATIN_MAP[k] + (isMinor ? 'm' : '')) : targetKeyName;
             
@@ -15555,9 +14691,7 @@ if (typeof _origDbSaveSongFixed === 'undefined') {
             audio_url: safeAudioUrl,
             audio_data: null,
             compass: song.compass||'',
-            duration_str: song.durationStr||'',
-            drive_url: song.driveUrl || null,
-            cifrado: song.cifrado || null
+            duration_str: song.durationStr||''
         });
         
         syncDone(error);
@@ -15572,8 +14706,7 @@ window.dbSaveSong = async function(song) {
     if (window._pendingAcordesUrlForSave !== undefined && window._pendingAcordesUrlForSave !== null) {
         song.url = window._pendingAcordesUrlForSave;
     }
-    // No limpiar aquí el pending, dejar que lo haga el saveModal original en su callback finish()
-    // o el siguiente parche en la cadena. Pero para mayor seguridad, solo lo asignamos.
+    window._pendingAcordesUrlForSave = undefined;
     return _origDbSaveSongFixed(song);
 };
 
@@ -15754,97 +14887,6 @@ window.handleUpload = async function(files) {
         }
     }
 };
-
-/* ── patch_v28.js ── */
-// ════════════════════════════════════════════════════════════════════
-//  PATCH v28 — MODO PRESENTACIÓN DESDE INSPECTOR + PINCH TO ZOOM
-// ════════════════════════════════════════════════════════════════════
-(function patchV28() {
-    // 1. Pinch to zoom en modo presentación
-    const presWrap = document.querySelector('.cif-present');
-    if (presWrap) {
-        let _pzDist = 0;
-        let _pzFs = 0;
-        let _pzRatio = 1;
-
-        presWrap.addEventListener('touchstart', e => {
-            if (e.touches.length === 2 && presWrap.classList.contains('open')) {
-                _pzDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                _pzFs = window.cifPresentFs || 18;
-            }
-        });
-
-        presWrap.addEventListener('touchmove', e => {
-            if (e.touches.length === 2 && _pzDist > 0) {
-                e.preventDefault(); // Evitar scroll
-                const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-                _pzRatio = dist / _pzDist;
-                
-                // Limit ratio (font size bounds 10 to 40)
-                const maxRatio = 40 / _pzFs;
-                const maxAllowed = Math.max(1, maxRatio);
-                const minRatio = 10 / _pzFs;
-                _pzRatio = Math.max(minRatio, Math.min(maxAllowed, _pzRatio));
-
-                const grid = document.getElementById('_cpres_grid');
-                if (grid) {
-                    grid.style.transform = `scale(${_pzRatio})`;
-                    grid.style.transformOrigin = 'center top';
-                }
-            }
-        }, { passive: false });
-
-        presWrap.addEventListener('touchend', e => {
-            if (_pzRatio !== 1 && e.touches.length < 2) {
-                let newFs = _pzFs * _pzRatio;
-                newFs = Math.max(10, Math.min(40, newFs));
-                window.cifPresentFs = newFs;
-                _pzRatio = 1;
-                _pzDist = 0;
-                
-                const grid = document.getElementById('_cpres_grid');
-                if (grid) grid.style.transform = '';
-
-                const ctrl = document.querySelector('.cpres-size-lbl');
-                if (ctrl) ctrl.textContent = Math.round(newFs / 18 * 100) + '%';
-                
-                window.cifBuildPresentFixed && window.cifBuildPresentFixed();
-            }
-        });
-    }
-
-    // 2. Botón "Modo Presentación" en el inspector
-    function ensurePresentacionBtn() {
-        const panel = document.getElementById('inspector-panel');
-        if (!panel) return;
-        if (panel.querySelector('._v28-present-btn')) return;
-
-        const songId = typeof selectedSongId !== 'undefined' ? selectedSongId : null;
-        if (!songId) return;
-        const s = (typeof songs !== 'undefined' ? songs : []).find(x => x.id === songId);
-        if (!s) return;
-
-        const viewBtn = [...panel.querySelectorAll('button')].find(b => b.textContent.includes('Ver acordes'));
-        if (!viewBtn) return;
-
-        const presBtn = document.createElement('button');
-        presBtn.className = 'btn _v28-present-btn';
-        presBtn.innerHTML = '▶ Modo Presentación';
-        presBtn.style.cssText = 'width:100%;margin-bottom:6px;background:var(--accent);color:white;border:none;';
-        presBtn.onclick = () => {
-            if (typeof cifLoad === 'function') cifLoad(s.id);
-            if (typeof window.cifOpenPresent === 'function') window.cifOpenPresent();
-        };
-
-        viewBtn.parentNode.insertBefore(presBtn, viewBtn);
-    }
-
-    const _origRenderLibIns2 = window.renderLibraryInspector;
-    window.renderLibraryInspector = function(panel) {
-        if (_origRenderLibIns2) _origRenderLibIns2(panel);
-        setTimeout(ensurePresentacionBtn, 65);
-    };
-})();
 
 console.log('✅ Fix v1.0 aplicado: Manejo mejorado de carga de acordes');
 </script>
