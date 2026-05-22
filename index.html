@@ -5272,8 +5272,44 @@ function cycleStatus(date, memberId) {
         const idx = order.indexOf(rec.status);
         rec.status = order[(idx + 1) % order.length];
     }
-    renderMain();
-    renderInspector();
+
+    // ── Actualización quirúrgica: solo el fila afectada, sin resetear scroll ──
+    const newRec  = attendance[date].records.find(r => r.memberId === memberId);
+    const newSt   = newRec ? newRec.status : 'none';
+    const info    = STATUS_INFO[newSt] || STATUS_INFO.none;
+    const row     = document.querySelector(`.attend-row[data-member-id="${memberId}"]`);
+
+    if (row) {
+        // Actualizar botón de estado
+        const btn = row.querySelector('.attend-status-btn');
+        if (btn) {
+            btn.className = `attend-status-btn ${info.cls}`;
+            btn.textContent = info.emoji;
+        }
+        // Actualizar pill de estado
+        const pill = row.querySelector('.status-pill');
+        if (pill) {
+            pill.className = `status-pill ${info.cls}`;
+            pill.textContent = info.label;
+        }
+
+        // Actualizar barra de contadores (presentes / tarde / ausentes)
+        const statsBar = document.getElementById('attend-stats-bar');
+        if (statsBar) {
+            const r2      = attendance[date] || { records: [] };
+            const present = r2.records.filter(r => r.status === 'present').length;
+            const late    = r2.records.filter(r => r.status === 'late').length;
+            const absent  = r2.records.filter(r => r.status === 'absent').length;
+            const pills   = statsBar.querySelectorAll('.status-pill');
+            if (pills[0]) pills[0].textContent = `${present} presentes`;
+            if (pills[1]) pills[1].textContent = `${late} tarde`;
+            if (pills[2]) pills[2].textContent = `${absent} ausentes`;
+        }
+    } else {
+        // Fallback: redibujar completo si el panel no está visible
+        renderMain();
+        renderInspector();
+    }
 }
 
 function setAttendObs(date, memberId, obs) {
@@ -5317,7 +5353,7 @@ function renderAttendance(display) {
 
     left.appendChild(mkEl('div','attend-panel-header',`
         <span class="reg-panel-title">📋 ${attendType==='culto'?'⛪ Culto':'🎸 Ensayo'} — ${fmtDate(attendDate)}</span>
-        <div style="display:flex;gap:6px">
+        <div id="attend-stats-bar" style="display:flex;gap:6px">
             <span class="status-pill present">${present} presentes</span>
             <span class="status-pill late">${late} tarde</span>
             <span class="status-pill absent">${absent} ausentes</span>
@@ -5341,6 +5377,7 @@ function renderAttendance(display) {
             const info = STATUS_INFO[sr.status] || STATUS_INFO.none;
 
             const row = mkEl('div','attend-row','');
+            row.dataset.memberId = m.id;
             row.innerHTML = `
                 <button class="attend-status-btn ${info.cls}" title="Clic para cambiar estado">${info.emoji}</button>
                 <div class="member-avatar" style="width:30px;height:30px;font-size:11px;flex-shrink:0">${memberInitials(m.name)}</div>
@@ -7916,7 +7953,11 @@ async function reloadAttendance() {
             attendance[r.date].records.push({ memberId: r.member_id, status: r.status, obs: r.obs||'' });
         });
         showSyncToast('📋 Asistencia actualizada');
+        // Preservar posición de scroll antes de redibujar
+        const disp = document.getElementById('main-display');
+        const savedScroll = disp ? disp.scrollTop : 0;
         refreshUI();
+        if (disp && savedScroll) requestAnimationFrame(() => { disp.scrollTop = savedScroll; });
     } catch(e) { console.error('Realtime attendance error:', e); }
 }
 
