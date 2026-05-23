@@ -5303,17 +5303,22 @@ function cycleStatus(date, memberId) {
             pill.textContent = info.label;
         }
 
-        // Actualizar barra de contadores (presentes / tarde / ausentes)
+        // Actualizar barra de contadores completa con todos los estados
         const statsBar = document.getElementById('attend-stats-bar');
         if (statsBar) {
             const r2      = attendance[date] || { records: [] };
             const present = r2.records.filter(r => r.status === 'present').length;
             const late    = r2.records.filter(r => r.status === 'late').length;
+            const lateEx  = r2.records.filter(r => r.status === 'late_excused').length;
             const absent  = r2.records.filter(r => r.status === 'absent').length;
-            const pills   = statsBar.querySelectorAll('.status-pill');
-            if (pills[0]) pills[0].textContent = `${present} presentes`;
-            if (pills[1]) pills[1].textContent = `${late} tarde`;
-            if (pills[2]) pills[2].textContent = `${absent} ausentes`;
+            const absEx   = r2.records.filter(r => r.status === 'abs_excused').length;
+            statsBar.innerHTML = `
+                <span class="status-pill present">${present} pres.</span>
+                ${late   ? `<span class="status-pill late">${late} atraso</span>` : ''}
+                ${lateEx ? `<span class="status-pill late-excused">${lateEx} at.just.</span>` : ''}
+                ${absent ? `<span class="status-pill absent">${absent} falta</span>` : ''}
+                ${absEx  ? `<span class="status-pill excused">${absEx} f.just.</span>` : ''}
+            `;
         }
     } else {
         // Fallback: redibujar completo si el panel no está visible
@@ -5451,7 +5456,9 @@ function renderAttendance(display) {
             const total   = members.length;
             const pres    = d.records.filter(r=>r.status==='present').length;
             const lt      = d.records.filter(r=>r.status==='late').length;
+            const ltEx    = d.records.filter(r=>r.status==='late_excused').length;
             const abs     = d.records.filter(r=>r.status==='absent').length;
+            const absEx   = d.records.filter(r=>r.status==='abs_excused').length;
 
             const row = mkEl('div','attend-history-row','');
             row.innerHTML = `
@@ -5465,7 +5472,9 @@ function renderAttendance(display) {
                 <div style="display:flex;gap:5px;flex-wrap:wrap">
                     ${pres?`<span class="status-pill present">✅ ${pres}</span>`:''}
                     ${lt  ?`<span class="status-pill late">⏰ ${lt}</span>`:''}
+                    ${ltEx?`<span class="status-pill late-excused">🟡 ${ltEx}</span>`:''}
                     ${abs ?`<span class="status-pill absent">❌ ${abs}</span>`:''}
+                    ${absEx?`<span class="status-pill excused">🔵 ${absEx}</span>`:''}
                 </div>
             `;
             row.onclick = () => setAttendDate(date);
