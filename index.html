@@ -6066,6 +6066,16 @@ async function dbClearAttendance(date) {
     syncDone(error);
 }
 
+async function dbUpdateAttendanceType(date, type) {
+    syncStart();
+    try {
+        const { error } = await sb.from('attendance').update({ type: type }).eq('date', date);
+        syncDone(error);
+    } catch(e) {
+        syncDone(e);
+    }
+}
+
 
 
 // ── SONG ZOOMS ──
@@ -6352,6 +6362,13 @@ window.setAttendObs = function(date, memberId, obs) {
     const rec = attendance[date].records.find(r => r.memberId === memberId);
     if (rec) { rec.obs = obs; dbSaveAttendance(date, memberId, rec.status, obs, attendance[date].type); }
     else { attendance[date].records.push({ memberId, status:'none', obs }); }
+};
+
+// Patch setAttendType
+const _origSetAttendType = setAttendType;
+window.setAttendType = function(type) {
+    _origSetAttendType(type);
+    dbUpdateAttendanceType(attendDate, type);
 };
 
 
