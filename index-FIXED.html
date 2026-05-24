@@ -2029,21 +2029,23 @@
         }
 
         .attend-status-btn:hover { transform: scale(1.1); }
-        .attend-status-btn.present  { background: rgba(62,207,142,0.2);  border-color: var(--green);  }
-        .attend-status-btn.late     { background: rgba(240,192,64,0.2);  border-color: var(--yellow); }
-        .attend-status-btn.absent   { background: rgba(255,60,60,0.2);   border-color: #ff6060; }
-        .attend-status-btn.excused  { background: rgba(77,158,255,0.2);  border-color: var(--blue); }
+        .attend-status-btn.present      { background: rgba(62,207,142,0.2);  border-color: var(--green);  }
+        .attend-status-btn.late         { background: rgba(240,192,64,0.2);  border-color: var(--yellow); }
+        .attend-status-btn.late-excused { background: rgba(255,210,0,0.2);   border-color: #f5c518; }
+        .attend-status-btn.absent       { background: rgba(255,60,60,0.2);   border-color: #ff6060; }
+        .attend-status-btn.excused      { background: rgba(77,158,255,0.2);  border-color: var(--blue); }
 
         .status-pill {
             font-family: 'Syne', sans-serif; font-size: 9px; font-weight: 700;
             padding: 2px 8px; border-radius: 20px; white-space: nowrap;
         }
 
-        .status-pill.present  { background: rgba(62,207,142,0.15);  color: var(--green); }
-        .status-pill.late     { background: rgba(240,192,64,0.15);  color: var(--yellow); }
-        .status-pill.absent   { background: rgba(255,60,60,0.12);   color: #ff6060; }
-        .status-pill.excused  { background: rgba(77,158,255,0.12);  color: var(--blue); }
-        .status-pill.none     { background: rgba(255,255,255,0.05); color: var(--dim2); }
+        .status-pill.present      { background: rgba(62,207,142,0.15);  color: var(--green); }
+        .status-pill.late         { background: rgba(240,192,64,0.15);  color: var(--yellow); }
+        .status-pill.late-excused { background: rgba(255,210,0,0.15);   color: #f5c518; }
+        .status-pill.absent       { background: rgba(255,60,60,0.12);   color: #ff6060; }
+        .status-pill.excused      { background: rgba(77,158,255,0.12);  color: var(--blue); }
+        .status-pill.none         { background: rgba(255,255,255,0.05); color: var(--dim2); }
 
         .attend-obs-input {
             background: transparent; border: none; outline: none;
@@ -2161,7 +2163,7 @@
         .cprev-wt { display:inline-flex; flex-direction:column; align-items:flex-start; }
         .cprev-chord { font-family:'Syne',sans-serif; font-size:11px; font-weight:800; color:var(--accent); white-space:nowrap; min-height:15px; line-height:1.3; }
         .cprev-chord.empty { opacity:0; }
-        .cprev-text { font-size:12px; color:var(--text); white-space:pre; line-height:1.55; }
+        .cprev-text { font-family: var(--cif-font, inherit); font-size:12px; color:var(--text); white-space:pre; line-height:1.55; }
         .cprev-co { display:flex; flex-wrap:wrap; gap:8px; padding:3px 0; }
         .cprev-co-chip { font-family:'Syne',sans-serif; font-size:11px; font-weight:800; color:var(--accent); }
         .cif-present { position:fixed; inset:0; background:#060606; z-index:12000; display:none; flex-direction:column; }
@@ -2944,12 +2946,12 @@ function renderSideNav() {
         } else {
             dates.forEach(date => {
                 const n = history[date].length;
-                const mins = history[date].reduce((a,b)=>a+(parseInt(b.duration)||0),0);
+                const totalSec = history[date].reduce((a,b)=>a+(parseInt(b.duration)||0),0);
                 const d = mkEl('div', `history-date-item ${regDate===date?'active':''}`, `
                     <span class="history-date-label">${fmtDate(date)}</span>
                     <span class="history-count">${n}</span>
                 `);
-                d.title = `${n} canción${n!==1?'es':''} · ${mins} min`;
+                d.title = `${n} canción${n!==1?'es':''} · ${formatTotalDuration(totalSec)}`;
                 d.onclick = () => { setRegDate(date); };
                 nav.appendChild(d);
             });
@@ -3456,7 +3458,7 @@ function renderRegistro(display) {
     leftPanel.appendChild(mkEl('div','reg-panel-header',`
         <span class="reg-panel-title">📋 Setlist</span>
         <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--accent)">
-            ${dayList.length} tema${dayList.length!==1?'s':''} · ${total} min
+            ${dayList.length} tema${dayList.length!==1?'s':''} · ${formatTotalDuration(total)}
         </span>
     `));
 
@@ -3491,7 +3493,7 @@ function renderRegistro(display) {
                 <span class="setlist-num">${i+1}</span>
                 <div class="setlist-thumb" title="Ver acordes">${thumbHtml}</div>
                 <div class="setlist-info">
-                    <b>${esc(s.name)}</b>
+                    <b class="setlist-title" style="cursor:pointer;" title="Ver/Editar Información">${esc(s.name)}</b>
                     <div class="setlist-tags">
                         ${s.author ? `<span style="font-size:10px;color:var(--dim)">${esc(s.author)}</span>` : ''}
                         ${s.key ? `<span class="tag tag-key" style="font-size:8px">${esc(s.key)}</span>` : ''}
@@ -3499,11 +3501,18 @@ function renderRegistro(display) {
                         ${singerHtml}
                     </div>
                 </div>
-                ${s.duration ? `<span class="setlist-dur">${s.duration}m</span>` : ''}
+                ${s.duration ? `<span class="setlist-dur">${s.durationStr || secToDurStr(s.duration)}</span>` : ''}
                 <button class="setlist-remove" title="Quitar">×</button>
             `;
 
             item.querySelector('.setlist-thumb').onclick = () => { if(s.url) openFull(s); };
+            item.querySelector('.setlist-title').onclick = () => {
+                selectedSongId = s.id;
+                const panel = document.getElementById('inspector-panel');
+                panel.innerHTML = '';
+                renderLibraryInspector(panel);
+                document.getElementById('inspector-aside').classList.add('open');
+            };
             item.querySelector('.setlist-remove').onclick = () => removeFromHistory(i);
 
             // ── Drag Notion-style ──
@@ -3583,7 +3592,7 @@ function renderRegistro(display) {
     }
 
     if (total > 0) {
-        const totEl = mkEl('span','',`<span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--dim);margin-left:auto">${total} min</span>`);
+        const totEl = mkEl('span','',`<span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--dim);margin-left:auto">${formatTotalDuration(total)}</span>`);
         lFoot.appendChild(totEl);
     }
 
@@ -3937,12 +3946,12 @@ function renderLibraryInspector(panel) {
                     <span style="color:var(--accent);font-family:'Syne',sans-serif;font-weight:700;font-size:10px;min-width:14px">${i+1}</span>
                     <span style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(x.name)}</span>
                     ${x.key ? `<span class="tag tag-key" style="font-size:8px">${esc(x.key)}</span>` : ''}
-                    <span style="color:var(--dim);font-size:10px">${x.duration||''}m</span>
+                    <span style="color:var(--dim);font-size:10px">${x.durationStr || secToDurStr(x.duration)}</span>
                 </div>`).join('') || '<p style="color:var(--dim);font-size:11px;text-align:center;padding:8px 0">Vacío</p>'}
         </div>
         <div style="display:flex;justify-content:space-between;font-family:\'Syne\',sans-serif;font-size:11px;font-weight:700;color:var(--accent);margin-bottom:9px">
             <span>${dayList.length} tema${dayList.length!==1?'s':''}</span>
-            <span>${total} min</span>
+            <span>${formatTotalDuration(total)}</span>
         </div>
     `;
     const waBtn = mkEl('button','btn btn-green','📱 Compartir por WhatsApp');
@@ -3959,7 +3968,7 @@ function renderLibraryInspector(panel) {
         ['🎵', songs.length, 'en biblioteca'],
         ['📅', Object.keys(history).length, 'fechas'],
         ['▶', allItems.length, 'ejecuciones'],
-        ['⏱', allItems.reduce((a,b)=>a+(parseInt(b.duration)||0),0), 'min total'],
+        ['⏱', formatTotalDuration(allItems.reduce((a,b)=>a+(parseInt(b.duration)||0),0)), 'tiempo total'],
     ].forEach(([icon,val,label]) => {
         grid.appendChild(mkEl('div','stat-box',`
             <div class="stat-box-icon">${icon}</div>
@@ -3984,14 +3993,14 @@ function renderRegistroInspector(panel) {
     } else {
         dates.forEach(date => {
             const items = history[date];
-            const mins  = items.reduce((a,b) => a+(parseInt(b.duration)||0), 0);
+            const totalSec  = items.reduce((a,b) => a+(parseInt(b.duration)||0), 0);
             const row   = mkEl('div','',`
                 <div style="padding:8px 2px;border-bottom:1px solid var(--border);cursor:pointer">
                     <div style="display:flex;justify-content:space-between;margin-bottom:2px">
                         <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;
                                color:${regDate===date?'var(--accent)':'var(--text)'}">
                                ${fmtDate(date)}</span>
-                        <span style="font-size:10px;color:var(--dim)">${mins}m</span>
+                        <span style="font-size:10px;color:var(--dim)">${formatTotalDuration(totalSec)}</span>
                     </div>
                     <div style="font-size:10px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
                         ${items.map(x => x.name).join(' · ')}
@@ -4011,7 +4020,7 @@ function renderRegistroInspector(panel) {
     [
         ['📅', Object.keys(history).length, 'servicios'],
         ['▶', allItems.length, 'canciones'],
-        ['⏱', allItems.reduce((a,b)=>a+(parseInt(b.duration)||0),0), 'minutos'],
+        ['⏱', formatTotalDuration(allItems.reduce((a,b)=>a+(parseInt(b.duration)||0),0)), 'tiempo total'],
         ['📚', songs.length, 'en biblioteca'],
     ].forEach(([icon,val,label]) => {
         grid.appendChild(mkEl('div','stat-box',`
@@ -4043,6 +4052,19 @@ function secToDurStr(sec) {
     const m = Math.floor(sec / 60);
     const s = sec % 60;
     return `${m}:${String(s).padStart(2,'0')}`;
+}
+
+// Convertir segundos totales → "H:MM h" (si >= 1 hora) o "MM:SS min" (si < 1 hora)
+function formatTotalDuration(seconds) {
+    if (!seconds || seconds <= 0) return '0:00 min';
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    if (hrs > 0) {
+        return `${hrs}:${String(mins).padStart(2, '0')} h`;
+    } else {
+        return `${mins}:${String(secs).padStart(2, '0')} min`;
+    }
 }
 
 function clearAudio() {
@@ -4606,12 +4628,12 @@ function shareWhatsApp() {
         if (s.author) line += ` — ${s.author}`;
         if (s.key)    line += ` · 🎼 ${s.key}`;
         if (s.bpm)    line += ` · ${s.bpm}bpm`;
-        if (s.duration) line += ` · ${s.duration}m`;
+        if (s.duration) line += ` · ${s.durationStr || secToDurStr(s.duration)}`;
         const singer = dayAssign[s.id] ? members.find(m => m.id === dayAssign[s.id]) : null;
         if (singer)   line += ` 🎤 ${singer.name}`;
         text += line + '\n';
     });
-    text += `\n⏱ Total: ${total} min  |  🎵 ${list.length} canciones`;
+    text += `\n⏱ Total: ${formatTotalDuration(total)}  |  🎵 ${list.length} canciones`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 
@@ -4692,7 +4714,7 @@ function renderStats(display) {
     const totalServices   = allDates.length;
     const totalPlays      = allItems.length;
     const uniqueSongs     = stats.length;
-    const totalMinutes    = allItems.reduce((a,b)=>a+(parseInt(b.duration)||0),0);
+    const totalSec        = allItems.reduce((a,b)=>a+(parseInt(b.duration)||0),0);
 
     // Avg per month
     const months = Object.keys(monthly);
@@ -4713,7 +4735,7 @@ function renderStats(display) {
         ['📅', totalServices, 'Servicios'],
         ['▶', totalPlays, 'Reproducciones'],
         ['🎵', uniqueSongs, 'Canciones únicas'],
-        ['⏱', totalMinutes, 'Minutos totales'],
+        ['⏱', formatTotalDuration(totalSec), 'Tiempo total'],
         ['📊', avgPerMonth, 'Promedio / mes'],
         ['📚', songs.length, 'En biblioteca'],
         ['👥', members.length, 'En el equipo'],
@@ -5239,17 +5261,18 @@ document.getElementById('singer-modal').addEventListener('click', function(e) {
 // ══════════════════════════════════════════════
 //  ASISTENCIA — ESTADO
 // ══════════════════════════════════════════════
-// attendance: { "YYYY-MM-DD": { type:'ensayo'|'culto', records:[{memberId, status:'present'|'late'|'absent'|'excused', obs:''}] } }
+// attendance: { "YYYY-MM-DD": { type:'ensayo'|'culto', records:[{memberId, status:'present'|'late'|'late_excused'|'absent'|'abs_excused'|'none', obs:''}] } }
 let attendance    = {};
 let attendDate    = todayStr();
 let attendType    = 'culto';   // 'ensayo' | 'culto'
 
 const STATUS_INFO = {
-    present : { emoji:'✅', label:'Presente',    cls:'present'  },
-    late    : { emoji:'⏰', label:'Tarde',        cls:'late'     },
-    absent  : { emoji:'❌', label:'Inasistencia', cls:'absent'   },
-    excused : { emoji:'🔵', label:'Justificado',  cls:'excused'  },
-    none    : { emoji:'○',  label:'Sin registrar',cls:'none'     },
+    present      : { emoji:'✅', label:'Presente',           cls:'present'      },
+    late         : { emoji:'⏰', label:'Atraso',             cls:'late'         },
+    late_excused : { emoji:'🟡', label:'Atraso Justificado', cls:'late-excused' },
+    absent       : { emoji:'❌', label:'Inasistencia',       cls:'absent'       },
+    abs_excused  : { emoji:'🔵', label:'Falta Justificada',  cls:'excused'      },
+    none         : { emoji:'○',  label:'Sin registrar',      cls:'none'         },
 };
 
 function getAttendRecord(date) {
@@ -5264,7 +5287,7 @@ function getMemberStatus(date, memberId) {
 function cycleStatus(date, memberId) {
     snapshot(`Cambiar asistencia`);
     if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
-    const order = ['present','late','absent','excused','none'];
+    const order = ['present','late','late_excused','absent','abs_excused','none'];
     const rec   = attendance[date].records.find(r => r.memberId === memberId);
     if (!rec) {
         attendance[date].records.push({ memberId, status:'present', obs:'' });
@@ -5272,8 +5295,49 @@ function cycleStatus(date, memberId) {
         const idx = order.indexOf(rec.status);
         rec.status = order[(idx + 1) % order.length];
     }
-    renderMain();
-    renderInspector();
+
+    // ── Actualización quirúrgica: solo la fila afectada, sin resetear scroll ──
+    const newRec  = attendance[date].records.find(r => r.memberId === memberId);
+    const newSt   = newRec ? newRec.status : 'none';
+    const info    = STATUS_INFO[newSt] || STATUS_INFO.none;
+    const row     = document.querySelector(`.attend-row[data-member-id="${memberId}"]`);
+
+    if (row) {
+        // Actualizar botón de estado
+        const btn = row.querySelector('.attend-status-btn');
+        if (btn) {
+            btn.className = `attend-status-btn ${info.cls}`;
+            btn.textContent = info.emoji;
+        }
+        // Actualizar pill de estado
+        const pill = row.querySelector('.status-pill');
+        if (pill) {
+            pill.className = `status-pill ${info.cls}`;
+            pill.textContent = info.label;
+        }
+
+        // Actualizar barra de contadores completa con todos los estados
+        const statsBar = document.getElementById('attend-stats-bar');
+        if (statsBar) {
+            const r2      = attendance[date] || { records: [] };
+            const present = r2.records.filter(r => r.status === 'present').length;
+            const late    = r2.records.filter(r => r.status === 'late').length;
+            const lateEx  = r2.records.filter(r => r.status === 'late_excused').length;
+            const absent  = r2.records.filter(r => r.status === 'absent').length;
+            const absEx   = r2.records.filter(r => r.status === 'abs_excused').length;
+            statsBar.innerHTML = `
+                <span class="status-pill present">${present} pres.</span>
+                ${late   ? `<span class="status-pill late">${late} atraso</span>` : ''}
+                ${lateEx ? `<span class="status-pill late-excused">${lateEx} at.just.</span>` : ''}
+                ${absent ? `<span class="status-pill absent">${absent} falta</span>` : ''}
+                ${absEx  ? `<span class="status-pill excused">${absEx} f.just.</span>` : ''}
+            `;
+        }
+    } else {
+        // Fallback: redibujar completo si el panel no está visible
+        renderMain();
+        renderInspector();
+    }
 }
 
 function setAttendObs(date, memberId, obs) {
@@ -5313,14 +5377,18 @@ function renderAttendance(display) {
     const rec  = getAttendRecord(attendDate);
     const present = rec.records.filter(r=>r.status==='present').length;
     const late    = rec.records.filter(r=>r.status==='late').length;
+    const lateEx  = rec.records.filter(r=>r.status==='late_excused').length;
     const absent  = rec.records.filter(r=>r.status==='absent').length;
+    const absEx   = rec.records.filter(r=>r.status==='abs_excused').length;
 
     left.appendChild(mkEl('div','attend-panel-header',`
         <span class="reg-panel-title">📋 ${attendType==='culto'?'⛪ Culto':'🎸 Ensayo'} — ${fmtDate(attendDate)}</span>
-        <div style="display:flex;gap:6px">
-            <span class="status-pill present">${present} presentes</span>
-            <span class="status-pill late">${late} tarde</span>
-            <span class="status-pill absent">${absent} ausentes</span>
+        <div id="attend-stats-bar" style="display:flex;gap:4px;flex-wrap:wrap">
+            <span class="status-pill present">${present} pres.</span>
+            ${late   ? `<span class="status-pill late">${late} atraso</span>` : ''}
+            ${lateEx ? `<span class="status-pill late-excused">${lateEx} at.just.</span>` : ''}
+            ${absent ? `<span class="status-pill absent">${absent} falta</span>` : ''}
+            ${absEx  ? `<span class="status-pill excused">${absEx} f.just.</span>` : ''}
         </div>
     `));
 
@@ -5341,6 +5409,7 @@ function renderAttendance(display) {
             const info = STATUS_INFO[sr.status] || STATUS_INFO.none;
 
             const row = mkEl('div','attend-row','');
+            row.dataset.memberId = m.id;
             row.innerHTML = `
                 <button class="attend-status-btn ${info.cls}" title="Clic para cambiar estado">${info.emoji}</button>
                 <div class="member-avatar" style="width:30px;height:30px;font-size:11px;flex-shrink:0">${memberInitials(m.name)}</div>
@@ -5367,11 +5436,12 @@ function renderAttendance(display) {
     foot.appendChild(waBtn);
     if (rec.records.length) {
         const clr = mkEl('button','inline-btn-ghost','🗑 Limpiar');
-        clr.onclick = () => {
+        clr.onclick = async () => {
             if (!confirm(`¿Limpiar registro de ${fmtDate(attendDate)}?`)) return;
             snapshot(`Limpiar asistencia ${fmtDate(attendDate)}`);
             delete attendance[attendDate];
             renderMain(); renderInspector();
+            await dbClearAttendance(attendDate);
         };
         foot.appendChild(clr);
     }
@@ -5399,7 +5469,9 @@ function renderAttendance(display) {
             const total   = members.length;
             const pres    = d.records.filter(r=>r.status==='present').length;
             const lt      = d.records.filter(r=>r.status==='late').length;
+            const ltEx    = d.records.filter(r=>r.status==='late_excused').length;
             const abs     = d.records.filter(r=>r.status==='absent').length;
+            const absEx   = d.records.filter(r=>r.status==='abs_excused').length;
 
             const row = mkEl('div','attend-history-row','');
             row.innerHTML = `
@@ -5413,7 +5485,9 @@ function renderAttendance(display) {
                 <div style="display:flex;gap:5px;flex-wrap:wrap">
                     ${pres?`<span class="status-pill present">✅ ${pres}</span>`:''}
                     ${lt  ?`<span class="status-pill late">⏰ ${lt}</span>`:''}
+                    ${ltEx?`<span class="status-pill late-excused">🟡 ${ltEx}</span>`:''}
                     ${abs ?`<span class="status-pill absent">❌ ${abs}</span>`:''}
+                    ${absEx?`<span class="status-pill excused">🔵 ${absEx}</span>`:''}
                 </div>
             `;
             row.onclick = () => setAttendDate(date);
@@ -5455,12 +5529,19 @@ function renderAttendanceInspector(panel) {
     }
 
     members.forEach(m => {
-        let pr=0, lt=0, ab=0, ex=0, tot=0;
+        let pr=0, lt=0, ltEx=0, ab=0, absEx=0, tot=0;
         Object.values(attendance).forEach(d => {
             const r = d.records.find(x => x.memberId===m.id);
-            if (r) { tot++; if(r.status==='present')pr++; else if(r.status==='late')lt++; else if(r.status==='absent')ab++; else if(r.status==='excused')ex++; }
+            if (r && r.status !== 'none') {
+                tot++;
+                if(r.status==='present')          pr++;
+                else if(r.status==='late')         lt++;
+                else if(r.status==='late_excused') ltEx++;
+                else if(r.status==='absent')       ab++;
+                else if(r.status==='abs_excused')  absEx++;
+            }
         });
-        const pct = tot ? Math.round((pr+lt)/tot*100) : 0;
+        const pct = tot ? Math.round((pr+ltEx)/tot*100) : 0;
 
         sec.innerHTML += `
             <div style="padding:7px 0;border-bottom:1px solid var(--border)">
@@ -5469,11 +5550,12 @@ function renderAttendanceInspector(panel) {
                     <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'}">${pct}%</span>
                 </div>
                 <div style="display:flex;gap:4px;flex-wrap:wrap">
-                    ${pr?`<span class="status-pill present">✅${pr}</span>`:''}
-                    ${lt?`<span class="status-pill late">⏰${lt}</span>`:''}
-                    ${ab?`<span class="status-pill absent">❌${ab}</span>`:''}
-                    ${ex?`<span class="status-pill excused">🔵${ex}</span>`:''}
-                    ${!tot?`<span class="status-pill none">Sin datos</span>`:''}
+                    ${pr   ?`<span class="status-pill present">✅${pr}</span>`:''}
+                    ${lt   ?`<span class="status-pill late">⏰${lt}</span>`:''}
+                    ${ltEx ?`<span class="status-pill late-excused">🟡${ltEx}</span>`:''}
+                    ${ab   ?`<span class="status-pill absent">❌${ab}</span>`:''}
+                    ${absEx?`<span class="status-pill excused">🔵${absEx}</span>`:''}
+                    ${!tot ?`<span class="status-pill none">Sin datos</span>`:''}
                 </div>
                 <div style="margin-top:5px;background:var(--panel2);border-radius:4px;height:4px;overflow:hidden">
                     <div style="height:100%;width:${pct}%;background:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'};border-radius:4px;transition:width 0.4s"></div>
@@ -5490,8 +5572,10 @@ function renderAttendanceInspector(panel) {
     [
         ['📅', Object.keys(attendance).length, 'sesiones'],
         ['✅', allRec.filter(r=>r.status==='present').length, 'presentes'],
-        ['⏰', allRec.filter(r=>r.status==='late').length, 'tardanzas'],
+        ['⏰', allRec.filter(r=>r.status==='late').length, 'atrasos'],
+        ['🟡', allRec.filter(r=>r.status==='late_excused').length, 'atr.just.'],
         ['❌', allRec.filter(r=>r.status==='absent').length, 'ausencias'],
+        ['🔵', allRec.filter(r=>r.status==='abs_excused').length, 'f.just.'],
     ].forEach(([icon,val,label]) => {
         grid.appendChild(mkEl('div','stat-box',`<div class="stat-box-icon">${icon}</div><div class="stat-box-val">${val}</div><div class="stat-box-label">${label}</div>`));
     });
@@ -5995,6 +6079,16 @@ async function dbClearAttendance(date) {
     syncDone(error);
 }
 
+async function dbUpdateAttendanceType(date, type) {
+    syncStart();
+    try {
+        const { error } = await sb.from('attendance').update({ type: type }).eq('date', date);
+        syncDone(error);
+    } catch(e) {
+        syncDone(e);
+    }
+}
+
 
 
 // ── SONG ZOOMS ──
@@ -6214,7 +6308,7 @@ window.assignSinger = function(songId, memberId) {
 const _origCycleStatus = cycleStatus;
 window.cycleStatus = function(date, memberId) {
     if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
-    const order = ['present','late','absent','excused','none'];
+    const order = ['present','late','late_excused','absent','abs_excused','none'];
     const rec   = attendance[date].records.find(r => r.memberId === memberId);
     let newStatus;
     if (!rec) {
@@ -6225,9 +6319,50 @@ window.cycleStatus = function(date, memberId) {
         newStatus = order[(idx + 1) % order.length];
         rec.status = newStatus;
     }
-    // Render BEFORE the async call so UI updates instantly without waiting for Supabase
-    renderMain(); renderInspector();
-    // Sync to Supabase in background — won't block or break UI
+
+    // ── Actualización quirúrgica para evitar resetear scroll y parpadeos ──
+    const info = STATUS_INFO[newStatus] || STATUS_INFO.none;
+    const row  = document.querySelector(`.attend-row[data-member-id="${memberId}"]`);
+
+    if (row) {
+        // Actualizar botón de estado
+        const btn = row.querySelector('.attend-status-btn');
+        if (btn) {
+            btn.className = `attend-status-btn ${info.cls}`;
+            btn.textContent = info.emoji;
+        }
+        // Actualizar pill de estado
+        const pill = row.querySelector('.status-pill');
+        if (pill) {
+            pill.className = `status-pill ${info.cls}`;
+            pill.textContent = info.label;
+        }
+
+        // Reconstruir barra de contadores completa con todos los estados
+        const statsBar = document.getElementById('attend-stats-bar');
+        if (statsBar) {
+            const r2    = attendance[date] || { records: [] };
+            const pres  = r2.records.filter(r => r.status === 'present').length;
+            const lt    = r2.records.filter(r => r.status === 'late').length;
+            const ltEx  = r2.records.filter(r => r.status === 'late_excused').length;
+            const ab    = r2.records.filter(r => r.status === 'absent').length;
+            const abEx  = r2.records.filter(r => r.status === 'abs_excused').length;
+            statsBar.innerHTML =
+                `<span class="status-pill present">${pres} pres.</span>` +
+                (lt   ? `<span class="status-pill late">${lt} atraso</span>` : '') +
+                (ltEx ? `<span class="status-pill late-excused">${ltEx} at.just.</span>` : '') +
+                (ab   ? `<span class="status-pill absent">${ab} falta</span>` : '') +
+                (abEx ? `<span class="status-pill excused">${abEx} f.just.</span>` : '');
+        }
+    } else {
+        // Fallback: redibujar completo si la fila no está visible
+        renderMain();
+    }
+
+    // Actualizar el panel inspector lateral de estadísticas
+    renderInspector();
+
+    // Guardar en Supabase en segundo plano
     const obsVal = attendance[date].records.find(r => r.memberId === memberId)?.obs || '';
     const typeVal = attendance[date].type || attendType;
     dbSaveAttendance(date, memberId, newStatus, obsVal, typeVal);
@@ -6240,6 +6375,13 @@ window.setAttendObs = function(date, memberId, obs) {
     const rec = attendance[date].records.find(r => r.memberId === memberId);
     if (rec) { rec.obs = obs; dbSaveAttendance(date, memberId, rec.status, obs, attendance[date].type); }
     else { attendance[date].records.push({ memberId, status:'none', obs }); }
+};
+
+// Patch setAttendType
+const _origSetAttendType = setAttendType;
+window.setAttendType = function(type) {
+    _origSetAttendType(type);
+    dbUpdateAttendanceType(attendDate, type);
 };
 
 
@@ -7629,6 +7771,7 @@ function cifRenderPreview() {
         if (isChordOnly) {
             const co = document.createElement('div');
             co.className = 'cprev-co';
+            if (!_cifPrefs.showChords) co.style.display = 'none';
             (sec.coChords||[]).forEach(ch => {
                 const s = document.createElement('span');
                 s.className = 'cprev-co-chip'; s.textContent = cifFormatChord(ch);
@@ -7662,6 +7805,7 @@ function buildPreviewLine(line, map, wtCls, chordCls, textCls) {
             const wt = document.createElement('span');
             wt.className = wtCls;
             const t = document.createElement('span'); t.className = textCls; t.textContent = lyric.slice(i,j);
+            if (!_cifPrefs.showLyrics) t.style.display = 'none';
             wt.appendChild(t);
             row.appendChild(wt);
             i = j;
@@ -7674,7 +7818,9 @@ function buildPreviewLine(line, map, wtCls, chordCls, textCls) {
             const c = document.createElement('span');
             c.className = chordCls + (entry ? '' : ' empty');
             c.textContent = entry ? cifFormatChord(entry.chord) : '\u00a0';
+            if (!_cifPrefs.showChords) c.style.display = 'none';
             const t = document.createElement('span'); t.className = textCls; t.textContent = lyric.slice(i,j);
+            if (!_cifPrefs.showLyrics) t.style.display = 'none';
             wt.appendChild(c); wt.appendChild(t);
             row.appendChild(wt);
             i = j;
@@ -7684,7 +7830,8 @@ function buildPreviewLine(line, map, wtCls, chordCls, textCls) {
     if (!lyric.trim() && map.length) {
         map.forEach(entry => {
             const wt = document.createElement('span'); wt.className = wtCls;
-            const c = document.createElement('span'); c.className = chordCls; c.textContent = entry.chord;
+            const c = document.createElement('span'); c.className = chordCls; c.textContent = cifFormatChord(entry.chord);
+            if (!_cifPrefs.showChords) c.style.display = 'none';
             wt.appendChild(c); row.appendChild(wt);
         });
     }
@@ -7916,7 +8063,11 @@ async function reloadAttendance() {
             attendance[r.date].records.push({ memberId: r.member_id, status: r.status, obs: r.obs||'' });
         });
         showSyncToast('📋 Asistencia actualizada');
+        // Preservar posición de scroll antes de redibujar
+        const disp = document.getElementById('main-display');
+        const savedScroll = disp ? disp.scrollTop : 0;
         refreshUI();
+        if (disp && savedScroll) requestAnimationFrame(() => { disp.scrollTop = savedScroll; });
     } catch(e) { console.error('Realtime attendance error:', e); }
 }
 
