@@ -13229,6 +13229,18 @@ async function insertBatch(table, rows) {
 
 async function runSeed() {
     try {
+        // Verificar si la base de datos ya tiene canciones para evitar re-sembrar y revivir canciones eliminadas
+        const { data, error } = await sb.from('songs').select('id').limit(1);
+        if (error) {
+            console.error('[SEED] Error comprobando base de datos:', error);
+            return;
+        }
+        if (data && data.length > 0) {
+            console.log('[SEED] La base de datos ya contiene datos en Supabase. Omitiendo la siembra.');
+            localStorage.setItem('adorachord_seeded_v2', '1');
+            return;
+        }
+
         if (typeof toast === 'function') toast('⏳ Migrando datos al nuevo servidor...');
         
         // Insertar en orden (respetando foreign keys)
