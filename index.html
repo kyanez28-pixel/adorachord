@@ -2716,6 +2716,27 @@
                 <input type="text" id="search-input" placeholder="Buscar canción, autor, tonalidad…" oninput="renderMain()">
             </div>
             <div class="view-badge" id="view-name">BIBLIOTECA</div>
+            <!-- Botón instalar (desktop) – oculto si ya está instalada -->
+            <button id="top-install-btn" onclick="window.showPWAInstallBanner && window.showPWAInstallBanner()" style="
+              display: flex; align-items: center; gap: 6px;
+              background: linear-gradient(135deg, rgba(232,87,42,0.15), rgba(255,122,77,0.1));
+              border: 1px solid rgba(232,87,42,0.35);
+              color: #FF7A4D;
+              padding: 7px 13px; border-radius: 20px;
+              font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+              cursor: pointer; white-space: nowrap; flex-shrink: 0;
+              transition: all 0.18s; letter-spacing: 0.3px;
+            "
+            onmouseover="this.style.background='linear-gradient(135deg,rgba(232,87,42,0.25),rgba(255,122,77,0.18))';this.style.borderColor='rgba(232,87,42,0.6)'"
+            onmouseout="this.style.background='linear-gradient(135deg,rgba(232,87,42,0.15),rgba(255,122,77,0.1))';this.style.borderColor='rgba(232,87,42,0.35)'"
+            title="Instalar AdoraChord Pro en este dispositivo">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              Instalar
+            </button>
         </header>
 
         <!-- FILTER BAR (library only) -->
@@ -15220,6 +15241,33 @@ window.handleUpload = async function(files) {
 };
 
 console.log('✅ Fix v1.0 aplicado: Manejo mejorado de carga de acordes');
+</script>
+
+<!-- Script de control del botón de instalación en top-bar -->
+<script>
+(function() {
+  const isPWAMode = window.navigator.standalone === true
+    || window.matchMedia('(display-mode: standalone)').matches
+    || window.matchMedia('(display-mode: fullscreen)').matches;
+
+  function hideInstallBtnIfInstalled() {
+    const btn = document.getElementById('top-install-btn');
+    if (btn && isPWAMode) btn.style.display = 'none';
+  }
+
+  // Ocultar inmediatamente si ya está instalada
+  document.addEventListener('DOMContentLoaded', hideInstallBtnIfInstalled);
+
+  // Ocultar cuando se instale durante la sesión
+  window.addEventListener('pwa-installed', () => {
+    const btn = document.getElementById('top-install-btn');
+    if (btn) btn.style.display = 'none';
+    const bnInstall = document.getElementById('bn-install');
+    if (bnInstall) bnInstall.style.display = 'none';
+    const sidebarInstall = document.getElementById('sidebar-install-btn');
+    if (sidebarInstall) sidebarInstall.style.display = 'none';
+  });
+})();
 </script>
 </body>
 </html>
