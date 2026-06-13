@@ -2417,8 +2417,113 @@
 
         @media (max-width:768px) { .cif-preview { display:none !important; } }
 
-
-
+        /* ── SECCIÓN DE LETRA (IMAGEN) ── */
+        .lyrics-section {
+            margin-top: 15px;
+            padding: 12px;
+            background: var(--panel);
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
+        .lyrics-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .lyrics-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        .lyrics-upload-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--border2);
+            border-radius: 8px;
+            padding: 18px 10px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s ease;
+            background: rgba(255,255,255,0.02);
+            position: relative;
+        }
+        .lyrics-upload-zone:hover, .lyrics-upload-zone.dragover {
+            border-color: var(--accent);
+            background: rgba(255,255,255,0.05);
+        }
+        .lyrics-upload-zone:focus {
+            outline: 2px solid var(--accent);
+            border-color: var(--accent);
+            background: rgba(255,255,255,0.05);
+        }
+        .lyrics-upload-zone .upload-icon {
+            font-size: 24px;
+            margin-bottom: 6px;
+            opacity: 0.7;
+        }
+        .lyrics-upload-zone .upload-text {
+            font-size: 11px;
+            color: var(--dim);
+            line-height: 1.4;
+        }
+        .lyrics-preview-container {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border2);
+            background: #000;
+            cursor: pointer;
+        }
+        .lyrics-preview-img {
+            width: 100%;
+            display: block;
+            max-height: 180px;
+            object-fit: contain;
+            transition: transform 0.2s ease;
+        }
+        .lyrics-preview-container:hover .lyrics-preview-img {
+            transform: scale(1.02);
+        }
+        .lyrics-actions {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+        }
+        .btn-lyrics-action {
+            flex: 1;
+            padding: 6px;
+            font-size: 10px;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            transition: filter 0.1s;
+        }
+        .btn-lyrics-action.delete {
+            background: rgba(239, 68, 68, 0.15);
+            color: #ef4444;
+        }
+        .btn-lyrics-action.delete:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+        .btn-lyrics-action.view {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+        .btn-lyrics-action.view:hover {
+            background: rgba(59, 130, 246, 0.25);
+        }
     </style>
 </head>
 <body>
@@ -2905,6 +3010,18 @@
     </div>
     <div class="viewer-body" id="viewer-body">
         <img id="v-img" src="" draggable="false">
+    </div>
+</div>
+
+<div class="viewer-overlay" id="lyrics-viewer">
+    <div class="viewer-header">
+        <button class="viewer-back-btn" onclick="closeLyricsViewer()" title="Volver (Esc)">
+            ← Regresar
+        </button>
+        <div class="viewer-title" id="lyrics-v-name"></div>
+    </div>
+    <div class="viewer-body" id="lyrics-viewer-body" style="overflow:auto;display:flex;justify-content:center;align-items:flex-start;padding:20px;background:#000">
+        <img id="lyrics-v-img" src="" style="max-width:100%;height:auto;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.8)" draggable="false">
     </div>
 </div>
 
@@ -4006,6 +4123,11 @@ function renderLibraryInspector(panel) {
                 panel.appendChild(coverSec);
             }
 
+            // Letras (Mobile)
+            const lyricsSec = mkEl('div','mob-cover-section','');
+            lyricsSec.innerHTML = getLyricsSectionHTML(s);
+            panel.appendChild(lyricsSec);
+
             // Fechas
             const dates = songDates(s.id);
             if (dates.length) {
@@ -4110,6 +4232,11 @@ function renderLibraryInspector(panel) {
             del.onclick = deleteSong;
             sec.appendChild(del);
             panel.appendChild(sec);
+
+            // Letras (Desktop)
+            const lyricsSec = mkEl('div','ins-section','');
+            lyricsSec.innerHTML = getLyricsSectionHTML(s);
+            panel.appendChild(lyricsSec);
         }
     } else {
         panel.appendChild(mkEl('div','ins-section',`
@@ -4452,6 +4579,7 @@ function saveModal() {
             multitrack: hasMultitrack,
             audioData:  audioData,
             coverUrl:   coverUrl,
+            lyricsUrl:  existingSong?.lyricsUrl || null,
         };
 
         if (modalMode === 'new') {
@@ -4792,6 +4920,7 @@ function onViewerWheel(e) {
 function onVKey(e) {
     if (e.key === 'Escape') {
         if (document.getElementById('song-modal').classList.contains('open')) closeModal();
+        else if (document.getElementById('lyrics-viewer') && document.getElementById('lyrics-viewer').classList.contains('open')) closeLyricsViewer();
         else closeViewer();
     }
     if (!document.getElementById('viewer').classList.contains('open')) return;
@@ -5996,6 +6125,7 @@ async function loadFromSupabase() {
             cifrado: r.cifrado || null,  // Keep as raw string; cifLoad will parse it
             // Preferir Supabase, si no hay → buscar en localStorage
             coverUrl:  r.cover_url  || localStorage.getItem('cover_'+r.id) || null,
+            lyricsUrl: r.audio_data || localStorage.getItem('lyrics_'+r.id) || null,
             audioUrl:  r.audio_url  || null,
             audioData: null,   // migrado a Storage, no se usa base64
             driveUrl:  r.drive_url  || null
@@ -6145,6 +6275,7 @@ async function dbSaveSong(song) {
     // Solo guardar URLs (nunca base64) en Supabase
     const safeUrl      = (song.url      && song.url.startsWith('http'))      ? song.url      : null;
     const safeCoverUrl = (song.coverUrl && song.coverUrl.startsWith('http')) ? song.coverUrl : null;
+    const safeLyricsUrl = (song.lyricsUrl && song.lyricsUrl.startsWith('http')) ? song.lyricsUrl : null;
 
     const { error } = await sb.from('songs').upsert({
         id: song.id, name: song.name, author: song.author||'',
@@ -6154,7 +6285,7 @@ async function dbSaveSong(song) {
         url: safeUrl,
         multitrack: song.multitrack||false,
         cover_url: safeCoverUrl,
-        audio_data: null,
+        audio_data: safeLyricsUrl,
         compass: song.compass||'',
         duration_str: song.durationStr||'',
         drive_url: song.driveUrl||null,
@@ -6396,6 +6527,7 @@ window.saveModal = function() {
             coverUrl  : finalCoverUrl,
             url       : finalAcordesUrl || (modalMode === 'edit' ? (songs.find(x=>x.id===modalSongId)?.url || '') : ''),
             driveUrl  : driveUrlToEmbed(document.getElementById('m-drive-url').value.trim()) || (modalMode === 'edit' ? (songs.find(x=>x.id===modalSongId)?.driveUrl || null) : null),
+            lyricsUrl : existingSong?.lyricsUrl || null,
         };
         if (modalMode === 'new') {
             snapshot(`Nueva canción "${name}"`);
@@ -8278,6 +8410,148 @@ const _origDbSaveSongRT = window.dbSaveSong;
 // Iniciar Realtime después de cargar datos
 setTimeout(initRealtime, 1000);
 
+
+// ── SECCIÓN DE LETRAS (IMAGEN) ──
+
+function getLyricsSectionHTML(s) {
+    if (s.lyricsUrl) {
+        return `
+            <div class="lyrics-header">
+                <div class="lyrics-title">📝 Letra (Imagen)</div>
+            </div>
+            <div class="lyrics-preview-container" onclick="openLyricsFull('${s.lyricsUrl}', '${esc(s.name)}')">
+                <img class="lyrics-preview-img" src="${s.lyricsUrl}" alt="Letra de ${esc(s.name)}">
+            </div>
+            <div class="lyrics-actions">
+                <button class="btn-lyrics-action view" onclick="openLyricsFull('${s.lyricsUrl}', '${esc(s.name)}')">
+                    🔍 Ampliar
+                </button>
+                <button class="btn-lyrics-action delete" onclick="deleteLyrics('${s.id}')">
+                    🗑 Quitar
+                </button>
+            </div>
+        `;
+    } else {
+        return `
+            <div class="lyrics-header">
+                <div class="lyrics-title">📝 Letra (Imagen)</div>
+            </div>
+            <div id="lyrics-upload-zone" class="lyrics-upload-zone" tabindex="0"
+                 onclick="this.focus()"
+                 onpaste="handleLyricsPaste(event, '${s.id}')">
+                <span class="upload-icon">📝</span>
+                <span class="upload-text" style="margin-bottom:8px">
+                    Haz clic aquí y presiona <strong>Ctrl+V</strong> para pegar captura de letra
+                </span>
+                <button class="btn btn-ghost" style="font-size:10px;padding:4px 8px;margin-top:4px" 
+                        onclick="event.stopPropagation(); document.getElementById('lyrics-file-input').click();">
+                    📂 Buscar archivo
+                </button>
+                <input type="file" id="lyrics-file-input" accept="image/*" style="display:none" 
+                       onchange="handleLyricsFileSelect(this, '${s.id}')">
+            </div>
+        `;
+    }
+}
+
+async function handleLyricsFileSelect(input, songId) {
+    const file = input.files[0];
+    if (!file) return;
+    processAndUploadLyrics(file, songId);
+}
+
+async function handleLyricsPaste(event, songId) {
+    const items = (event.clipboardData || event.originalEvent?.clipboardData)?.items;
+    if (!items) return;
+    for (const item of items) {
+        if (item.type.startsWith('image/')) {
+            const blob = item.getAsFile();
+            processAndUploadLyrics(blob, songId);
+            event.preventDefault();
+            return;
+        }
+    }
+    toast('⚠ No se detectó imagen en el portapapeles.');
+}
+
+async function processAndUploadLyrics(fileOrBlob, songId) {
+    const s = songs.find(x => x.id === songId);
+    if (!s) return;
+    
+    const zone = document.getElementById('lyrics-upload-zone');
+    if (zone) {
+        zone.innerHTML = `<span class="upload-icon">↻</span><span class="upload-text">Subiendo captura de letra...</span>`;
+    }
+    
+    try {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+            const base64DataUrl = e.target.result;
+            setBadge('syncing', '↻ Subiendo letra…');
+            
+            const publicUrl = await uploadImageToStorage(songId, base64DataUrl, 'lyrics');
+            if (publicUrl) {
+                s.lyricsUrl = publicUrl;
+                
+                await dbSaveSong(s);
+                localStorage.setItem('lyrics_' + songId, publicUrl);
+                
+                Object.keys(history).forEach(d => {
+                    history[d] = history[d].map(x => x.id === songId ? {...x, lyricsUrl: publicUrl} : x);
+                });
+                
+                toast('✓ Letra subida correctamente');
+            } else {
+                toast('⚠ Error al subir la letra');
+            }
+            refreshUI();
+        };
+        reader.readAsDataURL(fileOrBlob);
+    } catch(err) {
+        console.error('Error al procesar letra:', err);
+        toast('⚠ Error al procesar la imagen');
+        refreshUI();
+    }
+}
+
+async function deleteLyrics(songId) {
+    const s = songs.find(x => x.id === songId);
+    if (!s) return;
+    
+    if (confirm('¿Estás seguro de que quieres eliminar la captura de la letra?')) {
+        s.lyricsUrl = null;
+        
+        try {
+            setBadge('syncing', '↻ Eliminando letra…');
+            await dbSaveSong(s);
+            localStorage.removeItem('lyrics_' + songId);
+            
+            Object.keys(history).forEach(d => {
+                history[d] = history[d].map(x => x.id === songId ? {...x, lyricsUrl: null} : x);
+            });
+            
+            await deleteImageFromStorage(songId, 'lyrics');
+            
+            toast('✓ Letra eliminada');
+        } catch(err) {
+            console.error('Error al eliminar letra:', err);
+            toast('⚠ Error al guardar cambios');
+        }
+        refreshUI();
+    }
+}
+
+function openLyricsFull(lyricsUrl, songName) {
+    document.getElementById('lyrics-v-img').src = lyricsUrl;
+    document.getElementById('lyrics-v-name').textContent = songName + ' - Letra';
+    document.getElementById('lyrics-viewer').classList.add('open');
+    document.addEventListener('keydown', onVKey);
+}
+
+function closeLyricsViewer() {
+    document.getElementById('lyrics-viewer').classList.remove('open');
+    document.removeEventListener('keydown', onVKey);
+}
 
 // ── SERVICE WORKER ──
 if ('serviceWorker' in navigator) {
@@ -15023,40 +15297,39 @@ if (typeof syncDone === 'undefined') {
 // 2. GUARDAR Y PATCHAR dbSaveSong CORRECTAMENTE
 // ════════════════════════════════════════════════════════════════════════════
 
-if (typeof _origDbSaveSongFixed === 'undefined') {
-    window._origDbSaveSongFixed = window.dbSaveSong || (async function(song) {
-        syncStart();
-        
-        const safeUrl      = (song.url      && song.url.startsWith('http'))      ? song.url      : null;
-        const safeCoverUrl = (song.coverUrl && song.coverUrl.startsWith('http')) ? song.coverUrl : null;
-        const safeAudioUrl = (song.audioUrl && song.audioUrl.startsWith('http')) ? song.audioUrl : null;
+window._origDbSaveSongFixed = async function(song) {
+    syncStart();
+    
+    const safeUrl      = (song.url      && song.url.startsWith('http'))      ? song.url      : null;
+    const safeCoverUrl = (song.coverUrl && song.coverUrl.startsWith('http')) ? song.coverUrl : null;
+    const safeAudioUrl = (song.audioUrl && song.audioUrl.startsWith('http')) ? song.audioUrl : null;
+    const safeLyricsUrl = (song.lyricsUrl && song.lyricsUrl.startsWith('http')) ? song.lyricsUrl : null;
 
-        const { error } = await sb.from('songs').upsert({
-            id: song.id, 
-            name: song.name, 
-            author: song.author||'',
-            key: song.key||'', 
-            bpm: song.bpm||0, 
-            type: song.type||'otro',
-            duration: song.duration||0, 
-            youtube: song.youtube||'',
-            letter: song.letter||'',
-            url: safeUrl,
-            multitrack: song.multitrack||false,
-            cover_url: safeCoverUrl,
-            audio_url: safeAudioUrl,
-            audio_data: null,
-            compass: song.compass||'',
-            duration_str: song.durationStr||''
-        });
-        
-        syncDone(error);
-        
-        if (error) {
-            throw error;
-        }
+    const { error } = await sb.from('songs').upsert({
+        id: song.id, 
+        name: song.name, 
+        author: song.author||'',
+        key: song.key||'', 
+        bpm: song.bpm||0, 
+        type: song.type||'otro',
+        duration: song.duration||0, 
+        youtube: song.youtube||'',
+        letter: song.letter||'',
+        url: safeUrl,
+        multitrack: song.multitrack||false,
+        cover_url: safeCoverUrl,
+        audio_url: safeAudioUrl,
+        audio_data: safeLyricsUrl,
+        compass: song.compass||'',
+        duration_str: song.durationStr||''
     });
-}
+    
+    syncDone(error);
+    
+    if (error) {
+        throw error;
+    }
+};
 
 window.dbSaveSong = async function(song) {
     if (window._pendingAcordesUrlForSave !== undefined && window._pendingAcordesUrlForSave !== null) {
