@@ -15302,7 +15302,6 @@ window._origDbSaveSongFixed = async function(song) {
     
     const safeUrl      = (song.url      && song.url.startsWith('http'))      ? song.url      : null;
     const safeCoverUrl = (song.coverUrl && song.coverUrl.startsWith('http')) ? song.coverUrl : null;
-    const safeAudioUrl = (song.audioUrl && song.audioUrl.startsWith('http')) ? song.audioUrl : null;
     const safeLyricsUrl = (song.lyricsUrl && song.lyricsUrl.startsWith('http')) ? song.lyricsUrl : null;
 
     const { error } = await sb.from('songs').upsert({
@@ -15318,10 +15317,11 @@ window._origDbSaveSongFixed = async function(song) {
         url: safeUrl,
         multitrack: song.multitrack||false,
         cover_url: safeCoverUrl,
-        audio_url: safeAudioUrl,
         audio_data: safeLyricsUrl,
         compass: song.compass||'',
-        duration_str: song.durationStr||''
+        duration_str: song.durationStr||'',
+        drive_url: song.driveUrl||null,
+        cifrado: song.cifrado||null
     });
     
     syncDone(error);
