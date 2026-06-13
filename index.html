@@ -5661,6 +5661,9 @@ function renderAttendance(display) {
             const ltEx    = d.records.filter(r=>r.status==='late_excused').length;
             const abs     = d.records.filter(r=>r.status==='absent').length;
             const absEx   = d.records.filter(r=>r.status==='abs_excused').length;
+            // Solo contar registros con estado real (no 'none')
+            const registered = pres + lt + ltEx + abs + absEx;
+            const sinReg  = total - registered;
 
             const row = mkEl('div','attend-history-row','');
             row.innerHTML = `
@@ -5669,7 +5672,7 @@ function renderAttendance(display) {
                         <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:${date===attendDate?'var(--accent)':'var(--text)'}">${fmtDate(date)}</span>
                         <span class="status-pill ${d.type==='culto'?'excused':'present'}">${d.type==='culto'?'⛪ Culto':'🎸 Ensayo'}</span>
                     </div>
-                    <span style="font-size:10px;color:var(--dim)">${d.records.length}/${total}</span>
+                    <span style="font-size:10px;color:var(--dim)">${registered}/${total}</span>
                 </div>
                 <div style="display:flex;gap:5px;flex-wrap:wrap">
                     ${pres?`<span class="status-pill present">✅ ${pres}</span>`:''}
@@ -5677,6 +5680,7 @@ function renderAttendance(display) {
                     ${ltEx?`<span class="status-pill late-excused">🟡 ${ltEx}</span>`:''}
                     ${abs ?`<span class="status-pill absent">❌ ${abs}</span>`:''}
                     ${absEx?`<span class="status-pill excused">🔵 ${absEx}</span>`:''}
+                    ${sinReg > 0 ?`<span class="status-pill" style="background:rgba(255,255,255,0.05);color:var(--dim)">— ${sinReg} sin reg.</span>`:''}
                 </div>
             `;
             row.onclick = () => setAttendDate(date);
