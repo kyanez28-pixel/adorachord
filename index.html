@@ -3586,38 +3586,97 @@ function renderArtistSongs(display, artistName) {
         return normAuthor === normSearch;
     });
     const photoHtml = getArtistPhotoHtml(artistName);
+    const isSinArtista = normalizeArtistName(artistName) === 'Sin artista';
 
     // Header del artista
     const header = document.createElement('div');
     header.className = 'artist-songs-header';
-    header.innerHTML = `
-        <button class="artist-back-btn" onclick="selectedArtist=null;refreshUI()">← Artistas</button>
-        <div class="artist-hero">
-            <div class="artist-hero-photo" onclick="if(esc('${artistName}')!=='Sin artista') document.getElementById('artist-file-input').click()" style="cursor:pointer" title="Cambiar portada">${photoHtml}</div>
-            <div>
-                <div class="artist-hero-name">${esc(artistName)}</div>
-                <div class="artist-hero-count">${artistSongs.length} canción${artistSongs.length!==1?'es':''}</div>
-            </div>
-        </div>
-        ${artistName !== 'Sin artista' ? `
-        <input type="file" id="artist-file-input" style="display:none" accept="image/*" onchange="uploadArtistPhoto('${esc(artistName)}', this)">
-        <div style="display:flex;gap:6px;align-items:center">
-            <button class="inline-btn" onclick="document.getElementById('artist-file-input').click()" style="padding:7px 12px;font-size:11px;font-family:'Syne',sans-serif;font-weight:700">
-                📷 Cambiar Portada
-            </button>
-            <div id="artist-paste-${esc(artistName)}"
-                class="mobile-hidden"
-                tabindex="0"
-                onpaste="handleArtistPhotoPaste(event,'${esc(artistName)}')"
-                style="display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px dashed rgba(232,87,42,0.3);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:11px;color:var(--accent);font-family:'Syne',sans-serif;font-weight:600;outline:none;transition:border-color 0.2s,background 0.2s;white-space:nowrap"
-                onfocus="this.style.borderColor='var(--accent)';this.style.background='rgba(232,87,42,0.08)'"
-                onblur="this.style.borderColor='rgba(232,87,42,0.3)';this.style.background='var(--panel2)'"
-                title="Pega la foto con Ctrl+V (solo PC)">
-                📋 Pegar (Ctrl+V)
-            </div>
-        </div>
-        ` : ''}
-    `;
+
+    // Back button
+    const backBtn = document.createElement('button');
+    backBtn.className = 'artist-back-btn';
+    backBtn.textContent = '← Artistas';
+    backBtn.onclick = () => { selectedArtist = null; refreshUI(); };
+    header.appendChild(backBtn);
+
+    // Hero section
+    const heroDiv = document.createElement('div');
+    heroDiv.className = 'artist-hero';
+
+    const heroPhoto = document.createElement('div');
+    heroPhoto.className = 'artist-hero-photo';
+    heroPhoto.innerHTML = photoHtml;
+    heroPhoto.title = 'Cambiar portada';
+    if (!isSinArtista) {
+        heroPhoto.style.cursor = 'pointer';
+        heroPhoto.onclick = () => fileInput.click();
+    }
+    heroDiv.appendChild(heroPhoto);
+
+    const heroInfo = document.createElement('div');
+    const heroName = document.createElement('div');
+    heroName.className = 'artist-hero-name';
+    heroName.textContent = artistName;
+    const heroCount = document.createElement('div');
+    heroCount.className = 'artist-hero-count';
+    heroCount.textContent = `${artistSongs.length} canción${artistSongs.length !== 1 ? 'es' : ''}`;
+    heroInfo.appendChild(heroName);
+    heroInfo.appendChild(heroCount);
+    heroDiv.appendChild(heroInfo);
+    header.appendChild(heroDiv);
+
+    // File input + buttons (only for real artists)
+    let fileInput;
+    if (!isSinArtista) {
+        fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.id = 'artist-file-input';
+        fileInput.accept = 'image/*';
+        fileInput.style.display = 'none';
+        fileInput.onchange = () => {
+            if (fileInput.files[0]) _saveArtistPhoto(artistName, fileInput.files[0]);
+        };
+        header.appendChild(fileInput);
+
+        const btnRow = document.createElement('div');
+        btnRow.style.cssText = 'display:flex;gap:6px;align-items:center';
+
+        const uploadBtn = document.createElement('button');
+        uploadBtn.className = 'inline-btn';
+        uploadBtn.style.cssText = 'padding:7px 12px;font-size:11px;font-family:\'Syne\',sans-serif;font-weight:700';
+        uploadBtn.innerHTML = '📷 Cambiar Portada';
+        uploadBtn.onclick = () => fileInput.click();
+        btnRow.appendChild(uploadBtn);
+
+        // Paste zone (desktop only)
+        const pasteZone = document.createElement('div');
+        pasteZone.className = 'mobile-hidden';
+        pasteZone.tabIndex = 0;
+        pasteZone.innerHTML = '📋 Pegar (Ctrl+V)';
+        pasteZone.style.cssText = 'display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px dashed rgba(232,87,42,0.3);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:11px;color:var(--accent);font-family:\'Syne\',sans-serif;font-weight:600;outline:none;transition:border-color 0.2s,background 0.2s;white-space:nowrap';
+        pasteZone.title = 'Clic aquí y pega la foto con Ctrl+V';
+        pasteZone.onclick = () => pasteZone.focus();
+        pasteZone.onfocus = () => { pasteZone.style.borderColor = 'var(--accent)'; pasteZone.style.background = 'rgba(232,87,42,0.08)'; };
+        pasteZone.onblur  = () => { pasteZone.style.borderColor = 'rgba(232,87,42,0.3)'; pasteZone.style.background = 'var(--panel2)'; };
+        pasteZone.addEventListener('paste', (event) => {
+            const items = event.clipboardData?.items;
+            if (!items) return;
+            let file = null;
+            for (const item of items) {
+                if (item.type.startsWith('image/')) { file = item.getAsFile(); break; }
+            }
+            if (!file) return;
+            event.preventDefault();
+            pasteZone.textContent = '⏳ Subiendo…';
+            _saveArtistPhoto(artistName, file).then(() => {
+                pasteZone.innerHTML = '✓ Foto guardada';
+                setTimeout(() => { pasteZone.innerHTML = '📋 Pegar (Ctrl+V)'; }, 2000);
+            });
+        });
+        btnRow.appendChild(pasteZone);
+        header.appendChild(btnRow);
+    }
+
     display.appendChild(header);
 
     // Grid de canciones del artista
@@ -3651,28 +3710,6 @@ function renderArtistSongs(display, artistName) {
     display.appendChild(grid);
 }
 
-window.uploadArtistPhoto = async function(artistName, input) {
-    const file = input.files[0];
-    if (!file) return;
-    await _saveArtistPhoto(artistName, file);
-};
-
-window.handleArtistPhotoPaste = async function(event, artistName) {
-    const items = event.clipboardData?.items;
-    if (!items) return;
-    let file = null;
-    for (const item of items) {
-        if (item.type.startsWith('image/')) { file = item.getAsFile(); break; }
-    }
-    if (!file) return;
-    event.preventDefault();
-    // Feedback visual
-    const el = event.currentTarget;
-    el.textContent = '⏳ Subiendo…';
-    await _saveArtistPhoto(artistName, file);
-    el.innerHTML = '✓ Foto guardada';
-    setTimeout(() => { el.innerHTML = '📷 Clic + Ctrl+V'; }, 2000);
-};
 
 async function _saveArtistPhoto(artistName, file) {
     setBadge('syncing', '↻ Subiendo foto…');
