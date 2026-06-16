@@ -3832,9 +3832,12 @@ function renderRegistro(display) {
             <span style="margin-left:auto;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--accent)">${fmtDate(regDate)}</span>
         </div>
     `);
-    dateBar.querySelector('#reg-date-input').addEventListener('change', function() {
+    const regDateInput = dateBar.querySelector('#reg-date-input');
+    const updateRegDate = function() {
         if (this.value) setRegDate(this.value);
-    });
+    };
+    regDateInput.addEventListener('change', updateRegDate);
+    regDateInput.addEventListener('input', updateRegDate);
     display.appendChild(dateBar);
 
     const layout = mkEl('div','registro-layout','');
@@ -5769,9 +5772,12 @@ function renderAttendance(display) {
             </div>
         </div>
     `);
-    topBar.querySelector('#attend-date-input').addEventListener('change', function() {
+    const attendDateInput = topBar.querySelector('#attend-date-input');
+    const updateAttendDate = function() {
         if (this.value) setAttendDate(this.value);
-    });
+    };
+    attendDateInput.addEventListener('change', updateAttendDate);
+    attendDateInput.addEventListener('input', updateAttendDate);
     display.appendChild(topBar);
 
     const layout = mkEl('div','attend-layout','');
@@ -5993,7 +5999,7 @@ function renderAttendanceInspector(panel) {
 }
 
 function setAttendDate(date) {
-    if (!date) return;
+    if (!date || date === attendDate) return;
     attendDate = date;
     renderMain(); renderInspector();
 }
