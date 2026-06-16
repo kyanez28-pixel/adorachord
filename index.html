@@ -2449,24 +2449,36 @@
             padding: 18px 10px;
             cursor: pointer;
             text-align: center;
-            transition: all 0.2s ease;
+            transition: all 0.25s ease;
             background: rgba(255,255,255,0.02);
             position: relative;
+            outline: none;
         }
         .lyrics-upload-zone:hover, .lyrics-upload-zone.dragover {
             border-color: var(--accent);
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,120,0,0.07);
+            transform: scale(1.01);
         }
-        .lyrics-upload-zone:focus {
-            outline: 2px solid var(--accent);
+        .lyrics-upload-zone.paste-ready {
             border-color: var(--accent);
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,120,0,0.05);
+            animation: pulse-border 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse-border {
+            0%, 100% { border-color: var(--accent); box-shadow: 0 0 0 0 rgba(255,120,0,0.3); }
+            50% { border-color: var(--accent); box-shadow: 0 0 0 6px rgba(255,120,0,0); }
+        }
+        .lyrics-upload-zone.dragover {
+            border-style: solid;
+            border-width: 3px;
         }
         .lyrics-upload-zone .upload-icon {
-            font-size: 24px;
-            margin-bottom: 6px;
-            opacity: 0.7;
+            font-size: 28px;
+            margin-bottom: 8px;
+            transition: transform 0.2s;
         }
+        .lyrics-upload-zone:hover .upload-icon,
+        .lyrics-upload-zone.dragover .upload-icon { transform: scale(1.15); }
         .lyrics-upload-zone .upload-text {
             font-size: 11px;
             color: var(--dim);
@@ -6126,6 +6138,7 @@ async function loadFromSupabase() {
             // Preferir Supabase, si no hay → buscar en localStorage
             coverUrl:  r.cover_url  || localStorage.getItem('cover_'+r.id) || null,
             lyricsUrl: r.audio_data || localStorage.getItem('lyrics_'+r.id) || null,
+            _lyricsCacheTs: localStorage.getItem('lyrics_ts_'+r.id) || null,
             audioUrl:  r.audio_url  || null,
             audioData: null,   // migrado a Storage, no se usa base64
             driveUrl:  r.drive_url  || null
@@ -6233,20 +6246,40 @@ async function deleteAudioFromStorage(songId) {
     await sb.storage.from('multitracks').remove(paths);
 }
 
-// ── STORAGE: subir imagen (portada o acordes) ────────────────────
-async function uploadImageToStorage(songId, base64DataUrl, type) {
-    // type = 'cover' | 'acordes'
-    if (!base64DataUrl || !base64DataUrl.startsWith('data:')) return base64DataUrl;
+// ── STORAGE: subir imagen (portada, acordes o letra) ────────────────────
+async function uploadImageToStorage(songId, fileOrBase64, type) {
+    // type = 'cover' | 'acordes' | 'lyrics'
+    if (!fileOrBase64) return null;
+    
+    let blob;
+    let mime;
+    let ext;
+    
+    if (fileOrBase64 instanceof Blob) {
+        blob = fileOrBase64;
+        mime = blob.type || 'image/jpeg';
+        ext = mime.split('/')[1] || 'jpg';
+    } else if (typeof fileOrBase64 === 'string' && fileOrBase64.startsWith('data:')) {
+        try {
+            const parts   = fileOrBase64.split(',');
+            mime    = parts[0].match(/:(.*?);/)[1];
+            ext     = mime.split('/')[1] || 'jpg';
+            const binary  = atob(parts[1]);
+            const bytes   = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            blob    = new Blob([bytes], { type: mime });
+        } catch (err) {
+            console.error('[IMG STORAGE] Error decodificando base64:', err);
+            return null;
+        }
+    } else {
+        // Si ya es una URL HTTP
+        return fileOrBase64;
+    }
+    
     try {
-        // Convertir base64 a Blob
-        const parts   = base64DataUrl.split(',');
-        const mime    = parts[0].match(/:(.*?);/)[1];
-        const ext     = mime.split('/')[1] || 'jpg';
-        const binary  = atob(parts[1]);
-        const bytes   = new Uint8Array(binary.length);
-        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        const blob    = new Blob([bytes], { type: mime });
-        const path    = `${songId}/${type}.${ext}`;
+        const path = `${songId}/${type}.${ext}`;
+        console.log(`[IMG STORAGE] Subiendo ${type} → bucket:multitracks path:${path} mime:${mime} size:${blob.size}B`);
 
         // Eliminar versión anterior
         await sb.storage.from('multitracks').remove([path]);
@@ -6254,13 +6287,22 @@ async function uploadImageToStorage(songId, base64DataUrl, type) {
         const { error } = await sb.storage.from('multitracks').upload(path, blob, {
             cacheControl: '3600', upsert: true, contentType: mime
         });
-        if (error) { console.error('[IMG STORAGE]', error); return base64DataUrl; }
+        if (error) {
+            console.error('[IMG STORAGE] Error al subir:', JSON.stringify(error));
+            console.error('[IMG STORAGE] Mensaje:', error.message, '| Status:', error.statusCode, '| Error:', error.error);
+            return null; // null indica fallo
+        }
 
         const { data } = sb.storage.from('multitracks').getPublicUrl(path);
-        return data?.publicUrl || base64DataUrl;
+        let url = data?.publicUrl;
+        if (url) {
+            url = `${url.split('?')[0]}?t=${Date.now()}`;
+        }
+        console.log('[IMG STORAGE] URL pública:', url);
+        return url || null;
     } catch(e) {
-        console.error('[IMG STORAGE] Error:', e);
-        return base64DataUrl; // fallback: devolver base64 original
+        console.error('[IMG STORAGE] Excepción:', e);
+        return null; // null indica fallo
     }
 }
 
@@ -8344,7 +8386,9 @@ function mapDbSong(r) {
         youtube: r.youtube||'', letter: r.letter||'', url: r.url||'',
         multitrack: r.multitrack||false, cifrado: r.cifrado||null,
         coverUrl: r.cover_url||null, audioUrl: r.audio_url||null,
-        audioData: null, driveUrl: r.drive_url||null
+        audioData: null, driveUrl: r.drive_url||null,
+        lyricsUrl: r.audio_data || localStorage.getItem('lyrics_'+r.id) || null,
+        _lyricsCacheTs: localStorage.getItem('lyrics_ts_'+r.id) || null
     };
 }
 
@@ -8415,15 +8459,20 @@ setTimeout(initRealtime, 1000);
 
 function getLyricsSectionHTML(s) {
     if (s.lyricsUrl) {
+        // Asegurar que _lyricsCacheTs sea estable para evitar parpadeos
+        if (!s._lyricsCacheTs) {
+            s._lyricsCacheTs = Date.now();
+        }
+        const displayUrl = s.lyricsUrl.includes('?') ? s.lyricsUrl : s.lyricsUrl + '?t=' + s._lyricsCacheTs;
         return `
             <div class="lyrics-header">
                 <div class="lyrics-title">📝 Letra (Imagen)</div>
             </div>
-            <div class="lyrics-preview-container" onclick="openLyricsFull('${s.lyricsUrl}', '${esc(s.name)}')">
-                <img class="lyrics-preview-img" src="${s.lyricsUrl}" alt="Letra de ${esc(s.name)}">
+            <div class="lyrics-preview-container" onclick="openLyricsFull('${displayUrl}', '${esc(s.name)}')">
+                <img class="lyrics-preview-img" src="${displayUrl}" alt="Letra de ${esc(s.name)}">
             </div>
             <div class="lyrics-actions">
-                <button class="btn-lyrics-action view" onclick="openLyricsFull('${s.lyricsUrl}', '${esc(s.name)}')">
+                <button class="btn-lyrics-action view" onclick="openLyricsFull('${displayUrl}', '${esc(s.name)}')">
                     🔍 Ampliar
                 </button>
                 <button class="btn-lyrics-action delete" onclick="deleteLyrics('${s.id}')">
@@ -8436,14 +8485,20 @@ function getLyricsSectionHTML(s) {
             <div class="lyrics-header">
                 <div class="lyrics-title">📝 Letra (Imagen)</div>
             </div>
-            <div id="lyrics-upload-zone" class="lyrics-upload-zone" tabindex="0"
-                 onclick="this.focus()"
-                 onpaste="handleLyricsPaste(event, '${s.id}')">
-                <span class="upload-icon">📝</span>
-                <span class="upload-text" style="margin-bottom:8px">
-                    Haz clic aquí y presiona <strong>Ctrl+V</strong> para pegar captura de letra
+            <div id="lyrics-upload-zone" class="lyrics-upload-zone"
+                 data-songid="${s.id}"
+                 onclick="lyricsZoneClick(event, '${s.id}')"
+                 ondragover="event.preventDefault(); this.classList.add('dragover');"
+                 ondragleave="this.classList.remove('dragover');"
+                 ondrop="handleLyricsDrop(event, '${s.id}')">
+                <span class="upload-icon">📷</span>
+                <span class="upload-text" style="margin-bottom:8px;font-size:12px">
+                    <strong>Ctrl+V</strong> para pegar imagen desde cualquier lugar
                 </span>
-                <button class="btn btn-ghost" style="font-size:10px;padding:4px 8px;margin-top:4px" 
+                <span class="upload-text" style="opacity:0.5;font-size:10px;margin-bottom:8px">
+                    o arrastra una imagen aquí
+                </span>
+                <button class="btn btn-ghost" style="font-size:10px;padding:4px 12px;margin-top:4px" 
                         onclick="event.stopPropagation(); document.getElementById('lyrics-file-input').click();">
                     📂 Buscar archivo
                 </button>
@@ -8454,25 +8509,81 @@ function getLyricsSectionHTML(s) {
     }
 }
 
+function lyricsZoneClick(event, songId) {
+    // Clic simple en la zona activa el paste-ready (resalta)
+    if (event.target.tagName === 'BUTTON' || event.target.closest('button')) return;
+    const zone = document.getElementById('lyrics-upload-zone');
+    if (!zone) return;
+    zone.classList.add('paste-ready');
+    setTimeout(() => zone && zone.classList.remove('paste-ready'), 3000);
+}
+
 async function handleLyricsFileSelect(input, songId) {
     const file = input.files[0];
     if (!file) return;
     processAndUploadLyrics(file, songId);
 }
 
+async function handleLyricsDrop(event, songId) {
+    event.preventDefault();
+    const zone = document.getElementById('lyrics-upload-zone');
+    if (zone) zone.classList.remove('dragover');
+    const file = event.dataTransfer?.files?.[0];
+    if (file && file.type.startsWith('image/')) {
+        processAndUploadLyrics(file, songId);
+    } else {
+        toast('⚠ Solo se aceptan imágenes');
+    }
+}
+
+// ── PASTE GLOBAL: funciona desde cualquier lugar de la página ──
 async function handleLyricsPaste(event, songId) {
     const items = (event.clipboardData || event.originalEvent?.clipboardData)?.items;
     if (!items) return;
     for (const item of items) {
         if (item.type.startsWith('image/')) {
             const blob = item.getAsFile();
-            processAndUploadLyrics(blob, songId);
-            event.preventDefault();
-            return;
+            if (blob) {
+                processAndUploadLyrics(blob, songId);
+                event.preventDefault();
+                return;
+            }
         }
     }
     toast('⚠ No se detectó imagen en el portapapeles.');
 }
+
+// Listener global de paste — funciona con Ctrl+V desde cualquier lugar
+document.addEventListener('paste', function(event) {
+    // Solo activar si la zona de upload de letras es visible
+    const zone = document.getElementById('lyrics-upload-zone');
+    if (!zone) return; // No hay zona visible = no hay canción activa sin letra
+    
+    const songId = zone.getAttribute('data-songid');
+    if (!songId) return;
+    
+    // Verificar si el foco está en un input/textarea (no interferir con escritura)
+    const focused = document.activeElement;
+    if (focused && (focused.tagName === 'INPUT' || focused.tagName === 'TEXTAREA' || focused.isContentEditable)) return;
+    
+    const items = event.clipboardData?.items;
+    if (!items) return;
+    
+    for (const item of items) {
+        if (item.type.startsWith('image/')) {
+            const blob = item.getAsFile();
+            if (blob) {
+                event.preventDefault();
+                // Feedback visual: animar la zona
+                zone.classList.add('dragover');
+                setTimeout(() => zone && zone.classList.remove('dragover'), 500);
+                processAndUploadLyrics(blob, songId);
+                return;
+            }
+        }
+    }
+    // No mostrar toast si no hay imagen (puede ser texto normal)
+});
 
 async function processAndUploadLyrics(fileOrBlob, songId) {
     const s = songs.find(x => x.id === songId);
@@ -8484,32 +8595,43 @@ async function processAndUploadLyrics(fileOrBlob, songId) {
     }
     
     try {
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const base64DataUrl = e.target.result;
-            setBadge('syncing', '↻ Subiendo letra…');
+        setBadge('syncing', '↻ Subiendo letra…');
+        
+        // Borrar imagen anterior del storage antes de subir la nueva
+        await deleteImageFromStorage(songId, 'lyrics');
+        
+        // Subir directamente el Blob/File al storage
+        const publicUrl = await uploadImageToStorage(songId, fileOrBlob, 'lyrics');
+        
+        if (publicUrl && publicUrl.startsWith('http')) {
+            const baseUrl = publicUrl.split('?')[0];
+            const ts = Date.now();
+            const timestampedUrl = `${baseUrl}?t=${ts}`;
+            s.lyricsUrl = timestampedUrl;
+            s._lyricsCacheTs = ts;
             
-            const publicUrl = await uploadImageToStorage(songId, base64DataUrl, 'lyrics');
-            if (publicUrl) {
-                s.lyricsUrl = publicUrl;
-                
-                await dbSaveSong(s);
-                localStorage.setItem('lyrics_' + songId, publicUrl);
-                
-                Object.keys(history).forEach(d => {
-                    history[d] = history[d].map(x => x.id === songId ? {...x, lyricsUrl: publicUrl} : x);
-                });
-                
-                toast('✓ Letra subida correctamente');
-            } else {
-                toast('⚠ Error al subir la letra');
-            }
-            refreshUI();
-        };
-        reader.readAsDataURL(fileOrBlob);
-    } catch(err) {
-        console.error('Error al procesar letra:', err);
-        toast('⚠ Error al procesar la imagen');
+            // Guardar en localStorage y actualizar estado en memoria antes del await de la DB
+            // para evitar que el evento de realtime (disparado por el upsert) pise temporalmente el timestamp con null.
+            localStorage.setItem('lyrics_' + songId, baseUrl);
+            localStorage.setItem('lyrics_ts_' + songId, String(ts));
+            
+            await dbSaveSong(s);
+            
+            Object.keys(history).forEach(d => {
+                history[d] = history[d].map(x => x.id === songId ? {...x, lyricsUrl: timestampedUrl, _lyricsCacheTs: ts} : x);
+            });
+            
+            toast('✓ Letra subida correctamente');
+        } else {
+            console.error('[LYRICS] Upload falló — publicUrl recibido:', publicUrl);
+            toast('⚠ Error al subir la letra. Verifica los permisos del storage.');
+            setBadge('error', '⚠ Error al guardar');
+        }
+    } catch(innerErr) {
+        console.error('[LYRICS] Error interno al subir:', innerErr);
+        toast('⚠ Error al sincronizar con la nube');
+        setBadge('error', '⚠ Error al guardar');
+    } finally {
         refreshUI();
     }
 }
@@ -8519,18 +8641,25 @@ async function deleteLyrics(songId) {
     if (!s) return;
     
     if (confirm('¿Estás seguro de que quieres eliminar la captura de la letra?')) {
-        s.lyricsUrl = null;
-        
         try {
             setBadge('syncing', '↻ Eliminando letra…');
-            await dbSaveSong(s);
-            localStorage.removeItem('lyrics_' + songId);
             
+            // 1. Borrar del storage primero
+            await deleteImageFromStorage(songId, 'lyrics');
+            
+            // 2. Limpiar estado local
+            s.lyricsUrl = null;
+            s._lyricsCacheTs = null;
+            localStorage.removeItem('lyrics_' + songId);
+            localStorage.removeItem('lyrics_ts_' + songId);
+            
+            // 3. Actualizar historial
             Object.keys(history).forEach(d => {
-                history[d] = history[d].map(x => x.id === songId ? {...x, lyricsUrl: null} : x);
+                history[d] = history[d].map(x => x.id === songId ? {...x, lyricsUrl: null, _lyricsCacheTs: null} : x);
             });
             
-            await deleteImageFromStorage(songId, 'lyrics');
+            // 4. Guardar en DB
+            await dbSaveSong(s);
             
             toast('✓ Letra eliminada');
         } catch(err) {
