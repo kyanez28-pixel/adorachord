@@ -3834,10 +3834,12 @@ function renderRegistro(display) {
     `);
     const regDateInput = dateBar.querySelector('#reg-date-input');
     const updateRegDate = function() {
-        if (this.value) setRegDate(this.value);
+        if (this.value) {
+            const val = this.value;
+            setTimeout(() => setRegDate(val), 50);
+        }
     };
     regDateInput.addEventListener('change', updateRegDate);
-    regDateInput.addEventListener('input', updateRegDate);
     display.appendChild(dateBar);
 
     const layout = mkEl('div','registro-layout','');
@@ -3993,7 +3995,7 @@ function renderRegistro(display) {
     leftPanel.appendChild(lFoot);
 
     // ── Picker derecho ──
-    const rightPanel = mkEl('div','reg-panel','');
+    const rightPanel = mkEl('div','reg-panel mobile-hidden','');
     rightPanel.appendChild(mkEl('div','reg-panel-header',`
         <span class="reg-panel-title">🎵 Agregar canciones</span>
         <span style="font-size:10px;color:var(--dim)">${songs.length} en biblioteca</span>
@@ -5774,10 +5776,12 @@ function renderAttendance(display) {
     `);
     const attendDateInput = topBar.querySelector('#attend-date-input');
     const updateAttendDate = function() {
-        if (this.value) setAttendDate(this.value);
+        if (this.value) {
+            const val = this.value;
+            setTimeout(() => setAttendDate(val), 50);
+        }
     };
     attendDateInput.addEventListener('change', updateAttendDate);
-    attendDateInput.addEventListener('input', updateAttendDate);
     display.appendChild(topBar);
 
     const layout = mkEl('div','attend-layout','');
@@ -5859,7 +5863,7 @@ function renderAttendance(display) {
     left.appendChild(foot);
 
     // ── Panel derecho: Historial ──
-    const right = mkEl('div','attend-panel','');
+    const right = mkEl('div','attend-panel mobile-hidden','');
     const dates = Object.keys(attendance).sort().reverse();
 
     right.appendChild(mkEl('div','attend-panel-header',`
