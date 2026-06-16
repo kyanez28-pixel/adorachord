@@ -1445,6 +1445,81 @@
 
         .yt-link:hover { color: #FF6666; }
 
+        /* ── FLOATING YOUTUBE MINI-PLAYER ─────────────────────────── */
+        #yt-float {
+            position: fixed;
+            bottom: 90px;
+            right: 16px;
+            width: 300px;
+            background: #0f0f0f;
+            border-radius: 14px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.07);
+            z-index: 9999;
+            overflow: hidden;
+            display: none;
+            flex-direction: column;
+            transition: box-shadow 0.2s, transform 0.2s;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        #yt-float.visible { display: flex; animation: ytFloatIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both; }
+        @keyframes ytFloatIn {
+            from { opacity: 0; transform: translateY(20px) scale(0.94); }
+            to   { opacity: 1; transform: translateY(0)  scale(1); }
+        }
+        #yt-float.minimized { width: 220px; }
+        #yt-float.minimized #yt-iframe-wrap { display: none; }
+        #yt-float-bar {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px 10px 8px 12px;
+            background: #1a1a1a;
+            cursor: grab;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        #yt-float-bar:active { cursor: grabbing; }
+        #yt-float-logo {
+            color: #FF0000; font-size: 14px; line-height: 1; flex-shrink: 0;
+        }
+        #yt-float-title {
+            flex: 1; font-size: 11px; font-family: 'Syne', sans-serif;
+            font-weight: 700; color: #eee; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        #yt-float-btns { display: flex; gap: 2px; flex-shrink: 0; }
+        .yt-float-ctrl {
+            width: 26px; height: 26px; border-radius: 7px; border: none;
+            background: rgba(255,255,255,0.07); color: #aaa;
+            cursor: pointer; font-size: 13px; display: flex;
+            align-items: center; justify-content: center; transition: background 0.15s, color 0.15s;
+        }
+        .yt-float-ctrl:hover { background: rgba(255,255,255,0.14); color: #fff; }
+        .yt-float-ctrl.danger:hover { background: rgba(255,60,60,0.25); color: #FF6666; }
+        #yt-iframe-wrap {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 */
+            background: #000;
+        }
+        #yt-iframe-wrap iframe {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%; border: none;
+        }
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            #yt-float {
+                bottom: 74px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+            }
+            #yt-float.minimized {
+                width: auto;
+                left: auto;
+                right: 10px;
+                width: 200px;
+            }
+        }
+
         /* HISTORY SIDEBAR */
         .history-date-item {
             display: flex; align-items: center; gap: 7px;
@@ -4093,7 +4168,7 @@ function renderLibraryInspector(panel) {
             if (s.youtube) {
                 const b2 = mkEl('button','mob-action-btn yt','');
                 b2.innerHTML = `<span class="mob-btn-icon">▶</span>YouTube`;
-                b2.onclick = () => window.open(s.youtube, '_blank');
+                b2.onclick = () => openYouTubeFloat(s.youtube, s.name);
                 actions.appendChild(b2);
             }
             const b3 = mkEl('button','mob-action-btn primary','');
@@ -4186,7 +4261,7 @@ function renderLibraryInspector(panel) {
             });
 
             if (s.youtube) {
-                detailBody.innerHTML += `<div class="detail-row"><span class="detail-key">YouTube</span><a class="yt-link" href="${esc(s.youtube)}" target="_blank" rel="noopener">▶ Ver video</a></div>`;
+                detailBody.innerHTML += `<div class="detail-row"><span class="detail-key">YouTube</span><a class="yt-link" href="#" onclick="event.preventDefault();openYouTubeFloat('${esc(s.youtube)}','${esc(s.name)}')">▶ Ver video</a></div>`;
             }
             if (s.coverUrl) {
                 detailBody.innerHTML += `<div style="margin-top:8px"><div class="detail-key" style="margin-bottom:5px">Portada</div><img src="${s.coverUrl}" style="width:100%;border-radius:8px;object-fit:cover;max-height:120px"></div>`;
@@ -4232,8 +4307,8 @@ function renderLibraryInspector(panel) {
                 sec.appendChild(viewBtn);
             }
             if (s.youtube) {
-                const ytBtn = mkEl('button','btn btn-blue','▶ Abrir en YouTube');
-                ytBtn.onclick = () => window.open(s.youtube, '_blank');
+                const ytBtn = mkEl('button','btn btn-blue','▶ Ver en YouTube');
+                ytBtn.onclick = () => openYouTubeFloat(s.youtube, s.name);
                 sec.appendChild(ytBtn);
             }
             const editBtn = mkEl('button','btn btn-primary','✏ Editar datos');
@@ -15673,6 +15748,159 @@ console.log('✅ Fix v1.0 aplicado: Manejo mejorado de carga de acordes');
     const sidebarInstall = document.getElementById('sidebar-install-btn');
     if (sidebarInstall) sidebarInstall.style.display = 'none';
   });
+})();
+</script>
+<!-- ── FLOATING YOUTUBE MINI-PLAYER ─────────────────────────── -->
+<div id="yt-float">
+    <div id="yt-float-bar" id="yt-float-drag">
+        <span id="yt-float-logo">▶</span>
+        <span id="yt-float-title">YouTube</span>
+        <div id="yt-float-btns">
+            <button class="yt-float-ctrl" id="yt-float-min" title="Minimizar" onclick="ytFloatToggleMin()">⊟</button>
+            <button class="yt-float-ctrl" id="yt-float-ext" title="Abrir en YouTube" onclick="ytFloatOpenExternal()">↗</button>
+            <button class="yt-float-ctrl danger" id="yt-float-close" title="Cerrar" onclick="ytFloatClose()">✕</button>
+        </div>
+    </div>
+    <div id="yt-iframe-wrap">
+        <iframe id="yt-iframe" src="" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+    </div>
+</div>
+
+<script>
+// ── FLOATING YOUTUBE MINI-PLAYER ──────────────────────────────────────────
+(function() {
+    let _ytUrl = '';
+    let _minimized = false;
+
+    // Extrae el video ID de una URL de YouTube
+    function extractYtId(url) {
+        if (!url) return null;
+        // youtu.be/ID
+        let m = url.match(/youtu\.be\/([a-zA-Z0-9_-]{11})/);
+        if (m) return m[1];
+        // youtube.com/watch?v=ID
+        m = url.match(/[?&]v=([a-zA-Z0-9_-]{11})/);
+        if (m) return m[1];
+        // youtube.com/embed/ID
+        m = url.match(/embed\/([a-zA-Z0-9_-]{11})/);
+        if (m) return m[1];
+        return null;
+    }
+
+    // Convierte URL normal en embed con autoplay
+    function toEmbedUrl(url) {
+        const id = extractYtId(url);
+        if (!id) return url; // fallback: usar tal cual
+        // Preservar timestamp si existe (?t=... o &t=...)
+        const tMatch = url.match(/[?&]t=([0-9]+)/);
+        const startParam = tMatch ? `&start=${tMatch[1]}` : '';
+        return `https://www.youtube.com/embed/${id}?autoplay=1&rel=0${startParam}`;
+    }
+
+    window.openYouTubeFloat = function(url, title) {
+        _ytUrl = url;
+        const panel = document.getElementById('yt-float');
+        const iframe = document.getElementById('yt-iframe');
+        const titleEl = document.getElementById('yt-float-title');
+
+        titleEl.textContent = title || 'YouTube';
+        iframe.src = toEmbedUrl(url);
+
+        _minimized = false;
+        panel.classList.remove('minimized');
+        panel.classList.add('visible');
+        // Reset position
+        panel.style.transform = '';
+        panel.style.left = '';
+        panel.style.top = '';
+        panel.style.bottom = '';
+        panel.style.right = '';
+    };
+
+    window.ytFloatClose = function() {
+        const panel = document.getElementById('yt-float');
+        const iframe = document.getElementById('yt-iframe');
+        panel.classList.remove('visible');
+        // Pequeño delay para que no corte el audio abruptamente
+        setTimeout(() => { iframe.src = ''; }, 300);
+    };
+
+    window.ytFloatToggleMin = function() {
+        const panel = document.getElementById('yt-float');
+        const btn   = document.getElementById('yt-float-min');
+        _minimized = !_minimized;
+        panel.classList.toggle('minimized', _minimized);
+        btn.title = _minimized ? 'Restaurar' : 'Minimizar';
+        btn.textContent = _minimized ? '⊞' : '⊟';
+    };
+
+    window.ytFloatOpenExternal = function() {
+        if (_ytUrl) window.open(_ytUrl, '_blank');
+    };
+
+    // ── DRAG (desktop & mobile) ──────────────────────────────────────
+    const bar = document.getElementById('yt-float-bar');
+    let dragging = false, startX, startY, origLeft, origTop;
+
+    function getPanel() { return document.getElementById('yt-float'); }
+
+    function initDragPos(panel) {
+        // Si no tiene posición fija calculada, calculamos desde bottom/right
+        if (!panel.style.left) {
+            const rect = panel.getBoundingClientRect();
+            panel.style.left   = rect.left + 'px';
+            panel.style.top    = rect.top  + 'px';
+            panel.style.right  = 'auto';
+            panel.style.bottom = 'auto';
+        }
+    }
+
+    // Mouse
+    bar.addEventListener('mousedown', function(e) {
+        if (e.target.closest('button')) return;
+        dragging = true;
+        const panel = getPanel();
+        initDragPos(panel);
+        startX = e.clientX;
+        startY = e.clientY;
+        origLeft = parseFloat(panel.style.left);
+        origTop  = parseFloat(panel.style.top);
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', function(e) {
+        if (!dragging) return;
+        const panel = getPanel();
+        panel.style.left = (origLeft + e.clientX - startX) + 'px';
+        panel.style.top  = (origTop  + e.clientY - startY) + 'px';
+    });
+
+    document.addEventListener('mouseup', function() { dragging = false; });
+
+    // Touch (mobile)
+    bar.addEventListener('touchstart', function(e) {
+        if (e.target.closest('button')) return;
+        const touch = e.touches[0];
+        dragging = true;
+        const panel = getPanel();
+        initDragPos(panel);
+        startX = touch.clientX;
+        startY = touch.clientY;
+        origLeft = parseFloat(panel.style.left);
+        origTop  = parseFloat(panel.style.top);
+        e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('touchmove', function(e) {
+        if (!dragging) return;
+        const touch = e.touches[0];
+        const panel = getPanel();
+        panel.style.left = (origLeft + touch.clientX - startX) + 'px';
+        panel.style.top  = (origTop  + touch.clientY - startY) + 'px';
+        e.preventDefault();
+    }, { passive: false });
+
+    document.addEventListener('touchend', function() { dragging = false; });
 })();
 </script>
 </body>
