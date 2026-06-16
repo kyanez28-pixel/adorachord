@@ -701,11 +701,11 @@
         .artist-card:hover { border-color: rgba(232,87,42,0.4); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
         .artist-card.selected { border-color: var(--accent); background: rgba(232,87,42,0.06); }
         .artist-photo {
-            width: 72px; height: 72px; border-radius: 50%;
+            width: 96px; height: 96px; border-radius: 16px;
             object-fit: cover; margin: 0 auto 10px;
             background: var(--panel2); border: 2px solid var(--border2);
             display: flex; align-items: center; justify-content: center;
-            font-size: 28px; overflow: hidden; transition: border-color 0.2s;
+            font-size: 32px; overflow: hidden; transition: border-color 0.2s;
         }
         .artist-card:hover .artist-photo, .artist-card.selected .artist-photo { border-color: var(--accent); }
         .artist-photo img { width: 100%; height: 100%; object-fit: cover; }
@@ -727,10 +727,16 @@
             display: flex; align-items: center; gap: 12px; flex: 1;
         }
         .artist-hero-photo {
-            width: 48px; height: 48px; border-radius: 50%;
+            width: 120px; height: 120px; border-radius: 18px;
             object-fit: cover; background: var(--panel2);
             border: 2px solid var(--accent); overflow: hidden;
-            display: flex; align-items: center; justify-content: center; font-size: 20px;
+            display: flex; align-items: center; justify-content: center; font-size: 48px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+        .artist-hero-photo:hover {
+            transform: scale(1.03);
         }
         .artist-hero-photo img { width: 100%; height: 100%; object-fit: cover; }
         .artist-hero-name { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800; color: var(--text); }
@@ -3114,6 +3120,17 @@ function renderLibraryList(display, filtered) {
     display.appendChild(list);
 }
 
+function getArtistPhotoHtml(artistName) {
+    if (artistName === 'Sin artista') return '🎤';
+    const key = artistName.toLowerCase().replace(/[^a-z0-9]/g,'_');
+    const data = artistsData[artistName] || {};
+    const url = data.photoUrl || `https://isuzvbywhdapqkqdocip.supabase.co/storage/v1/object/public/multitracks/artists/${key}.png`;
+    const version = data.updated ? `?v=${data.updated}` : '';
+    const fallbackUrl = `https://isuzvbywhdapqkqdocip.supabase.co/storage/v1/object/public/multitracks/artists/${key}.jpg`;
+    
+    return `<img src="${url}${version}" alt="${esc(artistName)}" onerror="if(this.src.indexOf('.png')!==-1){this.src='${fallbackUrl}${version}';}else{this.outerHTML='🎤';}">`;
+}
+
 function renderArtistsView(display) {
     if (selectedArtist) {
         renderArtistSongs(display, selectedArtist);
@@ -3141,10 +3158,7 @@ function renderArtistsView(display) {
 
     sorted.forEach(name => {
         const artistSongs = artistMap[name];
-        const data = artistsData[name] || {};
-        const photoHtml = data.photoUrl
-            ? `<img src="${data.photoUrl}" alt="${esc(name)}">`
-            : `🎤`;
+        const photoHtml = getArtistPhotoHtml(name);
 
         const card = document.createElement('div');
         card.className = 'artist-card';
@@ -3162,8 +3176,7 @@ function renderArtistsView(display) {
 
 function renderArtistSongs(display, artistName) {
     const artistSongs = songs.filter(s => (s.author||'').trim() === artistName || (artistName === 'Sin artista' && !(s.author||'').trim()));
-    const data = artistsData[artistName] || {};
-    const photoHtml = data.photoUrl ? `<img src="${data.photoUrl}" alt="${esc(artistName)}">` : `🎤`;
+    const photoHtml = getArtistPhotoHtml(artistName);
 
     // Header del artista
     const header = document.createElement('div');
@@ -3171,22 +3184,30 @@ function renderArtistSongs(display, artistName) {
     header.innerHTML = `
         <button class="artist-back-btn" onclick="selectedArtist=null;refreshUI()">← Artistas</button>
         <div class="artist-hero">
-            <div class="artist-hero-photo">${photoHtml}</div>
+            <div class="artist-hero-photo" onclick="if(esc('${artistName}')!=='Sin artista') document.getElementById('artist-file-input').click()" style="cursor:pointer" title="Cambiar portada">${photoHtml}</div>
             <div>
                 <div class="artist-hero-name">${esc(artistName)}</div>
                 <div class="artist-hero-count">${artistSongs.length} canción${artistSongs.length!==1?'es':''}</div>
             </div>
         </div>
-        <div id="artist-paste-${esc(artistName)}"
-            tabindex="0"
-            onclick="this.focus()"
-            onpaste="handleArtistPhotoPaste(event,'${esc(artistName)}')"
-            style="display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px dashed rgba(232,87,42,0.3);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:11px;color:var(--accent);font-family:'Syne',sans-serif;font-weight:600;outline:none;transition:border-color 0.2s,background 0.2s;white-space:nowrap"
-            onfocus="this.style.borderColor='var(--accent)';this.style.background='rgba(232,87,42,0.08)'"
-            onblur="this.style.borderColor='rgba(232,87,42,0.3)';this.style.background='var(--panel2)'"
-            title="Clic aquí y pega la foto con Ctrl+V">
-            📷 Clic + Ctrl+V
+        ${artistName !== 'Sin artista' ? `
+        <input type="file" id="artist-file-input" style="display:none" accept="image/*" onchange="uploadArtistPhoto('${esc(artistName)}', this)">
+        <div style="display:flex;gap:6px;align-items:center">
+            <button class="inline-btn" onclick="document.getElementById('artist-file-input').click()" style="padding:7px 12px;font-size:11px;font-family:'Syne',sans-serif;font-weight:700">
+                📷 Cambiar Portada
+            </button>
+            <div id="artist-paste-${esc(artistName)}"
+                class="mobile-hidden"
+                tabindex="0"
+                onpaste="handleArtistPhotoPaste(event,'${esc(artistName)}')"
+                style="display:flex;align-items:center;gap:6px;background:var(--panel2);border:1px dashed rgba(232,87,42,0.3);border-radius:8px;padding:7px 12px;cursor:pointer;font-size:11px;color:var(--accent);font-family:'Syne',sans-serif;font-weight:600;outline:none;transition:border-color 0.2s,background 0.2s;white-space:nowrap"
+                onfocus="this.style.borderColor='var(--accent)';this.style.background='rgba(232,87,42,0.08)'"
+                onblur="this.style.borderColor='rgba(232,87,42,0.3)';this.style.background='var(--panel2)'"
+                title="Pega la foto con Ctrl+V (solo PC)">
+                📋 Pegar (Ctrl+V)
+            </div>
         </div>
+        ` : ''}
     `;
     display.appendChild(header);
 
@@ -3254,7 +3275,7 @@ async function _saveArtistPhoto(artistName, file) {
         const { error } = await sb.storage.from('multitracks').upload(path, file, { cacheControl:'3600', upsert:true, contentType:file.type });
         if (error) throw error;
         const { data } = sb.storage.from('multitracks').getPublicUrl(path);
-        artistsData[artistName] = { photoUrl: data.publicUrl };
+        artistsData[artistName] = { photoUrl: data.publicUrl, updated: Date.now() };
         localStorage.setItem('artistsData', JSON.stringify(artistsData));
         setBadge('', '☁ Sincronizado');
         refreshUI();
