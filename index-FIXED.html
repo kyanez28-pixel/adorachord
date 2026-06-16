@@ -3120,15 +3120,23 @@ function renderLibraryList(display, filtered) {
     display.appendChild(list);
 }
 
+function normalizeArtistName(name) {
+    if (!name) return 'Sin artista';
+    const trimmed = String(name).trim();
+    if (!trimmed) return 'Sin artista';
+    return trimmed.replace(/\s+/g, ' ');
+}
+
 function getArtistPhotoHtml(artistName) {
-    if (artistName === 'Sin artista') return '🎤';
-    const key = artistName.toLowerCase().replace(/[^a-z0-9]/g,'_');
-    const data = artistsData[artistName] || {};
+    const norm = normalizeArtistName(artistName);
+    if (norm === 'Sin artista') return '🎤';
+    const key = norm.toLowerCase().replace(/[^a-z0-9]/g,'_');
+    const data = artistsData[norm] || {};
     const url = data.photoUrl || `https://isuzvbywhdapqkqdocip.supabase.co/storage/v1/object/public/multitracks/artists/${key}.png`;
     const version = data.updated ? `?v=${data.updated}` : '';
     const fallbackUrl = `https://isuzvbywhdapqkqdocip.supabase.co/storage/v1/object/public/multitracks/artists/${key}.jpg`;
     
-    return `<img src="${url}${version}" alt="${esc(artistName)}" onerror="if(this.src.indexOf('.png')!==-1){this.src='${fallbackUrl}${version}';}else{this.outerHTML='🎤';}">`;
+    return `<img src="${url}${version}" alt="${esc(norm)}" onerror="if(this.src.indexOf('.png')!==-1){this.src='${fallbackUrl}${version}';}else{this.outerHTML='🎤';}">`;
 }
 
 function renderArtistsView(display) {
@@ -3139,10 +3147,15 @@ function renderArtistsView(display) {
 
     // Agrupar canciones por artista
     const artistMap = {};
+    const artistDisplayName = {};
     songs.forEach(s => {
-        const name = (s.author || '').trim() || 'Sin artista';
-        if (!artistMap[name]) artistMap[name] = [];
-        artistMap[name].push(s);
+        const norm = normalizeArtistName(s.author);
+        const key = norm.toLowerCase();
+        if (!artistMap[key]) {
+            artistMap[key] = [];
+            artistDisplayName[key] = norm;
+        }
+        artistMap[key].push(s);
     });
 
     const sorted = Object.keys(artistMap).sort((a,b) => a.localeCompare(b));
@@ -3156,18 +3169,19 @@ function renderArtistsView(display) {
     const grid = document.createElement('div');
     grid.className = 'artists-grid';
 
-    sorted.forEach(name => {
-        const artistSongs = artistMap[name];
-        const photoHtml = getArtistPhotoHtml(name);
+    sorted.forEach(key => {
+        const artistSongs = artistMap[key];
+        const dispName = artistDisplayName[key];
+        const photoHtml = getArtistPhotoHtml(dispName);
 
         const card = document.createElement('div');
         card.className = 'artist-card';
         card.innerHTML = `
             <div class="artist-photo">${photoHtml}</div>
-            <div class="artist-name">${esc(name)}</div>
+            <div class="artist-name">${esc(dispName)}</div>
             <div class="artist-count">${artistSongs.length} canción${artistSongs.length!==1?'es':''}</div>
         `;
-        card.onclick = () => { selectedArtist = name; refreshUI(); };
+        card.onclick = () => { selectedArtist = dispName; refreshUI(); };
         grid.appendChild(card);
     });
 
@@ -3175,7 +3189,11 @@ function renderArtistsView(display) {
 }
 
 function renderArtistSongs(display, artistName) {
-    const artistSongs = songs.filter(s => (s.author||'').trim() === artistName || (artistName === 'Sin artista' && !(s.author||'').trim()));
+    const normSearch = normalizeArtistName(artistName).toLowerCase();
+    const artistSongs = songs.filter(s => {
+        const normAuthor = normalizeArtistName(s.author).toLowerCase();
+        return normAuthor === normSearch;
+    });
     const photoHtml = getArtistPhotoHtml(artistName);
 
     // Header del artista
@@ -3268,14 +3286,15 @@ window.handleArtistPhotoPaste = async function(event, artistName) {
 async function _saveArtistPhoto(artistName, file) {
     setBadge('syncing', '↻ Subiendo foto…');
     try {
+        const norm = normalizeArtistName(artistName);
         const ext  = file.type.split('/')[1] || 'jpg';
-        const key  = artistName.toLowerCase().replace(/[^a-z0-9]/g,'_');
+        const key  = norm.toLowerCase().replace(/[^a-z0-9]/g,'_');
         const path = `artists/${key}.${ext}`;
         await sb.storage.from('multitracks').remove([path]);
         const { error } = await sb.storage.from('multitracks').upload(path, file, { cacheControl:'3600', upsert:true, contentType:file.type });
         if (error) throw error;
         const { data } = sb.storage.from('multitracks').getPublicUrl(path);
-        artistsData[artistName] = { photoUrl: data.publicUrl, updated: Date.now() };
+        artistsData[norm] = { photoUrl: data.publicUrl, updated: Date.now() };
         localStorage.setItem('artistsData', JSON.stringify(artistsData));
         setBadge('', '☁ Sincronizado');
         refreshUI();
