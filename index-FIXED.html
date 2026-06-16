@@ -3441,9 +3441,14 @@ function renderRegistro(display) {
             <span style="margin-left:auto;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--accent)">${fmtDate(regDate)}</span>
         </div>
     `);
-    dateBar.querySelector('#reg-date-input').addEventListener('change', function() {
+    const regDateInput = dateBar.querySelector('#reg-date-input');
+    const updateRegDate = function() {
         if (this.value) setRegDate(this.value);
-    });
+    };
+    regDateInput.addEventListener('change', updateRegDate);
+    if (!isIOS()) {
+        regDateInput.addEventListener('input', updateRegDate);
+    }
     display.appendChild(dateBar);
 
     const layout = mkEl('div','registro-layout','');
@@ -5364,9 +5369,14 @@ function renderAttendance(display) {
             <span style="margin-left:auto;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--accent)">${fmtDate(attendDate)}</span>
         </div>
     `);
-    topBar.querySelector('#attend-date-input').addEventListener('change', function() {
+    const attendDateInput = topBar.querySelector('#attend-date-input');
+    const updateAttendDate = function() {
         if (this.value) setAttendDate(this.value);
-    });
+    };
+    attendDateInput.addEventListener('change', updateAttendDate);
+    if (!isIOS()) {
+        attendDateInput.addEventListener('input', updateAttendDate);
+    }
     display.appendChild(topBar);
 
     const layout = mkEl('div','attend-layout','');
@@ -5654,6 +5664,9 @@ window.importBackup = function(input) {
 //  MÓVIL — SIDEBAR / INSPECTOR / BOTTOM NAV
 // ══════════════════════════════════════════════
 function isMobile() { return window.innerWidth <= 768; }
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
 
 function openSidebar() {
     document.getElementById('sidebar').classList.add('open');

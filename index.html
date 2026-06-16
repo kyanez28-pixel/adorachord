@@ -3840,6 +3840,9 @@ function renderRegistro(display) {
         }
     };
     regDateInput.addEventListener('change', updateRegDate);
+    if (!isIOS()) {
+        regDateInput.addEventListener('input', updateRegDate);
+    }
     display.appendChild(dateBar);
 
     const layout = mkEl('div','registro-layout','');
@@ -5782,6 +5785,9 @@ function renderAttendance(display) {
         }
     };
     attendDateInput.addEventListener('change', updateAttendDate);
+    if (!isIOS()) {
+        attendDateInput.addEventListener('input', updateAttendDate);
+    }
     display.appendChild(topBar);
 
     const layout = mkEl('div','attend-layout','');
@@ -6073,6 +6079,9 @@ window.importBackup = function(input) {
 //  MÓVIL — SIDEBAR / INSPECTOR / BOTTOM NAV
 // ══════════════════════════════════════════════
 function isMobile() { return window.innerWidth <= 768; }
+function isIOS() {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
 
 function openSidebar() {
     document.getElementById('sidebar').classList.add('open');
