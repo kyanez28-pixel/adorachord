@@ -7545,6 +7545,156 @@ console.log('✅ Patch v25: imagen de acordes separada de portada + Ver acordes 
     text-transform: uppercase; letter-spacing: 0.6px;
     margin-top: 2px;
 }
+
+/* ── GUÍA Y AYUDA DE INICIO ── */
+.home-guide-section {
+    max-width: 860px;
+    margin: 36px auto 0;
+    width: 100%;
+}
+.guide-main-header {
+    text-align: center;
+    margin-bottom: 22px;
+}
+.guide-badge {
+    display: inline-block;
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(232,87,42,0.12);
+    border: 1px solid rgba(232,87,42,0.25);
+    border-radius: 20px;
+    padding: 4px 12px;
+    margin-bottom: 8px;
+}
+.guide-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+.guide-subtitle {
+    font-size: 13px;
+    color: var(--dim);
+    line-height: 1.5;
+}
+.guide-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+@media (max-width: 768px) {
+    .guide-grid { grid-template-columns: 1fr; gap: 12px; }
+    .guide-title { font-size: 19px; }
+}
+.guide-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: border-color 0.2s, background 0.2s;
+    position: relative;
+}
+.guide-card:hover {
+    border-color: var(--accent-g, var(--accent));
+    background: var(--panel2);
+}
+.guide-card-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.guide-icon {
+    font-size: 24px;
+    line-height: 1;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.guide-head-info h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 2px;
+}
+.guide-location {
+    font-size: 11px;
+    color: var(--accent-g, var(--accent));
+    display: block;
+}
+.guide-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+.guide-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--dim);
+    line-height: 1.5;
+}
+.guide-step b {
+    color: var(--text);
+}
+.guide-step code {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+.step-num {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid var(--border2);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 800;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+.guide-btn {
+    align-self: flex-start;
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-top: 4px;
+}
+.guide-btn:hover {
+    border-color: var(--accent-g, var(--accent));
+    color: var(--accent-g, var(--accent));
+    background: rgba(255,255,255,0.04);
+}
 </style>
 
 <div id="home-dashboard">
@@ -7604,6 +7754,173 @@ console.log('✅ Patch v25: imagen de acordes separada de portada + Ver acordes 
             <div class="home-card-desc">Canciones más usadas, frecuencia por tipo y actividad del equipo.</div>
             <div class="home-card-tag">Datos</div>
             <span class="home-card-arrow">→</span>
+        </div>
+    </div>
+
+    <!-- ── GUÍA COMPLETA DE FUNCIONES ── -->
+    <div class="home-guide-section">
+        <div class="guide-main-header">
+            <div class="guide-badge">💡 GUÍA DE FUNCIONES Y USO RÁPIDO</div>
+            <h2 class="guide-title">¿Cómo usar AdoraChord Pro?</h2>
+            <p class="guide-subtitle">Aprende a encontrar y aprovechar cada herramienta desde tu computadora o celular</p>
+        </div>
+
+        <div class="guide-grid">
+            <!-- 1. ACORDES Y PARTITURAS -->
+            <div class="guide-card" style="--accent-g:#E8572A">
+                <div class="guide-card-head">
+                    <div class="guide-icon">🎸</div>
+                    <div class="guide-head-info">
+                        <h3>Acordes y Partituras</h3>
+                        <span class="guide-location">📍 Dónde: <b>Biblioteca</b> ➔ Seleccionar canción</span>
+                    </div>
+                </div>
+                <div class="guide-body">
+                    <div class="guide-step">
+                        <span class="step-num">1</span>
+                        <div><b>Ver acordes en vivo:</b> Toca <code>🎸 Ver acordes</code> para abrir el visor en pantalla completa (modo atril).</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">2</span>
+                        <div><b>Zoom persistente:</b> Ajusta el zoom con <code>+</code> y <code>−</code>. El tamaño se guarda automáticamente para cada canción.</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">3</span>
+                        <div><b>Subir acordes:</b> En <code>✏ Editar datos</code>, sube la imagen (JPG/PNG) o presiona <code>Ctrl + V</code> para pegarla directamente.</div>
+                    </div>
+                </div>
+                <button class="guide-btn" onclick="switchView('LIBRARY')">Ir a Biblioteca →</button>
+            </div>
+
+            <!-- 2. MULTITRACKS Y AUDIOS -->
+            <div class="guide-card" style="--accent-g:#FF7A4D">
+                <div class="guide-card-head">
+                    <div class="guide-icon">🎛</div>
+                    <div class="guide-head-info">
+                        <h3>Multitracks y Audios</h3>
+                        <span class="guide-location">📍 Dónde: <b>Biblioteca</b> ➔ <b>Editar datos</b></span>
+                    </div>
+                </div>
+                <div class="guide-body">
+                    <div class="guide-step">
+                        <span class="step-num">1</span>
+                        <div><b>Activar pista:</b> Al crear o editar una canción, selecciona <code>🎛 Con Multitrack</code>.</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">2</span>
+                        <div><b>Subir o enlazar:</b> Sube un archivo de audio (MP3, WAV, M4A) a la nube o pega un enlace público de <b>Google Drive</b>.</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">3</span>
+                        <div><b>Reproducir en ensayos:</b> El reproductor integrado estará disponible en celulares y PC para ensayar con la pista.</div>
+                    </div>
+                </div>
+                <button class="guide-btn" onclick="switchView('LIBRARY')">Explorar Multitracks →</button>
+            </div>
+
+            <!-- 3. SETLISTS Y WHATSAPP -->
+            <div class="guide-card" style="--accent-g:#4D9EFF">
+                <div class="guide-card-head">
+                    <div class="guide-icon">📅</div>
+                    <div class="guide-head-info">
+                        <h3>Setlists y WhatsApp</h3>
+                        <span class="guide-location">📍 Dónde: <b>Registro de Fechas</b></span>
+                    </div>
+                </div>
+                <div class="guide-body">
+                    <div class="guide-step">
+                        <span class="step-num">1</span>
+                        <div><b>Planificar fecha:</b> Selecciona el día del culto o ensayo en el registro lateral.</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">2</span>
+                        <div><b>Armar lista y voces:</b> Agrega las canciones en orden y asigna qué cantante o director guiará cada tema.</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">3</span>
+                        <div><b>Enviar a WhatsApp:</b> Pulsa <code>📲 Compartir por WhatsApp</code> para generar el resumen listo con canciones, tonos y cantantes.</div>
+                    </div>
+                </div>
+                <button class="guide-btn" onclick="switchView('SETLISTS')">Ver Setlists →</button>
+            </div>
+
+            <!-- 4. EQUIPO Y ASISTENCIA -->
+            <div class="guide-card" style="--accent-g:#A78BFA">
+                <div class="guide-card-head">
+                    <div class="guide-icon">👥</div>
+                    <div class="guide-head-info">
+                        <h3>Equipo y Asistencia</h3>
+                        <span class="guide-location">📍 Dónde: <b>Equipo</b> & <b>Asistencia</b></span>
+                    </div>
+                </div>
+                <div class="guide-body">
+                    <div class="guide-step">
+                        <span class="step-num">1</span>
+                        <div><b>Gestionar miembros:</b> Registra músicos, cantantes y técnicos con sus instrumentos y datos.</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">2</span>
+                        <div><b>Tomar lista:</b> En los ensayos, marca con 1 clic el estado (Presente, Tarde, Ausente, Excusado).</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">3</span>
+                        <div><b>Historial del grupo:</b> Revisa la constancia de asistencia y compromiso del equipo.</div>
+                    </div>
+                </div>
+                <button class="guide-btn" onclick="switchView('TEAM')">Gestionar Equipo →</button>
+            </div>
+
+            <!-- 5. INSTALACIÓN MÓVIL Y ACCESO -->
+            <div class="guide-card" style="--accent-g:#3ECF8E">
+                <div class="guide-card-head">
+                    <div class="guide-icon">📲</div>
+                    <div class="guide-head-info">
+                        <h3>Instalación en Celular</h3>
+                        <span class="guide-location">📍 Dónde: En tu navegador móvil</span>
+                    </div>
+                </div>
+                <div class="guide-body">
+                    <div class="guide-step">
+                        <span class="step-num">1</span>
+                        <div><b>En Android (Chrome):</b> Toca los 3 puntos ➔ <code>Instalar aplicación</code> o <code>Añadir a pantalla de inicio</code>.</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">2</span>
+                        <div><b>En iPhone / iPad (Safari):</b> Toca el botón <b>Compartir</b> (cuadro con flecha) ➔ <code>Añadir a pantalla de inicio</code>.</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">3</span>
+                        <div><b>Modo Offline:</b> Las canciones consultadas se guardan en caché para abrirse rápido incluso sin conexión.</div>
+                    </div>
+                </div>
+                <button class="guide-btn" onclick="window.showPWAInstallBanner ? window.showPWAInstallBanner() : alert('Usa el menú de tu navegador para añadir a la pantalla de inicio.')">Instalar App 📥</button>
+            </div>
+
+            <!-- 6. SINCRONIZACIÓN Y RESPALDO -->
+            <div class="guide-card" style="--accent-g:#F0C040">
+                <div class="guide-card-head">
+                    <div class="guide-icon">☁️</div>
+                    <div class="guide-head-info">
+                        <h3>Sincronización y Backup</h3>
+                        <span class="guide-location">📍 Dónde: <b>Menú Lateral</b> (Abajo)</span>
+                    </div>
+                </div>
+                <div class="guide-body">
+                    <div class="guide-step">
+                        <span class="step-num">1</span>
+                        <div><b>Tiempo real:</b> Todo lo que edites se actualiza al instante en los celulares del equipo vía Supabase.</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">2</span>
+                        <div><b>Exportar Backup:</b> Descarga un archivo <code>.json</code> con tus canciones, notas y datos a salvo.</div>
+                    </div>
+                    <div class="guide-step">
+                        <span class="step-num">3</span>
+                        <div><b>Importar Backup:</b> Restaura tu base de datos completa en cualquier momento con <code>📂 Importar Backup</code>.</div>
+                    </div>
+                </div>
+                <button class="guide-btn" onclick="exportBackup()">Exportar Backup 📥</button>
+            </div>
         </div>
     </div>
 </div>
