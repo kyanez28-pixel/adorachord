@@ -1,4 +1,4 @@
-const VERSION = '1.6.2';
+const VERSION = '1.7.0';
 const CACHE = `adorachord-${VERSION}`;
 
 // Assets locales (obligatorios)
@@ -69,8 +69,27 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const url = e.request.url;
 
-  // No interceptar requests a Supabase (siempre necesitan red fresca)
-  if (url.includes('supabase.co') ||
+  // Imágenes de Acordes y Portadas (Supabase Storage) — Cache First con Network Fallback
+  if (url.includes('supabase.co/storage/v1/object/public/')) {
+    e.respondWith(
+      caches.open(CACHE).then(cache =>
+        cache.match(e.request).then(cached => {
+          if (cached) return cached;
+          return fetch(e.request).then(res => {
+            if (res && res.status === 200) {
+              cache.put(e.request, res.clone());
+            }
+            return res;
+          }).catch(() => cached);
+        })
+      )
+    );
+    return;
+  }
+
+  // No interceptar peticiones de base de datos dinámica / APIs externas en tiempo real
+  if (url.includes('supabase.co/rest/') ||
+      url.includes('supabase.co/realtime/') ||
       url.includes('itunes.apple.com') ||
       url.includes('drive.google.com') ||
       url.includes('googleusercontent.com')) {

@@ -6142,6 +6142,15 @@ async function loadFromSupabase() {
         setBadge('', '☁ Sincronizado');
         setTimeout(() => document.getElementById('cloud-badge').style.opacity='0.5', 3000);
 
+        // Guardar respaldo en caché local para acceso offline
+        try {
+            localStorage.setItem('adorachord_cache_songs', JSON.stringify(songs));
+            localStorage.setItem('adorachord_cache_history', JSON.stringify(history));
+            localStorage.setItem('adorachord_cache_members', JSON.stringify(members));
+            localStorage.setItem('adorachord_cache_singerAssignments', JSON.stringify(singerAssignments));
+            localStorage.setItem('adorachord_cache_attendance', JSON.stringify(attendance));
+        } catch(e) {}
+
         // Mostrar botón migración si hay imágenes base64 pendientes
         const hasBase64 = songs.some(s =>
             (s.url && s.url.startsWith('data:')) ||
@@ -6152,8 +6161,24 @@ async function loadFromSupabase() {
 
     } catch (err) {
         console.error('Supabase load error:', err);
-        setBadge('error', '⚠ Sin conexión');
-        toast('⚠ Error al conectar. Usando datos locales.');
+        setBadge('error', '⚠ Sin conexión (Modo Offline)');
+        toast('📡 Sin conexión a internet. Mostrando canciones guardadas en tu dispositivo.');
+
+        // Recuperar datos desde la caché local
+        try {
+            const cachedSongs = localStorage.getItem('adorachord_cache_songs');
+            if (cachedSongs) songs = JSON.parse(cachedSongs);
+            const cachedHistory = localStorage.getItem('adorachord_cache_history');
+            if (cachedHistory) history = JSON.parse(cachedHistory);
+            const cachedMembers = localStorage.getItem('adorachord_cache_members');
+            if (cachedMembers) members = JSON.parse(cachedMembers);
+            const cachedSA = localStorage.getItem('adorachord_cache_singerAssignments');
+            if (cachedSA) singerAssignments = JSON.parse(cachedSA);
+            const cachedAtt = localStorage.getItem('adorachord_cache_attendance');
+            if (cachedAtt) attendance = JSON.parse(cachedAtt);
+        } catch(e) {
+            console.error('Error al recuperar caché local:', e);
+        }
     }
     hideOverlay();
     refreshUI();
