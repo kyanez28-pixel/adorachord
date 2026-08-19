@@ -7416,6 +7416,135 @@ window.renderLibraryInspector = function(panel) {
 console.log('✅ Patch v25: imagen de acordes separada de portada + Ver acordes siempre visible');
 
 </script>
+
+<style>
+#home-dashboard {
+    flex: 1;
+    overflow-y: auto;
+    padding: 28px 24px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 0;
+    width: 100%;
+}
+
+.home-hero {
+    text-align: center;
+    margin-bottom: 24px;
+    padding: 16px 0 8px;
+}
+.home-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--text);
+    margin-bottom: 6px;
+}
+.home-logo span { color: var(--accent); }
+.home-tagline {
+    font-size: 13px; color: var(--dim);
+    line-height: 1.6; max-width: 400px; margin: 0 auto;
+}
+
+.home-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 14px;
+    max-width: 860px;
+    margin: 0 auto;
+    width: 100%;
+}
+@media (max-width: 900px) { .home-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 520px) { 
+    .home-grid { grid-template-columns: 1fr; gap: 10px; }
+    #home-dashboard { padding: 16px 14px 80px; }
+    .home-hero { padding: 10px 0 18px; }
+    .home-logo { font-size: 24px; }
+}
+
+.home-card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px 20px;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+    display: flex; flex-direction: column; gap: 10px;
+    position: relative; overflow: hidden;
+    text-align: left;
+}
+.home-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--card-color, var(--accent));
+    opacity: 0; transition: opacity 0.2s;
+    border-radius: 16px 16px 0 0;
+}
+.home-card:hover {
+    border-color: var(--card-color, var(--accent));
+    background: var(--panel2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.home-card:hover::before { opacity: 1; }
+.home-card:active { transform: translateY(0); }
+
+.home-card-icon {
+    font-size: 28px; line-height: 1;
+}
+.home-card-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px; font-weight: 700;
+    color: var(--text);
+}
+.home-card-desc {
+    font-size: 12px; color: var(--dim);
+    line-height: 1.55; flex: 1;
+}
+.home-card-tag {
+    display: inline-block;
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.8px; text-transform: uppercase;
+    padding: 3px 8px; border-radius: 6px;
+    background: rgba(255,255,255,0.06);
+    color: var(--card-color, var(--dim));
+    border: 1px solid rgba(255,255,255,0.07);
+    align-self: flex-start;
+}
+.home-card-arrow {
+    position: absolute; bottom: 18px; right: 18px;
+    font-size: 16px; color: var(--dim2);
+    transition: color 0.2s, transform 0.2s;
+}
+.home-card:hover .home-card-arrow {
+    color: var(--card-color, var(--accent));
+    transform: translateX(3px);
+}
+
+.home-stats-bar {
+    display: flex; gap: 10px; justify-content: center;
+    max-width: 860px; margin: 0 auto 20px; width: 100%;
+    flex-wrap: wrap;
+}
+.home-stat {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 18px;
+    text-align: center; flex: 1; min-width: 80px;
+}
+.home-stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px; font-weight: 800;
+    color: var(--accent);
+}
+.home-stat-lbl {
+    font-size: 10px; color: var(--dim);
+    text-transform: uppercase; letter-spacing: 0.6px;
+    margin-top: 2px;
+}
 </style>
 
 <div id="home-dashboard">
