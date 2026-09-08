@@ -6561,9 +6561,6 @@ function checkSundayEligibility(sundayDateStr, memberId) {
     const latesInfo = getMemberUnexcusedLates(memberId, sundayDateStr);
     const unexcusedCount = latesInfo.count;
 
-    const served = getServedLatePenalties();
-    const isPenaltyServedForDate = !!(served[memberId] && served[memberId] >= (sundayDateStr || todayStr()));
-
     let eligible = true;
     const reasons = [];
 
@@ -6578,34 +6575,30 @@ function checkSundayEligibility(sundayDateStr, memberId) {
     const isLateNotice = satStatus === 'abs_late' || (satStatus === 'absent' && (obsLower.includes('fuera de tiempo') || obsLower.includes('sabado') || obsLower.includes('sábado')));
 
     if (satStatus === 'absent' && !isLateNotice) {
-        if (!isPenaltyServedForDate) {
-            eligible = false;
-            reasons.push({
-                rule: 'Regla 1',
-                title: 'Falta no justificada al repaso',
-                detail: 'Faltó al repaso del sábado sin justificación escrita previa en el chat de WhatsApp.'
-            });
-        }
+        eligible = false;
+        reasons.push({
+            rule: 'Regla 1',
+            title: 'Falta no justificada al repaso',
+            detail: 'Faltó al repaso del sábado sin justificación escrita previa en el chat de WhatsApp.'
+        });
     } else if (isLateNotice) {
-        if (!isPenaltyServedForDate) {
-            eligible = false;
-            reasons.push({
-                rule: 'Regla 4',
-                title: 'Falta comunicada fuera de tiempo',
-                detail: 'Informó recién el sábado. El plazo reglamentario era hasta el viernes.'
-            });
-        }
+        eligible = false;
+        reasons.push({
+            rule: 'Regla 4',
+            title: 'Falta comunicada fuera de tiempo',
+            detail: 'Informó recién el sábado. El plazo reglamentario era hasta el viernes.'
+        });
     }
 
+    // Regla 6: Si tiene 3 o más atrasos activos, está inhabilitado hasta cumplir su sanción este fin de semana
     if (unexcusedCount >= 3) {
-        if (!isPenaltyServedForDate) {
-            eligible = false;
-            reasons.push({
-                rule: 'Regla 6',
-                title: `Acumuló ${unexcusedCount} atrasos no justificados`,
-                detail: `Tiene ${unexcusedCount} atrasos sin justificar. Al llegar a 3 queda inhabilitado para tocar un domingo.`
-            });
-        }
+        eligible = false;
+        const pending = Math.floor(unexcusedCount / 3);
+        reasons.push({
+            rule: 'Regla 6',
+            title: `Acumuló ${unexcusedCount} atrasos no justificados`,
+            detail: `Tiene ${unexcusedCount} atrasos sin justificar (${pending} sanción${pending > 1 ? 'es' : ''} pendiente${pending > 1 ? 's' : ''}). Este fin de semana debe cumplir la sanción sin tocar para que se le descuenten 3 atrasos.`
+        });
     }
 
     return {
@@ -6616,9 +6609,7 @@ function checkSundayEligibility(sundayDateStr, memberId) {
         satObs,
         hasSatRecord: !!memberSat && memberSat.status !== 'none',
         unexcusedCount,
-        latesInfo,
-        isPenaltyServed: isPenaltyServedForDate,
-        lastReset: latesInfo.lastReset
+        latesInfo
     };
 }
 window.checkSundayEligibility = checkSundayEligibility;
