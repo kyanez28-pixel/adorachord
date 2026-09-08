@@ -6570,6 +6570,18 @@ function copyRulesToClipboard() {
 }
 
 // ── COMPARTIR HABILITACIÓN DOMINGO EN WHATSAPP ──
+
+window.shareRulesWhatsApp = shareRulesWhatsApp;
+window.copyRulesToClipboard = copyRulesToClipboard;
+window.shareSundayEligibilityWhatsApp = shareSundayEligibilityWhatsApp;
+window.openRuleSelectorModal = openRuleSelectorModal;
+window.closeRuleSelectorModal = closeRuleSelectorModal;
+window.togglePenaltyServed = togglePenaltyServed;
+window.setArmObs = setArmObs;
+window.saveArmSelection = saveArmSelection;
+window.checkSundayEligibility = checkSundayEligibility;
+window.getMemberUnexcusedLates = getMemberUnexcusedLates;
+
 function shareSundayEligibilityWhatsApp(sundayDate) {
     if (!sundayDate) sundayDate = selectedEligibilitySunday || getNextSunday(todayStr());
     const satDate = getSaturdayBefore(sundayDate);
@@ -6612,8 +6624,9 @@ function shareSundayEligibilityWhatsApp(sundayDate) {
 //  VISTA PRINCIPAL: ASISTENCIA
 // ══════════════════════════════════════════════
 function renderAttendance(display) {
-    display.className = '';
-    display.style.cssText = 'padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;min-height:0';
+    display.innerHTML = '';
+    display.className = 'content-area';
+    display.style.cssText = 'padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;min-height:0;height:100%;box-sizing:border-box;';
 
     if (!selectedEligibilitySunday) {
         selectedEligibilitySunday = getNextSunday(attendDate);
@@ -6640,9 +6653,11 @@ function renderAttendance(display) {
             <span>${t.label}</span>
             ${t.badge ? `<span class="attend-subtab-badge">${t.badge}</span>` : ''}
         `);
-        btn.onclick = () => {
+        btn.type = 'button';
+        btn.onclick = (e) => {
+            if (e) { e.preventDefault(); e.stopPropagation(); }
             attendSubTab = t.id;
-            renderAttendance(display);
+            renderMain();
             renderInspector();
         };
         subtabsBar.appendChild(btn);
@@ -6801,7 +6816,8 @@ function renderAttendanceRegister(display) {
     foot.appendChild(waBtn);
 
     const eligBtn = mkEl('button','inline-btn-ghost','⚖️ Habilitación Domingo');
-    eligBtn.onclick = () => { attendSubTab = 'eligibility'; renderAttendance(display); renderInspector(); };
+    eligBtn.type = 'button';
+    eligBtn.onclick = () => { attendSubTab = 'eligibility'; renderMain(); renderInspector(); };
     foot.appendChild(eligBtn);
 
     if (rec.records.length) {
@@ -6891,7 +6907,7 @@ function renderAttendanceEligibility(display) {
             <span style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--accent)">${fmtDate(sunDate)}</span>
         </div>
         <div style="display:flex;gap:6px">
-            <button class="inline-btn-green" onclick="shareSundayEligibilityWhatsApp('${sunDate}')">📲 Compartir en WhatsApp</button>
+            <button type="button" class="inline-btn-green" onclick="window.shareSundayEligibilityWhatsApp && window.shareSundayEligibilityWhatsApp('${sunDate}')">📲 Compartir en WhatsApp</button>
         </div>
     `);
     topBar.style.background = 'var(--panel)';
@@ -7140,8 +7156,8 @@ function renderAttendanceRules(display) {
                 <span>${RULES_AGREEMENT.title}</span>
             </div>
             <div style="display:flex;gap:6px">
-                <button class="inline-btn-green" onclick="shareRulesWhatsApp()">📲 Enviar al WhatsApp</button>
-                <button class="inline-btn" onclick="copyRulesToClipboard()">📋 Copiar</button>
+                <button type="button" class="inline-btn-green" id="btn-share-rules" onclick="window.shareRulesWhatsApp && window.shareRulesWhatsApp()">📲 Enviar al WhatsApp</button>
+                <button type="button" class="inline-btn" id="btn-copy-rules" onclick="window.copyRulesToClipboard && window.copyRulesToClipboard()">📋 Copiar</button>
             </div>
         </div>
         <div class="rule-card-body" style="font-size:13px;color:#e2e8f0;font-style:italic">
@@ -7186,7 +7202,7 @@ function renderAttendanceRules(display) {
                 <div style="font-weight:700;font-size:13px">¿Deseas verificar si se cumplen estas reglas para este domingo?</div>
                 <div style="font-size:11px;color:var(--dim)">El sistema audita automáticamente los repasos del sábado y la acumulación de 3 atrasos.</div>
             </div>
-            <button class="btn btn-primary" onclick="attendSubTab='eligibility';renderMain()">Verificar Habilitación Domingo →</button>
+            <button type="button" class="btn btn-primary" onclick="attendSubTab='eligibility';renderMain();renderInspector()">Verificar Habilitación Domingo →</button>
         </div>
     `);
     display.appendChild(bottomCard);
