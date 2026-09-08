@@ -13,15 +13,26 @@ const isInstalled = isIOSStandalone || isPWAStandalone;
 
 // ── 1. Registrar Service Worker ──────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
+  let refreshing = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!refreshing) {
+      refreshing = true;
+      console.log('🔄 SW controlador actualizado, recargando página...');
+      window.location.reload();
+    }
+  });
+
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('sw.js')
       .then(reg => {
         console.log('✓ SW registrado:', reg.scope);
-        setInterval(() => reg.update(), 6 * 60 * 60 * 1000);
+        setInterval(() => reg.update(), 60 * 60 * 1000); // Chequear cada hora
         reg.addEventListener('updatefound', () => {
           const nw = reg.installing;
           nw.addEventListener('statechange', () => {
             if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('⚡ Nueva versión encontrada, activando inmediatamente...');
+              if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
               window.dispatchEvent(new Event('sw-update-available'));
             }
           });

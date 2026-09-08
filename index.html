@@ -1094,8 +1094,8 @@
 
             .attend-panel.mobile-hidden { display: none; }
 
-            /* Panel de asistencia: ocupa toda la altura disponible */
-            .attend-panel {
+            /* Panel de asistencia: ocupa toda la altura disponible dentro del layout */
+            .attend-layout .attend-panel {
                 height: calc(100vh - 260px);
                 min-height: 0;
             }
@@ -6442,17 +6442,20 @@ function getMemberPenaltyData(memberId) {
         }
     }
 
-    // Sincronización con notas de miembros desde Supabase
+    // Sincronización bidireccional con notas de miembros desde Supabase
     if (typeof members !== 'undefined' && Array.isArray(members)) {
         const m = members.find(x => x.id === memberId);
         if (m && m.notes) {
             const matchS = m.notes.match(/\[?SANCTIONS:(\d+)\]?/);
-            if (matchS && parseInt(matchS[1], 10) > sanctions) {
-                sanctions = parseInt(matchS[1], 10);
-            }
+            const supaSanctions = matchS ? parseInt(matchS[1], 10) : 0;
             const matchR = m.notes.match(/\[?RESET_LATES:([0-9\-]+)\]?/);
-            if (matchR && matchR[1] > lastReset) {
-                lastReset = matchR[1];
+            const supaReset = matchR ? matchR[1] : '2000-01-01';
+
+            if (supaSanctions > sanctions || (sanctions === 0 && supaSanctions > 0)) {
+                sanctions = supaSanctions;
+            }
+            if (supaReset > lastReset || (lastReset === '2000-01-01' && supaReset !== '2000-01-01')) {
+                lastReset = supaReset;
             }
         }
     }
@@ -7240,8 +7243,33 @@ function renderAttendanceEligibility(display) {
     `);
     display.appendChild(metricsGrid);
 
+    // Totales de equipo sincronizados para móvil
+    let totalActiveLatesCount = 0;
+    members.forEach(m => {
+        totalActiveLatesCount += checkSundayEligibility(sunDate, m.id).unexcusedCount;
+    });
+    const allRecordsList = Object.values(attendance).flatMap(d => d.records);
+    const presRecsCount = allRecordsList.filter(r => r.status === 'present' || r.status === 'late_excused').length;
+    const totRecsCount = allRecordsList.filter(r => r.status !== 'none').length;
+    const generalAvgPct = totRecsCount ? Math.round((presRecsCount / totRecsCount) * 100) : 0;
+
+    const summaryBanner = mkEl('div', 'attend-team-summary-banner', `
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+            <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:11px">
+                <span>📅 <b>${Object.keys(attendance).length}</b> Sesiones</span>
+                <span>📈 <b style="color:var(--green)">${generalAvgPct}%</b> Asistencia</span>
+                <span>⏰ <b style="color:${totalActiveLatesCount>0?'var(--yellow)':'var(--text)'}">${totalActiveLatesCount}</b> Atrasos Activos</span>
+                <span>🚫 <b style="color:${totalBlocked>0?'#ff6060':'var(--green)'}">${totalBlocked}</b> Inhabilitados</span>
+            </div>
+            <button class="inline-btn" style="font-size:10px;padding:3px 8px;margin-left:auto" onclick="toggleInspector()">📊 Resumen lateral →</button>
+        </div>
+    `);
+    summaryBanner.style.cssText = 'padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;margin-bottom:6px;';
+    display.appendChild(summaryBanner);
+
     // Listado de Integrantes con Diagnóstico de Reglas
-    const listWrap = mkEl('div', 'attend-panel', '');
+    const listWrap = mkEl('div', 'attend-panel attend-eligibility-panel', '');
+    listWrap.style.cssText = 'height:auto;min-height:auto;overflow:visible;';
     listWrap.innerHTML = `
         <div class="attend-panel-header">
             <span class="reg-panel-title">Estado Individual por Integrante</span>
@@ -7250,6 +7278,7 @@ function renderAttendanceEligibility(display) {
     `;
 
     const lBody = mkEl('div', 'attend-panel-body', '');
+    lBody.style.cssText = 'height:auto;overflow:visible;';
 
     if (!members.length) {
         lBody.innerHTML = '<div class="empty-state"><p>Sin miembros</p></div>';
@@ -7874,6 +7903,30 @@ async function loadFromSupabase() {
             phone: r.phone||'', email: r.email||'', notes: r.notes||''
         }));
 
+        // Sincronizar penalizaciones de notas de miembros con localStorage
+        try {
+            const curPenalties = JSON.parse(localStorage.getItem('adorachord_late_penalties') || '{}');
+            members.forEach(m => {
+                let sanctions = 0;
+                let lastReset = '2000-01-01';
+                if (m.notes) {
+                    const matchS = m.notes.match(/\[?SANCTIONS:(\d+)\]?/);
+                    if (matchS) sanctions = parseInt(matchS[1], 10);
+                    const matchR = m.notes.match(/\[?RESET_LATES:([0-9\-]+)\]?/);
+                    if (matchR) lastReset = matchR[1];
+                }
+                const existing = curPenalties[m.id];
+                const existSanc = (existing && typeof existing === 'object') ? Number(existing.sanctions)||0 : (typeof existing === 'number' ? existing : 0);
+                const existReset = (existing && typeof existing === 'object') ? (existing.lastReset||'2000-01-01') : (typeof existing === 'string' && existing.match(/^\d{4}-\d{2}-\d{2}$/) ? existing : '2000-01-01');
+
+                curPenalties[m.id] = {
+                    sanctions: Math.max(sanctions, existSanc),
+                    lastReset: (lastReset > existReset) ? lastReset : existReset
+                };
+            });
+            localStorage.setItem('adorachord_late_penalties', JSON.stringify(curPenalties));
+        } catch(e) {}
+
         // Singer assignments
         const { data: dbSA, error: e4 } = await sb.from('singer_assignments').select('*');
         if (e4) throw e4;
@@ -7883,13 +7936,18 @@ async function loadFromSupabase() {
             singerAssignments[r.date][r.song_id] = r.member_id;
         });
 
-        // Attendance
+        // Attendance (con deduplicación estricta por fecha y miembro)
         const { data: dbAtt, error: e5 } = await sb.from('attendance').select('*');
         if (e5) throw e5;
         attendance = {};
         (dbAtt || []).forEach(r => {
             if (!attendance[r.date]) attendance[r.date] = { type: r.type, records: [] };
-            attendance[r.date].records.push({ memberId: r.member_id, status: r.status, obs: r.obs||'' });
+            const existingIdx = attendance[r.date].records.findIndex(x => x.memberId === r.member_id);
+            if (existingIdx >= 0) {
+                attendance[r.date].records[existingIdx] = { memberId: r.member_id, status: r.status, obs: r.obs||'' };
+            } else {
+                attendance[r.date].records.push({ memberId: r.member_id, status: r.status, obs: r.obs||'' });
+            }
         });
 
         setBadge('', '☁ Sincronizado');
@@ -8574,6 +8632,27 @@ async function reloadMembers() {
             instrument: r.instrument||'', instrument2: r.instrument2||'',
             phone: r.phone||'', email: r.email||'', notes: r.notes||''
         }));
+        try {
+            const curPenalties = JSON.parse(localStorage.getItem('adorachord_late_penalties') || '{}');
+            members.forEach(m => {
+                let sanctions = 0;
+                let lastReset = '2000-01-01';
+                if (m.notes) {
+                    const matchS = m.notes.match(/\[?SANCTIONS:(\d+)\]?/);
+                    if (matchS) sanctions = parseInt(matchS[1], 10);
+                    const matchR = m.notes.match(/\[?RESET_LATES:([0-9\-]+)\]?/);
+                    if (matchR) lastReset = matchR[1];
+                }
+                const existing = curPenalties[m.id];
+                const existSanc = (existing && typeof existing === 'object') ? Number(existing.sanctions)||0 : (typeof existing === 'number' ? existing : 0);
+                const existReset = (existing && typeof existing === 'object') ? (existing.lastReset||'2000-01-01') : (typeof existing === 'string' && existing.match(/^\d{4}-\d{2}-\d{2}$/) ? existing : '2000-01-01');
+                curPenalties[m.id] = {
+                    sanctions: Math.max(sanctions, existSanc),
+                    lastReset: (lastReset > existReset) ? lastReset : existReset
+                };
+            });
+            localStorage.setItem('adorachord_late_penalties', JSON.stringify(curPenalties));
+        } catch(e) {}
         showSyncToast('👥 Equipo actualizado');
         refreshUI();
     } catch(e) { console.error('Realtime members error:', e); }
@@ -8586,7 +8665,12 @@ async function reloadAttendance() {
         attendance = {};
         (data||[]).forEach(r => {
             if (!attendance[r.date]) attendance[r.date] = { type: r.type, records: [] };
-            attendance[r.date].records.push({ memberId: r.member_id, status: r.status, obs: r.obs||'' });
+            const existingIdx = attendance[r.date].records.findIndex(x => x.memberId === r.member_id);
+            if (existingIdx >= 0) {
+                attendance[r.date].records[existingIdx] = { memberId: r.member_id, status: r.status, obs: r.obs||'' };
+            } else {
+                attendance[r.date].records.push({ memberId: r.member_id, status: r.status, obs: r.obs||'' });
+            }
         });
         showSyncToast('📋 Asistencia actualizada');
         // Preservar posición de scroll antes de redibujar
