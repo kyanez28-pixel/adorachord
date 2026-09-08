@@ -6347,114 +6347,208 @@ function getNextSunday(dateStr) {
     return sun.toISOString().split('T')[0];
 }
 
-function getServedLatePenalties() {
+function getMemberPenaltyData(memberId) {
     let local = {};
     try {
         local = JSON.parse(localStorage.getItem('adorachord_late_penalties') || '{}');
     } catch(e) { local = {}; }
 
+    let val = local[memberId];
+    let sanctions = 0;
+    let lastReset = '2000-01-01';
+
+    if (typeof val === 'number') {
+        sanctions = val;
+    } else if (val && typeof val === 'object') {
+        sanctions = Number(val.sanctions) || 0;
+        lastReset = val.lastReset || '2000-01-01';
+    } else if (typeof val === 'string') {
+        if (val.startsWith('SANCTIONS:')) {
+            sanctions = parseInt(val.split(':')[1], 10) || 0;
+        } else if (val.match(/^\d{4}-\d{2}-\d{2}$/)) {
+            lastReset = val;
+        }
+    }
+
     // Sincronización con notas de miembros desde Supabase
     if (typeof members !== 'undefined' && Array.isArray(members)) {
-        members.forEach(m => {
-            if (m.notes && m.notes.includes('RESET_LATES:')) {
-                const match = m.notes.match(/RESET_LATES:([0-9\-]+)/);
-                if (match && match[1]) {
-                    if (!local[m.id] || local[m.id] < match[1]) {
-                        local[m.id] = match[1];
-                    }
-                }
+        const m = members.find(x => x.id === memberId);
+        if (m && m.notes) {
+            const matchS = m.notes.match(/\[?SANCTIONS:(\d+)\]?/);
+            if (matchS && parseInt(matchS[1], 10) > sanctions) {
+                sanctions = parseInt(matchS[1], 10);
             }
-        });
+            const matchR = m.notes.match(/\[?RESET_LATES:([0-9\-]+)\]?/);
+            if (matchR && matchR[1] > lastReset) {
+                lastReset = matchR[1];
+            }
+        }
     }
-    return local;
-}
-window.getServedLatePenalties = getServedLatePenalties;
 
-function setServedLatePenalty(memberId, resetDate) {
-    const data = getServedLatePenalties();
-    if (resetDate) data[memberId] = resetDate;
-    else delete data[memberId];
+    return { sanctions, lastReset };
+}
+window.getMemberPenaltyData = getMemberPenaltyData;
+
+function saveMemberPenaltyData(memberId, { sanctions, lastReset }) {
+    const current = getMemberPenaltyData(memberId);
+    const finalSanctions = (sanctions !== undefined) ? sanctions : current.sanctions;
+    const finalReset = (lastReset !== undefined) ? lastReset : current.lastReset;
+
+    let local = {};
     try {
-        localStorage.setItem('adorachord_late_penalties', JSON.stringify(data));
+        local = JSON.parse(localStorage.getItem('adorachord_late_penalties') || '{}');
+    } catch(e) { local = {}; }
+
+    local[memberId] = { sanctions: finalSanctions, lastReset: finalReset };
+    try {
+        localStorage.setItem('adorachord_late_penalties', JSON.stringify(local));
     } catch(e) {}
 
     // Sincronizar en member.notes para persistir en Supabase entre dispositivos
     const m = (typeof members !== 'undefined' && Array.isArray(members)) ? members.find(x => x.id === memberId) : null;
     if (m) {
-        let clean = (m.notes || '').replace(/\[?RESET_LATES:[0-9\-]+\]?/g, '').trim();
-        if (resetDate) {
-            clean = clean ? `${clean} [RESET_LATES:${resetDate}]` : `[RESET_LATES:${resetDate}]`;
-        }
+        let clean = (m.notes || '')
+            .replace(/\[?SANCTIONS:\d+\]?/g, '')
+            .replace(/\[?RESET_LATES:[0-9\-]+\]?/g, '')
+            .trim();
+        if (finalSanctions > 0) clean = clean ? `${clean} [SANCTIONS:${finalSanctions}]` : `[SANCTIONS:${finalSanctions}]`;
+        if (finalReset && finalReset !== '2000-01-01') clean = clean ? `${clean} [RESET_LATES:${finalReset}]` : `[RESET_LATES:${finalReset}]`;
         m.notes = clean;
         if (typeof dbSaveMember === 'function') {
             dbSaveMember(m);
         }
     }
 }
+window.saveMemberPenaltyData = saveMemberPenaltyData;
+
+function getServedLatePenalties() {
+    try {
+        return JSON.parse(localStorage.getItem('adorachord_late_penalties') || '{}');
+    } catch(e) { return {}; }
+}
+window.getServedLatePenalties = getServedLatePenalties;
+
+function setServedLatePenalty(memberId, val) {
+    if (typeof val === 'number') {
+        saveMemberPenaltyData(memberId, { sanctions: val });
+    } else {
+        saveMemberPenaltyData(memberId, { lastReset: val || '2000-01-01' });
+    }
+}
 window.setServedLatePenalty = setServedLatePenalty;
 
-function resetMemberPenaltyToZero(memberId, targetDate) {
+// Descuenta 3 atrasos al cumplir una sanción (ej: de 7 baja a 4, luego a 1)
+function deductMemberSanction(memberId, amount = 1) {
+    const { sanctions } = getMemberPenaltyData(memberId);
+    const newSanctions = sanctions + amount;
+    saveMemberPenaltyData(memberId, { sanctions: newSanctions });
+
     const m = (typeof members !== 'undefined' && Array.isArray(members)) ? members.find(x => x.id === memberId) : null;
     const mName = m ? m.name : 'Miembro';
-    const dateToSet = targetDate || todayStr();
-    setServedLatePenalty(memberId, dateToSet);
-    toast(`✓ Sanción cumplida: atrasos de ${mName} quedaron en 0/3 para iniciar nuevo ciclo`);
+    const info = getMemberUnexcusedLates(memberId);
+
+    if (info.count >= 3) {
+        toast(`✓ Se descontaron 3 atrasos de ${mName} (${newSanctions}ª sanción cumplida). Restan ${info.count}/3 atrasos pendientes.`);
+    } else {
+        toast(`✓ Se descontaron 3 atrasos de ${mName} (${newSanctions}ª sanción cumplida). Le queda ${info.count}/3 atrasos en su ciclo actual.`);
+    }
+    renderMain();
+    renderInspector();
+}
+window.deductMemberSanction = deductMemberSanction;
+
+// Deshace una sanción descontada en caso de error (+3 atrasos)
+function restoreMemberSanction(memberId) {
+    const { sanctions } = getMemberPenaltyData(memberId);
+    if (sanctions <= 0) return;
+    const newSanctions = sanctions - 1;
+    saveMemberPenaltyData(memberId, { sanctions: newSanctions });
+
+    const m = (typeof members !== 'undefined' && Array.isArray(members)) ? members.find(x => x.id === memberId) : null;
+    const mName = m ? m.name : 'Miembro';
+    const info = getMemberUnexcusedLates(memberId);
+    toast(`↺ Sanción revertida para ${mName}: +3 atrasos restaurados (Activos: ${info.count}/3)`);
+    renderMain();
+    renderInspector();
+}
+window.restoreMemberSanction = restoreMemberSanction;
+
+// Reinicia todos los atrasos activos a 0
+function resetMemberPenaltyToZero(memberId) {
+    const info = getMemberUnexcusedLates(memberId);
+    const needed = Math.ceil(info.rawCount / 3);
+    saveMemberPenaltyData(memberId, { sanctions: needed });
+
+    const m = (typeof members !== 'undefined' && Array.isArray(members)) ? members.find(x => x.id === memberId) : null;
+    const mName = m ? m.name : 'Miembro';
+    toast(`✓ Atrasos de ${mName} quedaron en 0/3 para iniciar nuevo ciclo`);
     renderMain();
     renderInspector();
 }
 window.resetMemberPenaltyToZero = resetMemberPenaltyToZero;
 
 function togglePenaltyServed(memberId, sundayDate) {
-    const served = getServedLatePenalties();
-    const m = (typeof members !== 'undefined' && Array.isArray(members)) ? members.find(x => x.id === memberId) : null;
-    const mName = m ? m.name : 'miembro';
-    const dateTarget = sundayDate || todayStr();
-    if (served[memberId] && served[memberId] >= dateTarget) {
-        setServedLatePenalty(memberId, null);
-        toast(`↺ Sanción reactivada para ${mName}`);
+    const info = getMemberUnexcusedLates(memberId);
+    if (info.count >= 3) {
+        deductMemberSanction(memberId, 1);
+    } else if (info.sanctions > 0) {
+        restoreMemberSanction(memberId);
     } else {
-        setServedLatePenalty(memberId, dateTarget);
-        toast(`✓ Sanción cumplida: atrasos de ${mName} quedaron en 0/3 para iniciar nuevo ciclo`);
+        resetMemberPenaltyToZero(memberId);
     }
-    renderMain();
-    renderInspector();
 }
 window.togglePenaltyServed = togglePenaltyServed;
 
-function resetAllMembersPastPenalties(targetDate) {
-    const d = targetDate || todayStr();
+// Descuenta ciclos pasados completos de 3 en 3 para todos los miembros
+function resetAllMembersPastPenalties() {
     let count = 0;
     if (typeof members !== 'undefined' && Array.isArray(members)) {
         members.forEach(m => {
             const info = getMemberUnexcusedLates(m.id);
-            if (info.count > 0) {
-                setServedLatePenalty(m.id, d);
-                count++;
+            if (info.rawCount >= 3) {
+                const autoSanctions = Math.floor(info.rawCount / 3);
+                if (autoSanctions > info.sanctions) {
+                    saveMemberPenaltyData(m.id, { sanctions: autoSanctions });
+                    count++;
+                }
             }
         });
     }
-    toast(`✓ Se reinició a 0 el contador de ${count} miembro(s) con sanciones pasadas cumplidas`);
+    toast(`✓ Se descontaron ciclos de 3 atrasos para las sanciones pasadas de ${count} miembro(s)`);
     renderMain();
     renderInspector();
 }
 window.resetAllMembersPastPenalties = resetAllMembersPastPenalties;
 
-// Cuenta atrasos injustificados acumulados en el ciclo activo (status === 'late')
+// Cuenta atrasos injustificados descontando de 3 en 3 por sanción cumplida
 function getMemberUnexcusedLates(memberId, upToDateStr) {
-    const served = getServedLatePenalties();
-    const lastReset = served[memberId] || '2000-01-01';
-    let count = 0;
+    const { sanctions, lastReset } = getMemberPenaltyData(memberId);
+    let rawCount = 0;
     const items = [];
     Object.keys(attendance).sort().forEach(d => {
         if (d > lastReset && (!upToDateStr || d <= upToDateStr)) {
             const r = attendance[d].records.find(x => x.memberId === memberId);
             if (r && r.status === 'late') {
-                count++;
+                rawCount++;
                 items.push({ date: d, type: attendance[d].type, obs: r.obs || '' });
             }
         }
     });
-    return { count, items, lastReset };
+
+    // Descontar exactamente 3 atrasos por cada sanción cumplida
+    const deducted = sanctions * 3;
+    const count = Math.max(0, rawCount - deducted);
+    const pendingSanctions = Math.floor(count / 3);
+
+    return {
+        count,               // Atrasos activos en el ciclo actual
+        rawCount,            // Total acumulado histórico
+        deducted,            // Atrasos descontados por sanciones
+        sanctions,           // Número de sanciones cumplidas (-3 c/u)
+        pendingSanctions,    // Sanciones acumuladas pendientes (de 3 en 3)
+        items,
+        lastReset
+    };
 }
 window.getMemberUnexcusedLates = getMemberUnexcusedLates;
 
@@ -7016,11 +7110,11 @@ function renderAttendanceEligibility(display) {
         <div style="display:flex;align-items:center;gap:10px;flex:1">
             <span style="font-size:16px">⚖️</span>
             <div style="font-size:11px;line-height:1.4">
-                <b>Regla de los 3 Atrasos:</b> Al cumplir la sanción de 3 atrasos, el contador queda en <b>0</b> para iniciar un nuevo ciclo y volver a contar.
+                <b>Regla de Sanción (quitar de 3 en 3):</b> Cada sanción cumplida descuenta <b>3 atrasos</b> del contador acumulado. Si alguien acumuló 7 atrasos y cumple 2 sanciones, le queda 1 atraso para su nuevo ciclo.
             </div>
         </div>
-        <button class="inline-btn" style="border-color:var(--accent);color:var(--accent);font-weight:700;font-size:11px;padding:5px 12px;background:rgba(232,87,42,0.12);white-space:nowrap" onclick="resetAllMembersPastPenalties('${sunDate}')">
-            🔄 Reiniciar a 0 sanciones pasadas de todos
+        <button class="inline-btn" style="border-color:var(--accent);color:var(--accent);font-weight:700;font-size:11px;padding:5px 12px;background:rgba(232,87,42,0.12);white-space:nowrap" onclick="resetAllMembersPastPenalties()">
+            🔄 Descontar ciclos pasados (-3 por sanción)
         </button>
     `);
     display.appendChild(resetNotice);
@@ -7101,7 +7195,8 @@ function renderAttendanceEligibility(display) {
             const check = checkSundayEligibility(sunDate, m.id);
             const satInfo = STATUS_INFO[check.satStatus] || STATUS_INFO.none;
             const unCount = check.unexcusedCount;
-            const isServed = check.isPenaltyServed;
+            const sanc = check.latesInfo.sanctions || 0;
+            const raw = check.latesInfo.rawCount || unCount;
 
             // Dots de atrasos acumulados
             let dotsHtml = '';
@@ -7117,12 +7212,14 @@ function renderAttendanceEligibility(display) {
                     <div style="display:flex;align-items:center;gap:10px">
                         <div class="member-avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0">${memberInitials(m.name)}</div>
                         <div>
-                            <div style="font-size:13px;font-weight:700">${esc(m.name)}</div>
+                            <div style="display:flex;align-items:center;gap:6px">
+                                <span style="font-size:13px;font-weight:700">${esc(m.name)}</span>
+                                ${sanc > 0 ? `<span class="status-pill present" style="font-size:9px;padding:1px 6px">✓ ${sanc} sanción${sanc>1?'es':''} cumplida${sanc>1?'s':''} (-${sanc*3})</span>` : ''}
+                            </div>
                             <div style="font-size:11px;color:var(--dim)">${roleLabel(m.role)}${m.instrument ? ' · ' + esc(m.instrument) : ''}</div>
                         </div>
                     </div>
                     <div style="display:flex;align-items:center;gap:6px">
-                        ${isServed ? '<span class="elig-badge ok" style="font-size:10px">✓ Sanción cumplida (En 0)</span>' : ''}
                         ${check.eligible 
                             ? '<span class="elig-badge ok">🟢 HABILITADO PARA MINISTRAR</span>'
                             : '<span class="elig-badge blocked">🔴 NO HABILITADO ESTE DOMINGO</span>'
@@ -7140,13 +7237,13 @@ function renderAttendanceEligibility(display) {
                     </div>
 
                     <div style="padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:6px;display:flex;align-items:center;justify-content:space-between">
-                        <span style="color:var(--dim)">Atrasos sin justificar ciclo actual:</span>
+                        <span style="color:var(--dim)">Atrasos activos (quitan de 3 en 3):</span>
                         <div style="display:flex;align-items:center;gap:6px">
                             <div class="late-meter">${dotsHtml}</div>
                             <span style="font-family:'Syne',sans-serif;font-weight:800;color:${unCount>=3 ? '#ff6060' : unCount===2 ? 'var(--yellow)' : unCount===0 ? 'var(--green)' : 'var(--text)'}">${unCount}/3</span>
                             ${unCount > 0 ? `
-                                <button class="inline-btn" style="font-size:9px;padding:2px 6px;color:var(--accent)" title="Reiniciar a 0 este contador" onclick="resetMemberPenaltyToZero('${m.id}', '${sunDate}')">
-                                    🔄 Reset a 0
+                                <button class="inline-btn" style="font-size:9px;padding:2px 6px;color:var(--accent)" title="Reiniciar todos a 0" onclick="resetMemberPenaltyToZero('${m.id}')">
+                                    🔄 0
                                 </button>
                             ` : ''}
                         </div>
@@ -7162,17 +7259,22 @@ function renderAttendanceEligibility(display) {
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:8px;flex-wrap:wrap">
                     <div style="font-size:10px;color:var(--dim2)">
                         ${check.satObs ? 'Nota repaso: "' + esc(check.satObs) + '"' : ''}
-                        ${check.lastReset && check.lastReset !== '2000-01-01' ? ` · Último reinicio: ${fmtDate(check.lastReset)}` : ''}
+                        ${raw > unCount ? ` · Historial: ${raw} atrasos en total (-${raw - unCount} descontados por sanciones)` : ''}
                     </div>
                     <div style="display:flex;gap:6px;flex-wrap:wrap">
-                        ${unCount >= 3 || !check.eligible ? `
-                            <button class="inline-btn" style="font-size:11px;padding:5px 12px;border-color:var(--green);color:var(--green);font-weight:700;background:rgba(62,207,142,0.12)" onclick="resetMemberPenaltyToZero('${m.id}', '${sunDate}')">
-                                ✓ Sanción cumplida (Queda en 0 para volver a contar)
+                        ${unCount >= 3 ? `
+                            <button class="inline-btn" style="font-size:11px;padding:5px 12px;border-color:var(--green);color:var(--green);font-weight:700;background:rgba(62,207,142,0.12)" onclick="deductMemberSanction('${m.id}')">
+                                ✓ Sanción cumplida (Descontar 3 atrasos)
                             </button>
                         ` : ''}
-                        ${isServed ? `
-                            <button class="inline-btn" style="font-size:10px;padding:3px 8px;border-color:rgba(255,255,255,0.2)" onclick="togglePenaltyServed('${m.id}', '${sunDate}')">
-                                ↺ Deshacer sanción cumplida
+                        ${unCount > 3 ? `
+                            <button class="inline-btn" style="font-size:10px;padding:4px 8px;color:var(--dim)" title="Reiniciar todos a 0" onclick="resetMemberPenaltyToZero('${m.id}')">
+                                🔄 Poner en 0
+                            </button>
+                        ` : ''}
+                        ${sanc > 0 ? `
+                            <button class="inline-btn" style="font-size:10px;padding:3px 8px;border-color:rgba(255,255,255,0.2)" title="Revertir sanción cumplida (+3 atrasos al contador)" onclick="restoreMemberSanction('${m.id}')">
+                                ↺ Deshacer (-1 sanción / +3 atrasos)
                             </button>
                         ` : ''}
                         <button class="inline-btn" style="font-size:10px;padding:3px 8px" onclick="openRuleSelectorModal('${satDate}', '${m.id}')">
@@ -7373,8 +7475,11 @@ function renderAttendanceInspector(panel) {
                         <span style="font-size:10px;color:${unCount>=3?'#ff6060':unCount===2?'var(--yellow)':unCount===0?'var(--green)':'var(--dim2)'}">
                             Atrasos: <b>${unCount}/3</b>
                         </span>
+                        ${unCount >= 3 ? `
+                            <button class="inline-btn" style="padding:1px 5px;font-size:9px;color:var(--green);border-color:rgba(62,207,142,0.3)" title="Cumplir sanción: Descontar 3 atrasos" onclick="deductMemberSanction('${m.id}')">✓-3</button>
+                        ` : ''}
                         ${unCount > 0 ? `
-                            <button class="inline-btn" style="padding:1px 5px;font-size:9px;color:var(--accent);border-color:rgba(232,87,42,0.3)" title="Sanción cumplida: Reiniciar a 0" onclick="resetMemberPenaltyToZero('${m.id}')">🔄 0</button>
+                            <button class="inline-btn" style="padding:1px 5px;font-size:9px;color:var(--accent);border-color:rgba(232,87,42,0.3)" title="Reiniciar a 0" onclick="resetMemberPenaltyToZero('${m.id}')">🔄 0</button>
                         ` : ''}
                     </div>
                 <div style="margin-top:5px;background:var(--panel2);border-radius:4px;height:4px;overflow:hidden">
