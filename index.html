@@ -2346,15 +2346,17 @@
         }
 
         .cloud-badge {
-            position: fixed; top: 12px; right: 16px;
-            background: rgba(62,207,142,0.12); border: 1px solid rgba(62,207,142,0.25);
-            color: var(--green); padding: 4px 10px; border-radius: 20px;
+            position: fixed; top: 12px; right: 316px;
+            background: rgba(18, 22, 28, 0.85); border: 1px solid rgba(62,207,142,0.3);
+            color: var(--green); padding: 5px 12px; border-radius: 20px;
             font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 700;
-            z-index: 5000; display: flex; align-items: center; gap: 5px;
+            z-index: 5000; display: flex; align-items: center; gap: 6px;
             transition: all 0.3s; pointer-events: none;
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
         }
-        .cloud-badge.syncing { background: rgba(240,192,64,0.12); border-color: rgba(240,192,64,0.25); color: var(--yellow); }
-        .cloud-badge.error   { background: rgba(255,60,60,0.1);   border-color: rgba(255,60,60,0.2);   color: #ff6060; }
+        .cloud-badge.syncing { border-color: rgba(240,192,64,0.35); color: var(--yellow); }
+        .cloud-badge.error   { border-color: rgba(255,60,60,0.3);   color: #ff6060; }
         .cloud-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
         /* ── ASISTENCIA ── */
@@ -2429,53 +2431,58 @@
         /* ── REGLAMENTO Y HABILITACIÓN DE ASISTENCIA ── */
         .attend-subtabs {
             display: flex;
-            gap: 6px;
-            background: var(--panel2);
-            border: 1px solid var(--border);
+            gap: 8px;
+            background: rgba(18, 20, 26, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 12px;
+            padding: 5px;
+            margin-bottom: 16px;
             flex-shrink: 0;
             overflow-x: auto;
             scrollbar-width: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
         }
         .attend-subtabs::-webkit-scrollbar { display: none; }
 
         .attend-subtab {
             flex: 1;
             min-width: fit-content;
-            padding: 8px 14px;
+            padding: 9px 16px;
             border: none;
             background: transparent;
             color: var(--dim);
-            font-family: 'Syne', sans-serif;
-            font-size: 11px;
-            font-weight: 700;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 11.5px;
+            font-weight: 600;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.16s ease;
+            transition: all 0.18s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 7px;
+            gap: 8px;
             white-space: nowrap;
         }
         .attend-subtab:hover {
             color: var(--text);
-            background: rgba(255,255,255,0.04);
+            background: rgba(255,255,255,0.05);
         }
         .attend-subtab.active {
-            background: var(--accent);
+            background: linear-gradient(135deg, #e8572a 0%, #ff6b3d 100%);
             color: #fff;
-            box-shadow: 0 4px 14px rgba(232,87,42,0.3);
+            box-shadow: 0 4px 14px rgba(232,87,42,0.35);
+            font-weight: 700;
         }
         .attend-subtab-badge {
             background: #ff4747;
             color: #fff;
-            font-size: 9px;
+            font-size: 9.5px;
             font-weight: 800;
-            padding: 1px 6px;
-            border-radius: 10px;
+            padding: 1px 7px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(255,71,71,0.4);
         }
 
         .attend-status-btn.abs-late {
@@ -2491,33 +2498,33 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-family: 'Syne', sans-serif;
+            padding: 4px 9px;
+            border-radius: 7px;
+            font-family: 'DM Sans', sans-serif;
             font-size: 10px;
             font-weight: 700;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.2px;
         }
         .elig-badge.ok {
-            background: rgba(62, 207, 142, 0.15);
-            color: var(--green);
-            border: 1px solid rgba(62, 207, 142, 0.3);
+            background: rgba(62, 207, 142, 0.12);
+            color: #3ecf8e;
+            border: 1px solid rgba(62, 207, 142, 0.28);
         }
         .elig-badge.blocked {
-            background: rgba(255, 71, 71, 0.18);
-            color: #ff5e5e;
-            border: 1px solid rgba(255, 71, 71, 0.4);
+            background: rgba(255, 71, 71, 0.15);
+            color: #ff6e6e;
+            border: 1px solid rgba(255, 71, 71, 0.35);
             animation: pulseSoft 2.5s infinite;
         }
         .elig-badge.warning {
-            background: rgba(240, 192, 64, 0.15);
-            color: var(--yellow);
-            border: 1px solid rgba(240, 192, 64, 0.3);
+            background: rgba(245, 158, 11, 0.14);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
         }
 
         @keyframes pulseSoft {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.78; }
+            50% { opacity: 0.82; }
         }
 
         .late-meter {
@@ -2526,95 +2533,107 @@
             gap: 4px;
         }
         .late-dot {
-            width: 9px;
-            height: 9px;
+            width: 8px;
+            height: 8px;
             border-radius: 50%;
             background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.22);
+            border: 1px solid rgba(255,255,255,0.2);
             transition: all 0.2s ease;
         }
         .late-dot.filled {
             background: var(--yellow);
             border-color: var(--yellow);
-            box-shadow: 0 0 6px rgba(240,192,64,0.5);
+            box-shadow: 0 0 6px rgba(240,192,64,0.45);
         }
         .late-dot.danger {
             background: #ff4747;
             border-color: #ff4747;
-            box-shadow: 0 0 6px rgba(255,71,71,0.6);
+            box-shadow: 0 0 6px rgba(255,71,71,0.55);
         }
 
         .rule-card {
-            background: var(--panel2);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 14px 16px;
-            margin-bottom: 10px;
-            transition: all 0.18s ease;
+            background: rgba(22, 25, 33, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
+            padding: 16px 18px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.14);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
         }
         .rule-card:hover {
-            border-color: var(--border2);
+            border-color: rgba(255, 255, 255, 0.16);
             transform: translateY(-1px);
+            box-shadow: 0 6px 24px rgba(0,0,0,0.22);
         }
         .rule-card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 8px;
-            gap: 10px;
+            margin-bottom: 9px;
+            gap: 12px;
         }
         .rule-card-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13.5px;
             font-weight: 700;
-            color: var(--text);
+            color: #f8fafc;
             display: flex;
             align-items: center;
             gap: 8px;
+            letter-spacing: -0.1px;
         }
         .rule-card-tag {
-            font-family: 'Syne', sans-serif;
-            font-size: 9px;
-            font-weight: 800;
-            padding: 2px 7px;
-            border-radius: 4px;
-            text-transform: uppercase;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 9.5px;
+            font-weight: 600;
+            padding: 3px 9px;
+            border-radius: 6px;
+            letter-spacing: 0.2px;
+            text-transform: none;
+            white-space: nowrap;
         }
-        .rule-card-tag.danger  { background: rgba(255,71,71,0.15); color: #ff6b6b; border: 1px solid rgba(255,71,71,0.3); }
-        .rule-card-tag.warning { background: rgba(240,192,64,0.15); color: var(--yellow); border: 1px solid rgba(240,192,64,0.3); }
-        .rule-card-tag.info    { background: rgba(77,158,255,0.15); color: var(--blue); border: 1px solid rgba(77,158,255,0.3); }
+        .rule-card-tag.danger  { background: rgba(255,71,71,0.12); color: #ff7a7a; border: 1px solid rgba(255,71,71,0.25); }
+        .rule-card-tag.warning { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
+        .rule-card-tag.info    { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
 
         .rule-card-body {
-            font-size: 12px;
-            color: #cbd5e1;
-            line-height: 1.5;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12.5px;
+            color: #94a3b8;
+            line-height: 1.55;
         }
         .rule-card-consequence {
-            margin-top: 8px;
-            padding: 8px 12px;
-            border-radius: 6px;
-            font-size: 11px;
+            margin-top: 10px;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 11.5px;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 8px;
-            font-weight: 600;
+            font-weight: 500;
+            line-height: 1.45;
         }
         .rule-card-consequence.danger {
-            background: rgba(255, 71, 71, 0.12);
-            border: 1px solid rgba(255, 71, 71, 0.25);
-            color: #ff6b6b;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-left: 3px solid #ef4444;
+            color: #fca5a5;
         }
         .rule-card-consequence.warning {
-            background: rgba(240, 192, 64, 0.12);
-            border: 1px solid rgba(240, 192, 64, 0.25);
-            color: #f6c84c;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-left: 3px solid #f59e0b;
+            color: #fde68a;
         }
         .rule-card-consequence.info {
-            background: rgba(77, 158, 255, 0.12);
-            border: 1px solid rgba(77, 158, 255, 0.25);
-            color: #72b3ff;
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-left: 3px solid #3b82f6;
+            color: #93c5fd;
         }
 
         .rule-option-btn {
@@ -2622,7 +2641,7 @@
             align-items: center;
             gap: 12px;
             width: 100%;
-            padding: 10px 12px;
+            padding: 11px 14px;
             border-radius: 10px;
             border: 1px solid var(--border);
             background: var(--panel2);
@@ -2630,12 +2649,12 @@
             cursor: pointer;
             text-align: left;
             margin-bottom: 7px;
-            transition: all 0.14s ease;
+            transition: all 0.16s ease;
         }
         .rule-option-btn:hover {
             border-color: var(--accent);
             background: rgba(232,87,42,0.06);
-            transform: translateX(3px);
+            transform: translateX(2px);
         }
         .rule-option-btn.selected {
             border-color: var(--accent);
@@ -2657,30 +2676,83 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 8px 12px;
+            padding: 10px 14px;
             background: rgba(232,87,42,0.08);
-            border: 1px solid rgba(232,87,42,0.25);
-            border-radius: 8px;
-            margin-bottom: 10px;
-            font-size: 11px;
-            gap: 8px;
+            border: 1px solid rgba(232,87,42,0.22);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            font-size: 11.5px;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
         .elig-member-card {
-            background: var(--panel2);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            padding: 12px 14px;
-            margin-bottom: 8px;
-            transition: border-color 0.15s;
+            background: rgba(22, 25, 33, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+        .elig-member-card:hover {
+            border-color: rgba(255,255,255,0.15);
         }
         .elig-member-card.sanctioned {
-            border-color: rgba(255,71,71,0.4);
-            background: linear-gradient(90deg, rgba(255,71,71,0.05) 0%, var(--panel2) 100%);
+            border-color: rgba(255,71,71,0.35);
+            background: linear-gradient(135deg, rgba(255,71,71,0.07) 0%, rgba(22,25,33,0.85) 100%);
         }
         .elig-member-card.warning {
-            border-color: rgba(240,192,64,0.4);
+            border-color: rgba(240,192,64,0.35);
+            background: linear-gradient(135deg, rgba(240,192,64,0.05) 0%, rgba(22,25,33,0.85) 100%);
+        }
+
+        /* ── INSPECTOR MEJORADO ── */
+        .ins-member-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+        .ins-member-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.12);
+        }
+        .ins-member-card.is-blocked {
+            border-color: rgba(255, 71, 71, 0.3);
+            background: linear-gradient(135deg, rgba(255, 71, 71, 0.07) 0%, rgba(255, 255, 255, 0.015) 100%);
+        }
+        .ins-stat-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .ins-stat-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 8px;
+            padding: 10px 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+        .ins-stat-val {
+            font-family: 'Syne', sans-serif;
+            font-size: 16px;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .ins-stat-label {
+            font-size: 9.5px;
+            color: var(--dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
         }
 
         /* ── SECCIÓN DE LETRA (IMAGEN) ── */
@@ -7352,35 +7424,37 @@ function renderAttendanceFullHistory(display) {
 function renderAttendanceRules(display) {
     // Encabezado institucional
     const header = mkEl('div', 'rule-card', `
-        <div class="rule-card-header">
-            <div class="rule-card-title" style="font-size:16px">
-                <span>📜</span>
+        <div class="rule-card-header" style="flex-wrap:wrap;gap:12px">
+            <div class="rule-card-title" style="font-size:15px">
+                <span style="font-size:18px">📜</span>
                 <span>${RULES_AGREEMENT.title}</span>
             </div>
-            <div style="display:flex;gap:6px">
+            <div style="display:flex;gap:8px">
                 <button type="button" class="inline-btn-green" id="btn-share-rules" onclick="window.shareRulesWhatsApp && window.shareRulesWhatsApp()">📲 Enviar al WhatsApp</button>
                 <button type="button" class="inline-btn" id="btn-copy-rules" onclick="window.copyRulesToClipboard && window.copyRulesToClipboard()">📋 Copiar</button>
             </div>
         </div>
-        <div class="rule-card-body" style="font-size:13px;color:#e2e8f0;font-style:italic">
+        <div class="rule-card-body" style="font-size:12.5px;color:#cbd5e1;line-height:1.5;margin-top:6px;font-style:italic">
             "${RULES_AGREEMENT.description}"
         </div>
     `);
-    header.style.background = 'linear-gradient(135deg, rgba(232,87,42,0.12) 0%, var(--panel) 100%)';
-    header.style.border = '1px solid rgba(232,87,42,0.3)';
+    header.style.background = 'linear-gradient(135deg, rgba(232,87,42,0.1) 0%, rgba(20,22,28,0.85) 100%)';
+    header.style.border = '1px solid rgba(232,87,42,0.25)';
+    header.style.marginBottom = '14px';
     display.appendChild(header);
 
     // Listado de las 6 reglas
     const grid = mkEl('div', '', '');
     grid.style.display = 'grid';
-    grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(320px, 1fr))';
-    grid.style.gap = '10px';
+    grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(340px, 1fr))';
+    grid.style.gap = '14px';
+    grid.style.marginBottom = '14px';
 
     RULES_AGREEMENT.rules.forEach(r => {
         const card = mkEl('div', 'rule-card', `
             <div class="rule-card-header">
                 <div class="rule-card-title">
-                    <span>${r.icon}</span>
+                    <span style="font-size:16px">${r.icon}</span>
                     <span>${r.number}. ${r.title}</span>
                 </div>
                 <span class="rule-card-tag ${r.tagType}">${r.tag}</span>
@@ -7399,10 +7473,10 @@ function renderAttendanceRules(display) {
 
     // Banner inferior
     const bottomCard = mkEl('div', 'rule-card', `
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap">
             <div>
-                <div style="font-weight:700;font-size:13px">¿Deseas verificar si se cumplen estas reglas para este domingo?</div>
-                <div style="font-size:11px;color:var(--dim)">El sistema audita automáticamente los repasos del sábado y la acumulación de 3 atrasos.</div>
+                <div style="font-weight:700;font-size:13px;color:#f8fafc">¿Deseas verificar si se cumplen estas reglas para este domingo?</div>
+                <div style="font-size:11px;color:var(--dim);margin-top:2px">El sistema audita automáticamente los repasos del sábado y la acumulación de 3 atrasos.</div>
             </div>
             <button type="button" class="btn btn-primary" onclick="attendSubTab='eligibility';renderMain();renderInspector()">Verificar Habilitación Domingo →</button>
         </div>
@@ -7444,66 +7518,88 @@ function renderAttendanceInspector(panel) {
         const unCount = eligCheck.unexcusedCount;
 
         sec.innerHTML += `
-            <div style="padding:8px 0;border-bottom:1px solid var(--border)">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-                    <span style="font-size:12px;font-weight:600">${esc(m.name)}</span>
-                    <div style="display:flex;align-items:center;gap:6px">
+            <div class="ins-member-card ${!eligCheck.eligible ? 'is-blocked' : ''}">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+                    <div style="display:flex;align-items:center;gap:8px;min-width:0">
+                        <div class="member-avatar" style="width:28px;height:28px;font-size:10.5px;flex-shrink:0;border:1px solid rgba(255,255,255,0.1)">${memberInitials(m.name)}</div>
+                        <div style="min-width:0">
+                            <div style="font-size:12px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#f1f5f9">${esc(m.name)}</div>
+                            <div style="font-size:10px;color:var(--dim2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.instrument ? esc(m.instrument) : roleLabel(m.role)}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
                         ${eligCheck.eligible 
-                            ? '<span class="elig-badge ok" style="font-size:9px;padding:1px 5px">🟢 Hab.</span>' 
-                            : '<span class="elig-badge blocked" style="font-size:9px;padding:1px 5px">🔴 No toca</span>'
+                            ? '<span class="elig-badge ok" style="font-size:9px;padding:2px 6px">🟢 Hab.</span>' 
+                            : '<span class="elig-badge blocked" style="font-size:9px;padding:2px 6px">🔴 No toca</span>'
                         }
                         <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'}">${pct}%</span>
                     </div>
                 </div>
-                <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
-                    ${pr     ? `<span class="status-pill present">✅${pr}</span>` : ''}
-                    ${lt     ? `<span class="status-pill late">⏰${lt}</span>` : ''}
-                    ${ltEx   ? `<span class="status-pill late-excused">🟡${ltEx}</span>` : ''}
-                    ${ab     ? `<span class="status-pill absent">❌${ab}</span>` : ''}
-                    ${absLate? `<span class="status-pill abs-late">⚠️${absLate}</span>` : ''}
-                    ${absEx  ? `<span class="status-pill excused">🔵${absEx}</span>` : ''}
-                    <div style="margin-left:auto;display:flex;align-items:center;gap:3px">
-                        <span style="font-size:10px;color:${unCount>=3?'#ff6060':unCount===2?'var(--yellow)':unCount===0?'var(--green)':'var(--dim2)'}">
+
+                <div style="background:rgba(255,255,255,0.06);border-radius:3px;height:3px;overflow:hidden;margin-bottom:7px">
+                    <div style="height:100%;width:${pct}%;background:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'};border-radius:3px;transition:width 0.4s"></div>
+                </div>
+
+                <div style="display:flex;justify-content:space-between;align-items:center;font-size:10px">
+                    <span style="color:var(--dim)">${pr+ltEx} de ${tot} asist.</span>
+                    <div style="display:flex;align-items:center;gap:4px">
+                        <span style="font-family:'Syne',sans-serif;font-weight:700;color:${unCount>=3?'#ff6060':unCount===2?'var(--yellow)':unCount===0?'var(--green)':'var(--dim2)'}">
                             Atrasos: <b>${unCount}/3</b>
                         </span>
                         ${unCount >= 3 ? `
-                            <button class="inline-btn" style="padding:1px 5px;font-size:9px;color:var(--green);border-color:rgba(62,207,142,0.3)" title="Cumplir sanción: Descontar 3 atrasos" onclick="deductMemberSanction('${m.id}')">✓-3</button>
+                            <button class="inline-btn" style="padding:1px 6px;font-size:9px;font-weight:700;color:var(--green);border-color:rgba(62,207,142,0.35);background:rgba(62,207,142,0.08);border-radius:4px" title="Cumplir sanción (descontar 3 atrasos)" onclick="deductMemberSanction('${m.id}')">✓-3</button>
                         ` : ''}
                         ${unCount > 0 ? `
-                            <button class="inline-btn" style="padding:1px 5px;font-size:9px;color:var(--accent);border-color:rgba(232,87,42,0.3)" title="Reiniciar a 0" onclick="resetMemberPenaltyToZero('${m.id}')">🔄 0</button>
+                            <button class="inline-btn" style="padding:1px 5px;font-size:9px;color:var(--accent);border-color:rgba(232,87,42,0.3);background:rgba(232,87,42,0.06);border-radius:4px" title="Reiniciar contador a 0" onclick="resetMemberPenaltyToZero('${m.id}')">🔄 0</button>
                         ` : ''}
                     </div>
-                <div style="margin-top:5px;background:var(--panel2);border-radius:4px;height:4px;overflow:hidden">
-                    <div style="height:100%;width:${pct}%;background:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'};border-radius:4px;transition:width 0.4s"></div>
                 </div>
             </div>`;
     });
     panel.appendChild(sec);
 
-    // Global totals
+    // Global totals & modern metrics
     const allRec = Object.values(attendance).flatMap(d=>d.records);
     const statSec = mkEl('div','ins-section','');
     statSec.innerHTML = `<div class="ins-header">Totales y Sanciones</div>`;
-    const grid = mkEl('div','stat-grid','');
 
     let totalBlocked = 0;
+    let totalActiveLates = 0;
     members.forEach(m => {
-        if (!checkSundayEligibility(nextSun, m.id).eligible) totalBlocked++;
+        const chk = checkSundayEligibility(nextSun, m.id);
+        if (!chk.eligible) totalBlocked++;
+        totalActiveLates += chk.unexcusedCount;
     });
 
-    [
-        ['📅', Object.keys(attendance).length, 'sesiones'],
-        ['✅', allRec.filter(r=>r.status==='present').length, 'presentes'],
-        ['⏰', allRec.filter(r=>r.status==='late').length, 'atrasos no just.'],
-        ['🟡', allRec.filter(r=>r.status==='late_excused').length, 'atr. just.'],
-        ['❌', allRec.filter(r=>r.status==='absent').length, 'inasistencias'],
-        ['⚠️', allRec.filter(r=>r.status==='abs_late').length, 'faltas tardías'],
-        ['🔵', allRec.filter(r=>r.status==='abs_excused').length, 'f. just.'],
-        ['🚫', totalBlocked, 'sancionados dom.']
-    ].forEach(([icon,val,label]) => {
-        grid.appendChild(mkEl('div','stat-box',`<div class="stat-box-icon">${icon}</div><div class="stat-box-val">${val}</div><div class="stat-box-label">${label}</div>`));
-    });
-    statSec.appendChild(grid);
+    const presCount = allRec.filter(r=>r.status==='present'||r.status==='late_excused').length;
+    const totalRecords = allRec.filter(r=>r.status!=='none').length;
+    const generalPct = totalRecords ? Math.round((presCount/totalRecords)*100) : 0;
+
+    statSec.innerHTML += `
+        <div class="ins-stat-grid">
+            <div class="ins-stat-card">
+                <div class="ins-stat-val">${Object.keys(attendance).length}</div>
+                <div class="ins-stat-label">Sesiones</div>
+            </div>
+            <div class="ins-stat-card">
+                <div class="ins-stat-val" style="color:var(--green)">${generalPct}%</div>
+                <div class="ins-stat-label">Asistencia Prom.</div>
+            </div>
+            <div class="ins-stat-card">
+                <div class="ins-stat-val" style="color:${totalActiveLates>0?'var(--yellow)':'var(--text)'}">${totalActiveLates}</div>
+                <div class="ins-stat-label">Atrasos Activos</div>
+            </div>
+            <div class="ins-stat-card">
+                <div class="ins-stat-val" style="color:${totalBlocked>0?'#ff6060':'var(--green)'}">${totalBlocked}</div>
+                <div class="ins-stat-label">No Habilitados</div>
+            </div>
+        </div>
+        <div style="margin-top:10px;padding:8px 10px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.05);border-radius:6px;font-size:10px;color:var(--dim);display:flex;justify-content:space-around;text-align:center">
+            <span>✅ ${allRec.filter(r=>r.status==='present').length} pres.</span>
+            <span>⏰ ${allRec.filter(r=>r.status==='late').length} atr.</span>
+            <span>❌ ${allRec.filter(r=>r.status==='absent').length} faltas</span>
+        </div>
+    `;
     panel.appendChild(statSec);
 }
 

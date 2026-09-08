@@ -1,4 +1,4 @@
-const VERSION = '1.9.5';
+const VERSION = '1.9.6';
 const CACHE = `adorachord-${VERSION}`;
 
 // Assets locales (obligatorios)
