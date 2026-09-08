@@ -5809,8 +5809,9 @@ function renderTeamInspector(panel) {
         rows.forEach(([k,v]) => {
             detailBody.innerHTML += `<div class="detail-row"><span class="detail-key">${k}</span><span class="detail-val">${v}</span></div>`;
         });
-        if (m.notes) {
-            detailBody.innerHTML += `<div style="margin-top:7px;font-size:11px;color:var(--dim);line-height:1.5">${esc(m.notes)}</div>`;
+        const cleanNotes = (m.notes || '').replace(/\[?RESET_LATES:[0-9\-]+\]?/g, '').trim();
+        if (cleanNotes) {
+            detailBody.innerHTML += `<div style="margin-top:7px;font-size:11px;color:var(--dim);line-height:1.5">${esc(cleanNotes)}</div>`;
         }
         detailBox.appendChild(detailBody);
         sec.appendChild(detailBox);
@@ -5890,7 +5891,7 @@ function openMemberModal(id) {
     document.getElementById('mm-instrument2').value= m?.instrument2 || '';
     document.getElementById('mm-phone').value      = m?.phone || '';
     document.getElementById('mm-email').value      = m?.email || '';
-    document.getElementById('mm-notes').value      = m?.notes || '';
+    document.getElementById('mm-notes').value      = (m?.notes || '').replace(/\[?RESET_LATES:[0-9\-]+\]?/g, '').trim();
     document.getElementById('member-modal').classList.add('open');
     setTimeout(()=>document.getElementById('mm-name').focus(),100);
 }
@@ -5902,6 +5903,11 @@ function closeMemberModal() {
 function saveMember() {
     const name = document.getElementById('mm-name').value.trim();
     if (!name) { toast('⚠ El nombre es obligatorio'); return; }
+    const m = members.find(x=>x.id===memberModalId);
+    const prevTag = (m?.notes || '').match(/\[RESET_LATES:[0-9\-]+\]/);
+    let noteVal = document.getElementById('mm-notes').value.trim();
+    if (prevTag) noteVal = noteVal ? `${noteVal} ${prevTag[0]}` : prevTag[0];
+
     const data = {
         name,
         role:        document.getElementById('mm-role').value,
@@ -5909,7 +5915,7 @@ function saveMember() {
         instrument2: document.getElementById('mm-instrument2').value.trim(),
         phone:       document.getElementById('mm-phone').value.trim(),
         email:       document.getElementById('mm-email').value.trim(),
-        notes:       document.getElementById('mm-notes').value.trim(),
+        notes:       noteVal,
     };
     if (memberModalMode === 'new') {
         snapshot(`Agregar miembro "${name}"`);
@@ -5917,7 +5923,6 @@ function saveMember() {
         toast(`✓ ${name} agregado al equipo`);
     } else {
         snapshot(`Editar miembro "${name}"`);
-        const m = members.find(x=>x.id===memberModalId);
         if (m) Object.assign(m, data);
         toast(`✓ ${name} actualizado`);
     }
@@ -6343,34 +6348,98 @@ function getNextSunday(dateStr) {
 }
 
 function getServedLatePenalties() {
+    let local = {};
     try {
-        return JSON.parse(localStorage.getItem('adorachord_late_penalties') || '{}');
-    } catch(e) { return {}; }
-}
+        local = JSON.parse(localStorage.getItem('adorachord_late_penalties') || '{}');
+    } catch(e) { local = {}; }
 
-function setServedLatePenalty(memberId, sundayDate) {
+    // Sincronización con notas de miembros desde Supabase
+    if (typeof members !== 'undefined' && Array.isArray(members)) {
+        members.forEach(m => {
+            if (m.notes && m.notes.includes('RESET_LATES:')) {
+                const match = m.notes.match(/RESET_LATES:([0-9\-]+)/);
+                if (match && match[1]) {
+                    if (!local[m.id] || local[m.id] < match[1]) {
+                        local[m.id] = match[1];
+                    }
+                }
+            }
+        });
+    }
+    return local;
+}
+window.getServedLatePenalties = getServedLatePenalties;
+
+function setServedLatePenalty(memberId, resetDate) {
     const data = getServedLatePenalties();
-    if (sundayDate) data[memberId] = sundayDate;
+    if (resetDate) data[memberId] = resetDate;
     else delete data[memberId];
     try {
         localStorage.setItem('adorachord_late_penalties', JSON.stringify(data));
     } catch(e) {}
+
+    // Sincronizar en member.notes para persistir en Supabase entre dispositivos
+    const m = (typeof members !== 'undefined' && Array.isArray(members)) ? members.find(x => x.id === memberId) : null;
+    if (m) {
+        let clean = (m.notes || '').replace(/\[?RESET_LATES:[0-9\-]+\]?/g, '').trim();
+        if (resetDate) {
+            clean = clean ? `${clean} [RESET_LATES:${resetDate}]` : `[RESET_LATES:${resetDate}]`;
+        }
+        m.notes = clean;
+        if (typeof dbSaveMember === 'function') {
+            dbSaveMember(m);
+        }
+    }
 }
+window.setServedLatePenalty = setServedLatePenalty;
+
+function resetMemberPenaltyToZero(memberId, targetDate) {
+    const m = (typeof members !== 'undefined' && Array.isArray(members)) ? members.find(x => x.id === memberId) : null;
+    const mName = m ? m.name : 'Miembro';
+    const dateToSet = targetDate || todayStr();
+    setServedLatePenalty(memberId, dateToSet);
+    toast(`✓ Sanción cumplida: atrasos de ${mName} quedaron en 0/3 para iniciar nuevo ciclo`);
+    renderMain();
+    renderInspector();
+}
+window.resetMemberPenaltyToZero = resetMemberPenaltyToZero;
 
 function togglePenaltyServed(memberId, sundayDate) {
     const served = getServedLatePenalties();
-    if (served[memberId] === sundayDate) {
+    const m = (typeof members !== 'undefined' && Array.isArray(members)) ? members.find(x => x.id === memberId) : null;
+    const mName = m ? m.name : 'miembro';
+    const dateTarget = sundayDate || todayStr();
+    if (served[memberId] && served[memberId] >= dateTarget) {
         setServedLatePenalty(memberId, null);
-        toast('↺ Sanción reactivada para ' + (members.find(m=>m.id===memberId)?.name || 'miembro'));
+        toast(`↺ Sanción reactivada para ${mName}`);
     } else {
-        setServedLatePenalty(memberId, sundayDate);
-        toast('✓ Sanción marcada como cumplida (3 atrasos reseteados)');
+        setServedLatePenalty(memberId, dateTarget);
+        toast(`✓ Sanción cumplida: atrasos de ${mName} quedaron en 0/3 para iniciar nuevo ciclo`);
     }
     renderMain();
     renderInspector();
 }
+window.togglePenaltyServed = togglePenaltyServed;
 
-// Cuenta atrasos injustificados acumulados (status === 'late')
+function resetAllMembersPastPenalties(targetDate) {
+    const d = targetDate || todayStr();
+    let count = 0;
+    if (typeof members !== 'undefined' && Array.isArray(members)) {
+        members.forEach(m => {
+            const info = getMemberUnexcusedLates(m.id);
+            if (info.count > 0) {
+                setServedLatePenalty(m.id, d);
+                count++;
+            }
+        });
+    }
+    toast(`✓ Se reinició a 0 el contador de ${count} miembro(s) con sanciones pasadas cumplidas`);
+    renderMain();
+    renderInspector();
+}
+window.resetAllMembersPastPenalties = resetAllMembersPastPenalties;
+
+// Cuenta atrasos injustificados acumulados en el ciclo activo (status === 'late')
 function getMemberUnexcusedLates(memberId, upToDateStr) {
     const served = getServedLatePenalties();
     const lastReset = served[memberId] || '2000-01-01';
@@ -6387,6 +6456,7 @@ function getMemberUnexcusedLates(memberId, upToDateStr) {
     });
     return { count, items, lastReset };
 }
+window.getMemberUnexcusedLates = getMemberUnexcusedLates;
 
 // Evaluación completa de elegibilidad para tocar el domingo
 function checkSundayEligibility(sundayDateStr, memberId) {
@@ -6396,6 +6466,9 @@ function checkSundayEligibility(sundayDateStr, memberId) {
 
     const latesInfo = getMemberUnexcusedLates(memberId, sundayDateStr);
     const unexcusedCount = latesInfo.count;
+
+    const served = getServedLatePenalties();
+    const isPenaltyServedForDate = !!(served[memberId] && served[memberId] >= (sundayDateStr || todayStr()));
 
     let eligible = true;
     const reasons = [];
@@ -6411,28 +6484,34 @@ function checkSundayEligibility(sundayDateStr, memberId) {
     const isLateNotice = satStatus === 'abs_late' || (satStatus === 'absent' && (obsLower.includes('fuera de tiempo') || obsLower.includes('sabado') || obsLower.includes('sábado')));
 
     if (satStatus === 'absent' && !isLateNotice) {
-        eligible = false;
-        reasons.push({
-            rule: 'Regla 1',
-            title: 'Falta no justificada al repaso',
-            detail: 'Faltó al repaso del sábado sin justificación escrita previa en el chat de WhatsApp.'
-        });
+        if (!isPenaltyServedForDate) {
+            eligible = false;
+            reasons.push({
+                rule: 'Regla 1',
+                title: 'Falta no justificada al repaso',
+                detail: 'Faltó al repaso del sábado sin justificación escrita previa en el chat de WhatsApp.'
+            });
+        }
     } else if (isLateNotice) {
-        eligible = false;
-        reasons.push({
-            rule: 'Regla 4',
-            title: 'Falta comunicada fuera de tiempo',
-            detail: 'Informó recién el sábado. El plazo reglamentario era hasta el viernes.'
-        });
+        if (!isPenaltyServedForDate) {
+            eligible = false;
+            reasons.push({
+                rule: 'Regla 4',
+                title: 'Falta comunicada fuera de tiempo',
+                detail: 'Informó recién el sábado. El plazo reglamentario era hasta el viernes.'
+            });
+        }
     }
 
     if (unexcusedCount >= 3) {
-        eligible = false;
-        reasons.push({
-            rule: 'Regla 6',
-            title: `Acumuló ${unexcusedCount} atrasos no justificados`,
-            detail: `Tiene ${unexcusedCount} atrasos sin justificar. Al llegar a 3 queda inhabilitado para tocar un domingo.`
-        });
+        if (!isPenaltyServedForDate) {
+            eligible = false;
+            reasons.push({
+                rule: 'Regla 6',
+                title: `Acumuló ${unexcusedCount} atrasos no justificados`,
+                detail: `Tiene ${unexcusedCount} atrasos sin justificar. Al llegar a 3 queda inhabilitado para tocar un domingo.`
+            });
+        }
     }
 
     return {
@@ -6443,9 +6522,12 @@ function checkSundayEligibility(sundayDateStr, memberId) {
         satObs,
         hasSatRecord: !!memberSat && memberSat.status !== 'none',
         unexcusedCount,
-        latesInfo
+        latesInfo,
+        isPenaltyServed: isPenaltyServedForDate,
+        lastReset: latesInfo.lastReset
     };
 }
+window.checkSundayEligibility = checkSundayEligibility;
 
 // ── MODAL SELECTOR DE REGLAS ──
 let curArmDate = null;
@@ -6929,6 +7011,20 @@ function renderAttendanceEligibility(display) {
     };
     display.appendChild(topBar);
 
+    // Banner de Reinicio y Regla de 3 Atrasos
+    const resetNotice = mkEl('div', 'rule-notice-bar', `
+        <div style="display:flex;align-items:center;gap:10px;flex:1">
+            <span style="font-size:16px">⚖️</span>
+            <div style="font-size:11px;line-height:1.4">
+                <b>Regla de los 3 Atrasos:</b> Al cumplir la sanción de 3 atrasos, el contador queda en <b>0</b> para iniciar un nuevo ciclo y volver a contar.
+            </div>
+        </div>
+        <button class="inline-btn" style="border-color:var(--accent);color:var(--accent);font-weight:700;font-size:11px;padding:5px 12px;background:rgba(232,87,42,0.12);white-space:nowrap" onclick="resetAllMembersPastPenalties('${sunDate}')">
+            🔄 Reiniciar a 0 sanciones pasadas de todos
+        </button>
+    `);
+    display.appendChild(resetNotice);
+
     // Tarjeta del Repaso del Sábado Asociado
     const satHasData = satRec && satRec.records.length > 0;
     const satNotice = mkEl('div', 'rule-card', `
@@ -7005,6 +7101,7 @@ function renderAttendanceEligibility(display) {
             const check = checkSundayEligibility(sunDate, m.id);
             const satInfo = STATUS_INFO[check.satStatus] || STATUS_INFO.none;
             const unCount = check.unexcusedCount;
+            const isServed = check.isPenaltyServed;
 
             // Dots de atrasos acumulados
             let dotsHtml = '';
@@ -7024,7 +7121,8 @@ function renderAttendanceEligibility(display) {
                             <div style="font-size:11px;color:var(--dim)">${roleLabel(m.role)}${m.instrument ? ' · ' + esc(m.instrument) : ''}</div>
                         </div>
                     </div>
-                    <div>
+                    <div style="display:flex;align-items:center;gap:6px">
+                        ${isServed ? '<span class="elig-badge ok" style="font-size:10px">✓ Sanción cumplida (En 0)</span>' : ''}
                         ${check.eligible 
                             ? '<span class="elig-badge ok">🟢 HABILITADO PARA MINISTRAR</span>'
                             : '<span class="elig-badge blocked">🔴 NO HABILITADO ESTE DOMINGO</span>'
@@ -7042,10 +7140,15 @@ function renderAttendanceEligibility(display) {
                     </div>
 
                     <div style="padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:6px;display:flex;align-items:center;justify-content:space-between">
-                        <span style="color:var(--dim)">Atrasos sin justificar (Regla 6):</span>
+                        <span style="color:var(--dim)">Atrasos sin justificar ciclo actual:</span>
                         <div style="display:flex;align-items:center;gap:6px">
                             <div class="late-meter">${dotsHtml}</div>
-                            <span style="font-family:'Syne',sans-serif;font-weight:800;color:${unCount>=3 ? '#ff6060' : unCount===2 ? 'var(--yellow)' : 'var(--text)'}">${unCount}/3</span>
+                            <span style="font-family:'Syne',sans-serif;font-weight:800;color:${unCount>=3 ? '#ff6060' : unCount===2 ? 'var(--yellow)' : unCount===0 ? 'var(--green)' : 'var(--text)'}">${unCount}/3</span>
+                            ${unCount > 0 ? `
+                                <button class="inline-btn" style="font-size:9px;padding:2px 6px;color:var(--accent)" title="Reiniciar a 0 este contador" onclick="resetMemberPenaltyToZero('${m.id}', '${sunDate}')">
+                                    🔄 Reset a 0
+                                </button>
+                            ` : ''}
                         </div>
                     </div>
                 </div>
@@ -7059,11 +7162,17 @@ function renderAttendanceEligibility(display) {
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:8px;flex-wrap:wrap">
                     <div style="font-size:10px;color:var(--dim2)">
                         ${check.satObs ? 'Nota repaso: "' + esc(check.satObs) + '"' : ''}
+                        ${check.lastReset && check.lastReset !== '2000-01-01' ? ` · Último reinicio: ${fmtDate(check.lastReset)}` : ''}
                     </div>
-                    <div style="display:flex;gap:6px">
-                        ${unCount >= 3 ? `
-                            <button class="inline-btn" style="font-size:10px;padding:3px 8px;border-color:var(--green);color:var(--green)" onclick="togglePenaltyServed('${m.id}', '${sunDate}')">
-                                🔄 Sanción cumplida (Resetear a 0/3)
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                        ${unCount >= 3 || !check.eligible ? `
+                            <button class="inline-btn" style="font-size:11px;padding:5px 12px;border-color:var(--green);color:var(--green);font-weight:700;background:rgba(62,207,142,0.12)" onclick="resetMemberPenaltyToZero('${m.id}', '${sunDate}')">
+                                ✓ Sanción cumplida (Queda en 0 para volver a contar)
+                            </button>
+                        ` : ''}
+                        ${isServed ? `
+                            <button class="inline-btn" style="font-size:10px;padding:3px 8px;border-color:rgba(255,255,255,0.2)" onclick="togglePenaltyServed('${m.id}', '${sunDate}')">
+                                ↺ Deshacer sanción cumplida
                             </button>
                         ` : ''}
                         <button class="inline-btn" style="font-size:10px;padding:3px 8px" onclick="openRuleSelectorModal('${satDate}', '${m.id}')">
@@ -7260,11 +7369,14 @@ function renderAttendanceInspector(panel) {
                     ${ab     ? `<span class="status-pill absent">❌${ab}</span>` : ''}
                     ${absLate? `<span class="status-pill abs-late">⚠️${absLate}</span>` : ''}
                     ${absEx  ? `<span class="status-pill excused">🔵${absEx}</span>` : ''}
-                    ${!tot   ? `<span class="status-pill none">Sin datos</span>` : ''}
-                    <span style="margin-left:auto;font-size:10px;color:${unCount>=3?'#ff6060':unCount===2?'var(--yellow)':'var(--dim2)'}">
-                        Atrasos: <b>${unCount}/3</b>
-                    </span>
-                </div>
+                    <div style="margin-left:auto;display:flex;align-items:center;gap:3px">
+                        <span style="font-size:10px;color:${unCount>=3?'#ff6060':unCount===2?'var(--yellow)':unCount===0?'var(--green)':'var(--dim2)'}">
+                            Atrasos: <b>${unCount}/3</b>
+                        </span>
+                        ${unCount > 0 ? `
+                            <button class="inline-btn" style="padding:1px 5px;font-size:9px;color:var(--accent);border-color:rgba(232,87,42,0.3)" title="Sanción cumplida: Reiniciar a 0" onclick="resetMemberPenaltyToZero('${m.id}')">🔄 0</button>
+                        ` : ''}
+                    </div>
                 <div style="margin-top:5px;background:var(--panel2);border-radius:4px;height:4px;overflow:hidden">
                     <div style="height:100%;width:${pct}%;background:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'};border-radius:4px;transition:width 0.4s"></div>
                 </div>
@@ -7332,7 +7444,8 @@ window.exportBackup = function() {
     if (!songs.length && !Object.keys(history).length && !Object.keys(attendance).length) {
         toast('⚠ Sin datos para exportar'); return;
     }
-    const blob = new Blob([JSON.stringify({songs, history, songZooms, members, singerAssignments, attendance}, null, 2)], {type:'application/json'});
+    const latePenalties = getServedLatePenalties();
+    const blob = new Blob([JSON.stringify({songs, history, songZooms, members, singerAssignments, attendance, latePenalties}, null, 2)], {type:'application/json'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = `adorachord_${todayStr()}.json`;
@@ -7358,6 +7471,11 @@ window.importBackup = function(input) {
             members           = data.members || [];
             singerAssignments = data.singerAssignments || {};
             attendance        = data.attendance || {};
+            if (data.latePenalties) {
+                try {
+                    localStorage.setItem('adorachord_late_penalties', JSON.stringify(data.latePenalties));
+                } catch(e) {}
+            }
             selectedSongId    = null;
             toast(`✓ ${songs.length} canciones importadas`);
             refreshUI();
