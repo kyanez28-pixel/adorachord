@@ -2426,6 +2426,263 @@
         .attend-history-row:hover { background: rgba(255,255,255,0.03); }
         .attend-history-row:last-child { border-bottom: none; }
 
+        /* ── REGLAMENTO Y HABILITACIÓN DE ASISTENCIA ── */
+        .attend-subtabs {
+            display: flex;
+            gap: 6px;
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .attend-subtabs::-webkit-scrollbar { display: none; }
+
+        .attend-subtab {
+            flex: 1;
+            min-width: fit-content;
+            padding: 8px 14px;
+            border: none;
+            background: transparent;
+            color: var(--dim);
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.16s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 7px;
+            white-space: nowrap;
+        }
+        .attend-subtab:hover {
+            color: var(--text);
+            background: rgba(255,255,255,0.04);
+        }
+        .attend-subtab.active {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(232,87,42,0.3);
+        }
+        .attend-subtab-badge {
+            background: #ff4747;
+            color: #fff;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
+
+        .attend-status-btn.abs-late {
+            background: rgba(249, 115, 22, 0.2);
+            border-color: #f97316;
+        }
+        .status-pill.abs-late {
+            background: rgba(249, 115, 22, 0.15);
+            color: #f97316;
+        }
+
+        .elig-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-family: 'Syne', sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .elig-badge.ok {
+            background: rgba(62, 207, 142, 0.15);
+            color: var(--green);
+            border: 1px solid rgba(62, 207, 142, 0.3);
+        }
+        .elig-badge.blocked {
+            background: rgba(255, 71, 71, 0.18);
+            color: #ff5e5e;
+            border: 1px solid rgba(255, 71, 71, 0.4);
+            animation: pulseSoft 2.5s infinite;
+        }
+        .elig-badge.warning {
+            background: rgba(240, 192, 64, 0.15);
+            color: var(--yellow);
+            border: 1px solid rgba(240, 192, 64, 0.3);
+        }
+
+        @keyframes pulseSoft {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.78; }
+        }
+
+        .late-meter {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .late-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.22);
+            transition: all 0.2s ease;
+        }
+        .late-dot.filled {
+            background: var(--yellow);
+            border-color: var(--yellow);
+            box-shadow: 0 0 6px rgba(240,192,64,0.5);
+        }
+        .late-dot.danger {
+            background: #ff4747;
+            border-color: #ff4747;
+            box-shadow: 0 0 6px rgba(255,71,71,0.6);
+        }
+
+        .rule-card {
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            transition: all 0.18s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .rule-card:hover {
+            border-color: var(--border2);
+            transform: translateY(-1px);
+        }
+        .rule-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+        .rule-card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .rule-card-tag {
+            font-family: 'Syne', sans-serif;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 2px 7px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+        .rule-card-tag.danger  { background: rgba(255,71,71,0.15); color: #ff6b6b; border: 1px solid rgba(255,71,71,0.3); }
+        .rule-card-tag.warning { background: rgba(240,192,64,0.15); color: var(--yellow); border: 1px solid rgba(240,192,64,0.3); }
+        .rule-card-tag.info    { background: rgba(77,158,255,0.15); color: var(--blue); border: 1px solid rgba(77,158,255,0.3); }
+
+        .rule-card-body {
+            font-size: 12px;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+        .rule-card-consequence {
+            margin-top: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+        .rule-card-consequence.danger {
+            background: rgba(255, 71, 71, 0.12);
+            border: 1px solid rgba(255, 71, 71, 0.25);
+            color: #ff6b6b;
+        }
+        .rule-card-consequence.warning {
+            background: rgba(240, 192, 64, 0.12);
+            border: 1px solid rgba(240, 192, 64, 0.25);
+            color: #f6c84c;
+        }
+        .rule-card-consequence.info {
+            background: rgba(77, 158, 255, 0.12);
+            border: 1px solid rgba(77, 158, 255, 0.25);
+            color: #72b3ff;
+        }
+
+        .rule-option-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--panel2);
+            color: var(--text);
+            cursor: pointer;
+            text-align: left;
+            margin-bottom: 7px;
+            transition: all 0.14s ease;
+        }
+        .rule-option-btn:hover {
+            border-color: var(--accent);
+            background: rgba(232,87,42,0.06);
+            transform: translateX(3px);
+        }
+        .rule-option-btn.selected {
+            border-color: var(--accent);
+            background: rgba(232,87,42,0.14);
+        }
+        .rule-option-icon {
+            font-size: 18px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            flex-shrink: 0;
+        }
+
+        .rule-notice-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(232,87,42,0.08);
+            border: 1px solid rgba(232,87,42,0.25);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 11px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .elig-member-card {
+            background: var(--panel2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 8px;
+            transition: border-color 0.15s;
+        }
+        .elig-member-card.sanctioned {
+            border-color: rgba(255,71,71,0.4);
+            background: linear-gradient(90deg, rgba(255,71,71,0.05) 0%, var(--panel2) 100%);
+        }
+        .elig-member-card.warning {
+            border-color: rgba(240,192,64,0.4);
+        }
+
         /* ── SECCIÓN DE LETRA (IMAGEN) ── */
         .lyrics-section {
             margin-top: 15px;
@@ -2955,6 +3212,47 @@
         <div style="display:flex;gap:8px;margin-top:4px">
             <button class="btn btn-primary" style="flex:1" onclick="saveMember()">💾 Guardar</button>
             <button class="btn btn-ghost" style="flex:0;width:auto;padding:10px 16px" onclick="closeMemberModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: Selección de Estado según Reglamento -->
+<div class="modal-overlay" id="attend-rule-modal">
+    <div class="modal-box" style="width: 500px; max-width: 95vw;">
+        <div class="modal-title" style="justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:8px">
+                <span>📋</span>
+                <span id="arm-member-name">Registrar Asistencia</span>
+            </div>
+            <button class="btn-icon" onclick="closeRuleSelectorModal()" style="font-size:16px">✕</button>
+        </div>
+        <div style="font-size:11px;color:var(--dim);margin-bottom:12px;padding:7px 10px;background:rgba(255,255,255,0.03);border-radius:6px" id="arm-date-desc">
+            Fecha: <b id="arm-date-text" style="color:var(--text)"></b> · Sesión: <span id="arm-type-text" style="color:var(--accent);font-weight:700"></span>
+        </div>
+
+        <div style="font-size:10px;font-weight:700;font-family:'Syne',sans-serif;color:var(--dim2);text-transform:uppercase;margin-bottom:8px;letter-spacing:0.8px">
+            Opciones según los Acuerdos del Grupo:
+        </div>
+
+        <div id="arm-options-list" style="display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
+            <!-- Rendered dynamically -->
+        </div>
+
+        <div class="field-group" style="margin-bottom:12px">
+            <label style="font-size:11px;font-weight:600;margin-bottom:4px;display:block">Observación / Justificación:</label>
+            <input type="text" id="arm-obs-input" class="date-input-styled" style="width:100%;font-size:12px;padding:8px 10px" placeholder="Motivo o detalle registrado...">
+            
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px">
+                <button type="button" class="inline-btn" style="font-size:10px;padding:3px 8px" onclick="setArmObs('Avisó WhatsApp a tiempo')">📱 WhatsApp a tiempo</button>
+                <button type="button" class="inline-btn" style="font-size:10px;padding:3px 8px" onclick="setArmObs('Avisó WhatsApp < 1:00 PM')">⏰ WhatsApp &lt; 1:00 PM</button>
+                <button type="button" class="inline-btn" style="font-size:10px;padding:3px 8px" onclick="setArmObs('Avisó recién sábado en WhatsApp')">⚠️ Avisó sábado</button>
+                <button type="button" class="inline-btn" style="font-size:10px;padding:3px 8px" onclick="setArmObs('Aviso verbal / llamada (no válido)')">📵 Verbal/Llamada</button>
+            </div>
+        </div>
+
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--border);padding-top:12px">
+            <button class="btn btn-ghost" onclick="closeRuleSelectorModal()">Cancelar</button>
+            <button class="btn btn-primary" onclick="saveArmSelection()">Aplicar y Guardar</button>
         </div>
     </div>
 </div>
@@ -5730,20 +6028,146 @@ document.getElementById('singer-modal').addEventListener('click', function(e) {
 });
 
 // ══════════════════════════════════════════════
-//  ASISTENCIA — ESTADO
+//  ASISTENCIA — ESTADO Y REGLAMENTO
 // ══════════════════════════════════════════════
-// attendance: { "YYYY-MM-DD": { type:'ensayo'|'culto', records:[{memberId, status:'present'|'late'|'late_excused'|'absent'|'abs_excused'|'none', obs:''}] } }
+// attendance: { "YYYY-MM-DD": { type:'ensayo'|'culto', records:[{memberId, status:'present'|'late'|'late_excused'|'absent'|'abs_excused'|'abs_late'|'none', obs:''}] } }
 let attendance    = {};
 let attendDate    = todayStr();
 let attendType    = 'culto';   // 'ensayo' | 'culto'
+let attendSubTab  = 'register'; // 'register' | 'eligibility' | 'history' | 'rules'
+let selectedEligibilitySunday = '';
+
+// ── REGLAMENTO OFICIAL DEL GRUPO DE ALABANZA ──
+const RULES_AGREEMENT = {
+    title: "Acuerdos y Reglamento — Grupo de Alabanza",
+    description: "Estos acuerdos buscan mantener una buena organización, responsabilidad, puntualidad y, sobre todo, respeto por el compromiso de todo el equipo. Es responsabilidad de cada integrante cumplir y comunicar oportunamente cualquier situación.",
+    rules: [
+        {
+            id: 'rule1',
+            number: '1',
+            title: 'Falta no justificada al repaso',
+            tag: 'Sanción Domingo',
+            tagType: 'danger',
+            icon: '❌',
+            description: 'Si un integrante falta al repaso del sábado sin una justificación comunicada previamente, automáticamente no podrá participar tocando el domingo.',
+            consequence: 'No podrá participar tocando el domingo.',
+            consequenceType: 'danger'
+        },
+        {
+            id: 'rule2',
+            number: '2',
+            title: 'Forma oficial de justificar',
+            tag: 'Chat WhatsApp',
+            tagType: 'info',
+            icon: '📱',
+            description: 'Toda falta deberá ser comunicada por escrito en el chat de WhatsApp del grupo. Si la situación no está comunicada en el chat, se asumirá como falta no justificada.',
+            consequence: 'Único medio válido: mensaje por escrito en el grupo.',
+            consequenceType: 'info'
+        },
+        {
+            id: 'rule3',
+            number: '3',
+            title: 'Sin justificaciones verbales ni telefónicas',
+            tag: 'Constancia Escrita',
+            tagType: 'warning',
+            icon: '📵',
+            description: 'No se aceptarán justificaciones verbales ni por llamadas telefónicas. Es importante que la información quede registrada en el chat para que todos tengamos conocimiento y exista una adecuada organización.',
+            consequence: 'Llamadas o avisos en persona se asumen como no justificados.',
+            consequenceType: 'warning'
+        },
+        {
+            id: 'rule4',
+            number: '4',
+            title: 'Falta comunicada fuera de tiempo',
+            tag: 'Plazo: Viernes',
+            tagType: 'danger',
+            icon: '⏳',
+            description: 'Si alguien sabe durante la semana que no podrá asistir al repaso del sábado, deberá comunicarlo hasta el viernes. Si recién informa el sábado que no podrá asistir, no podrá tocar el domingo.',
+            consequence: 'Avisar el mismo sábado cuenta fuera de tiempo: no toca domingo.',
+            consequenceType: 'danger'
+        },
+        {
+            id: 'rule5',
+            number: '5',
+            title: 'Atrasos al repaso del sábado',
+            tag: 'Plazo: Sábado 1:00 PM',
+            tagType: 'warning',
+            icon: '⏰',
+            description: 'Si alguien va a llegar tarde al repaso, deberá comunicarlo previamente en el grupo, como máximo hasta la 1:00 p. m. del sábado.',
+            consequence: 'Avisar después de 1:00 PM o no avisar = atraso no justificado.',
+            consequenceType: 'warning'
+        },
+        {
+            id: 'rule6',
+            number: '6',
+            title: 'Tres atrasos no justificados',
+            tag: 'Sanción Acumulativa',
+            tagType: 'danger',
+            icon: '🚫',
+            description: 'Se mantiene el acuerdo de que al acumular tres atrasos no justificados, el integrante no podrá participar tocando un domingo.',
+            consequence: '3 atrasos sin justificar = suspensión de tocar un domingo.',
+            consequenceType: 'danger'
+        }
+    ]
+};
 
 const STATUS_INFO = {
-    present      : { emoji:'✅', label:'Presente',           cls:'present'      },
-    late         : { emoji:'⏰', label:'Atraso',             cls:'late'         },
-    late_excused : { emoji:'🟡', label:'Atraso Justificado', cls:'late-excused' },
-    absent       : { emoji:'❌', label:'Inasistencia',       cls:'absent'       },
-    abs_excused  : { emoji:'🔵', label:'Falta Justificada',  cls:'excused'      },
-    none         : { emoji:'○',  label:'Sin registrar',      cls:'none'         },
+    present: {
+        emoji: '✅',
+        label: 'Presente',
+        short: 'pres.',
+        desc: 'Asistencia puntual',
+        detail: 'Asistió puntualmente al ensayo/culto',
+        cls: 'present'
+    },
+    late_excused: {
+        emoji: '🟡',
+        label: 'Atraso Justificado',
+        short: 'at.just.',
+        desc: 'WhatsApp ≤ 1:00 PM',
+        detail: 'Avisó en WhatsApp antes de la 1:00 p. m.',
+        cls: 'late-excused'
+    },
+    late: {
+        emoji: '⏰',
+        label: 'Atraso No Justificado',
+        short: 'atraso',
+        desc: 'No avisó o > 1:00 PM',
+        detail: 'No avisó, avisó después de 1:00 PM o llamada (suma a 3 atrasos)',
+        cls: 'late'
+    },
+    abs_excused: {
+        emoji: '🔵',
+        label: 'Falta Justificada (A tiempo)',
+        short: 'f.just.',
+        desc: 'WhatsApp hasta viernes',
+        detail: 'Comunicó por escrito en WhatsApp a tiempo (hasta el viernes)',
+        cls: 'excused'
+    },
+    abs_late: {
+        emoji: '⚠️',
+        label: 'Falta Fuera de Tiempo',
+        short: 'f.tarde',
+        desc: 'Avisó recién sábado (No toca)',
+        detail: 'Avisó recién el sábado en WhatsApp. No podrá tocar el domingo.',
+        cls: 'abs-late'
+    },
+    absent: {
+        emoji: '❌',
+        label: 'Falta No Justificada',
+        short: 'falta',
+        desc: 'Sin WhatsApp (No toca)',
+        detail: 'Sin justificación escrita previa en WhatsApp. No podrá tocar el domingo.',
+        cls: 'absent'
+    },
+    none: {
+        emoji: '○',
+        label: 'Sin registrar',
+        short: 'sin reg.',
+        desc: 'Sin registrar',
+        detail: 'Sin registro para esta fecha',
+        cls: 'none'
+    }
 };
 
 function getAttendRecord(date) {
@@ -5755,74 +6179,350 @@ function getMemberStatus(date, memberId) {
     return rec.records.find(r => r.memberId === memberId) || { memberId, status:'none', obs:'' };
 }
 
-function cycleStatus(date, memberId) {
-    snapshot(`Cambiar asistencia`);
-    if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
-    const order = ['present','late','late_excused','absent','abs_excused','none'];
-    const rec   = attendance[date].records.find(r => r.memberId === memberId);
-    if (!rec) {
-        attendance[date].records.push({ memberId, status:'present', obs:'' });
+// ── SANCIONES Y ELEGIBILIDAD DOMINGO ──
+function getSaturdayBefore(dateStr) {
+    if (!dateStr) return '';
+    const d = new Date(dateStr + 'T12:00:00Z');
+    const day = d.getUTCDay(); // 0 Dom, 1 Lun, ..., 6 Sáb
+    let diff = 0;
+    if (day === 0) diff = 1;      // Domingo -> ayer sábado (-1)
+    else if (day === 6) diff = 0; // Sábado -> hoy
+    else diff = day + 1;         // Lun (1) -> -2 días, etc.
+    const sat = new Date(d.getTime() - diff * 24 * 60 * 60 * 1000);
+    return sat.toISOString().split('T')[0];
+}
+
+function getNextSunday(dateStr) {
+    if (!dateStr) dateStr = todayStr();
+    const d = new Date(dateStr + 'T12:00:00Z');
+    const day = d.getUTCDay();
+    const diff = (7 - day) % 7;
+    const sun = new Date(d.getTime() + diff * 24 * 60 * 60 * 1000);
+    return sun.toISOString().split('T')[0];
+}
+
+function getServedLatePenalties() {
+    try {
+        return JSON.parse(localStorage.getItem('adorachord_late_penalties') || '{}');
+    } catch(e) { return {}; }
+}
+
+function setServedLatePenalty(memberId, sundayDate) {
+    const data = getServedLatePenalties();
+    if (sundayDate) data[memberId] = sundayDate;
+    else delete data[memberId];
+    try {
+        localStorage.setItem('adorachord_late_penalties', JSON.stringify(data));
+    } catch(e) {}
+}
+
+function togglePenaltyServed(memberId, sundayDate) {
+    const served = getServedLatePenalties();
+    if (served[memberId] === sundayDate) {
+        setServedLatePenalty(memberId, null);
+        toast('↺ Sanción reactivada para ' + (members.find(m=>m.id===memberId)?.name || 'miembro'));
     } else {
-        const idx = order.indexOf(rec.status);
-        rec.status = order[(idx + 1) % order.length];
+        setServedLatePenalty(memberId, sundayDate);
+        toast('✓ Sanción marcada como cumplida (3 atrasos reseteados)');
+    }
+    renderMain();
+    renderInspector();
+}
+
+// Cuenta atrasos injustificados acumulados (status === 'late')
+function getMemberUnexcusedLates(memberId, upToDateStr) {
+    const served = getServedLatePenalties();
+    const lastReset = served[memberId] || '2000-01-01';
+    let count = 0;
+    const items = [];
+    Object.keys(attendance).sort().forEach(d => {
+        if (d > lastReset && (!upToDateStr || d <= upToDateStr)) {
+            const r = attendance[d].records.find(x => x.memberId === memberId);
+            if (r && r.status === 'late') {
+                count++;
+                items.push({ date: d, type: attendance[d].type, obs: r.obs || '' });
+            }
+        }
+    });
+    return { count, items, lastReset };
+}
+
+// Evaluación completa de elegibilidad para tocar el domingo
+function checkSundayEligibility(sundayDateStr, memberId) {
+    const satDate = getSaturdayBefore(sundayDateStr);
+    const satRec = attendance[satDate];
+    const memberSat = satRec?.records?.find(r => r.memberId === memberId);
+
+    const latesInfo = getMemberUnexcusedLates(memberId, sundayDateStr);
+    const unexcusedCount = latesInfo.count;
+
+    let eligible = true;
+    const reasons = [];
+
+    let satStatus = 'none';
+    let satObs = '';
+    if (memberSat) {
+        satStatus = memberSat.status;
+        satObs = memberSat.obs || '';
     }
 
-    // ── Actualización quirúrgica: solo la fila afectada, sin resetear scroll ──
-    const newRec  = attendance[date].records.find(r => r.memberId === memberId);
-    const newSt   = newRec ? newRec.status : 'none';
-    const info    = STATUS_INFO[newSt] || STATUS_INFO.none;
-    const row     = document.querySelector(`.attend-row[data-member-id="${memberId}"]`);
+    const obsLower = (satObs || '').toLowerCase();
+    const isLateNotice = satStatus === 'abs_late' || (satStatus === 'absent' && (obsLower.includes('fuera de tiempo') || obsLower.includes('sabado') || obsLower.includes('sábado')));
 
-    if (row) {
-        // Actualizar botón de estado
-        const btn = row.querySelector('.attend-status-btn');
-        if (btn) {
-            btn.className = `attend-status-btn ${info.cls}`;
-            btn.textContent = info.emoji;
-        }
-        // Actualizar pill de estado
-        const pill = row.querySelector('.status-pill');
-        if (pill) {
-            pill.className = `status-pill ${info.cls}`;
-            pill.textContent = info.label;
-        }
+    if (satStatus === 'absent' && !isLateNotice) {
+        eligible = false;
+        reasons.push({
+            rule: 'Regla 1',
+            title: 'Falta no justificada al repaso',
+            detail: 'Faltó al repaso del sábado sin justificación escrita previa en el chat de WhatsApp.'
+        });
+    } else if (isLateNotice) {
+        eligible = false;
+        reasons.push({
+            rule: 'Regla 4',
+            title: 'Falta comunicada fuera de tiempo',
+            detail: 'Informó recién el sábado. El plazo reglamentario era hasta el viernes.'
+        });
+    }
 
-        // Actualizar barra de contadores completa con todos los estados
-        const statsBar = document.getElementById('attend-stats-bar');
-        if (statsBar) {
-            const r2      = attendance[date] || { records: [] };
-            const present = r2.records.filter(r => r.status === 'present').length;
-            const late    = r2.records.filter(r => r.status === 'late').length;
-            const lateEx  = r2.records.filter(r => r.status === 'late_excused').length;
-            const absent  = r2.records.filter(r => r.status === 'absent').length;
-            const absEx   = r2.records.filter(r => r.status === 'abs_excused').length;
-            statsBar.innerHTML = `
-                <span class="status-pill present">${present} pres.</span>
-                ${late   ? `<span class="status-pill late">${late} atraso</span>` : ''}
-                ${lateEx ? `<span class="status-pill late-excused">${lateEx} at.just.</span>` : ''}
-                ${absent ? `<span class="status-pill absent">${absent} falta</span>` : ''}
-                ${absEx  ? `<span class="status-pill excused">${absEx} f.just.</span>` : ''}
-            `;
-        }
+    if (unexcusedCount >= 3) {
+        eligible = false;
+        reasons.push({
+            rule: 'Regla 6',
+            title: `Acumuló ${unexcusedCount} atrasos no justificados`,
+            detail: `Tiene ${unexcusedCount} atrasos sin justificar. Al llegar a 3 queda inhabilitado para tocar un domingo.`
+        });
+    }
+
+    return {
+        eligible,
+        reasons,
+        satDate,
+        satStatus,
+        satObs,
+        hasSatRecord: !!memberSat && memberSat.status !== 'none',
+        unexcusedCount,
+        latesInfo
+    };
+}
+
+// ── MODAL SELECTOR DE REGLAS ──
+let curArmDate = null;
+let curArmMemberId = null;
+let curArmStatus = 'none';
+
+function openRuleSelectorModal(date, memberId) {
+    curArmDate = date;
+    curArmMemberId = memberId;
+
+    const m = members.find(x => x.id === memberId);
+    const curRec = getMemberStatus(date, memberId);
+    curArmStatus = curRec.status || 'none';
+
+    document.getElementById('arm-member-name').textContent = m ? m.name : 'Miembro';
+    document.getElementById('arm-date-text').textContent = fmtDate(date);
+    document.getElementById('arm-type-text').textContent = (attendance[date]?.type || attendType) === 'culto' ? '⛪ Culto' : '🎸 Ensayo';
+    document.getElementById('arm-obs-input').value = curRec.obs || '';
+
+    const listEl = document.getElementById('arm-options-list');
+    listEl.innerHTML = '';
+
+    const options = [
+        { id: 'present',      label: '✅ Presente',                  sub: 'Asistió puntualmente',                     cls: 'present' },
+        { id: 'late_excused', label: '🟡 Atraso Justificado',         sub: 'Avisó en WhatsApp antes de 1:00 PM',       cls: 'late-excused' },
+        { id: 'late',         label: '⏰ Atraso No Justificado',     sub: 'No avisó o > 1:00 PM (suma a 3 atrasos)',  cls: 'late' },
+        { id: 'abs_excused',  label: '🔵 Falta Justificada a Tiempo', sub: 'Avisó por escrito en WhatsApp hasta el viernes', cls: 'excused' },
+        { id: 'abs_late',     label: '⚠️ Falta Fuera de Tiempo',     sub: 'Avisó recién sábado en WhatsApp (No toca domingo)', cls: 'abs-late' },
+        { id: 'absent',       label: '❌ Falta No Justificada',       sub: 'Sin WhatsApp / llamada (No toca domingo)', cls: 'absent' },
+        { id: 'none',         label: '○ Sin registrar',              sub: 'Sin estado asignado',                      cls: 'none' }
+    ];
+
+    options.forEach(opt => {
+        const isSel = curArmStatus === opt.id;
+        const btn = mkEl('button', `rule-option-btn ${isSel ? 'selected' : ''}`, `
+            <div class="rule-option-icon ${opt.cls}">${opt.label.split(' ')[0]}</div>
+            <div style="flex:1;min-width:0">
+                <div style="font-size:12px;font-weight:700">${opt.label.substring(opt.label.indexOf(' ')+1)}</div>
+                <div style="font-size:10px;color:var(--dim)">${opt.sub}</div>
+            </div>
+            ${isSel ? '<span style="color:var(--accent);font-weight:800;font-size:11px">✓ Actual</span>' : ''}
+        `);
+        btn.onclick = () => {
+            curArmStatus = opt.id;
+            listEl.querySelectorAll('.rule-option-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+
+            // Auto-rellenar observación si está vacía
+            const obsInp = document.getElementById('arm-obs-input');
+            if (!obsInp.value.trim()) {
+                if (opt.id === 'late_excused') obsInp.value = 'Avisó WhatsApp < 1:00 PM';
+                else if (opt.id === 'abs_excused') obsInp.value = 'Avisó WhatsApp a tiempo (hasta viernes)';
+                else if (opt.id === 'abs_late') obsInp.value = 'Avisó sábado en WhatsApp (fuera de tiempo)';
+                else if (opt.id === 'late') obsInp.value = 'Atraso no justificado (> 1:00 PM / llamada)';
+                else if (opt.id === 'absent') obsInp.value = 'Falta no justificada (sin registro en chat)';
+            }
+        };
+        listEl.appendChild(btn);
+    });
+
+    document.getElementById('attend-rule-modal').classList.add('open');
+}
+
+function closeRuleSelectorModal() {
+    document.getElementById('attend-rule-modal').classList.remove('open');
+    curArmDate = null;
+    curArmMemberId = null;
+}
+
+function setArmObs(val) {
+    const inp = document.getElementById('arm-obs-input');
+    if (inp) inp.value = val;
+}
+
+function saveArmSelection() {
+    if (!curArmDate || !curArmMemberId) return;
+    const obsVal = document.getElementById('arm-obs-input').value.trim();
+    if (typeof setMemberStatusDirect === 'function') {
+        setMemberStatusDirect(curArmDate, curArmMemberId, curArmStatus, obsVal);
     } else {
-        // Fallback: redibujar completo si el panel no está visible
+        if (!attendance[curArmDate]) attendance[curArmDate] = { type: attendType, records: [] };
+        let rec = attendance[curArmDate].records.find(r => r.memberId === curArmMemberId);
+        if (!rec) {
+            attendance[curArmDate].records.push({ memberId: curArmMemberId, status: curArmStatus, obs: obsVal });
+        } else {
+            rec.status = curArmStatus;
+            rec.obs = obsVal;
+        }
+        dbSaveAttendance(curArmDate, curArmMemberId, curArmStatus, obsVal, attendance[curArmDate].type);
         renderMain();
         renderInspector();
     }
+    toast('✓ Estado actualizado según acuerdos');
+    closeRuleSelectorModal();
 }
 
-function setAttendObs(date, memberId, obs) {
-    if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
-    const rec = attendance[date].records.find(r => r.memberId === memberId);
-    if (rec) rec.obs = obs;
-    else attendance[date].records.push({ memberId, status:'none', obs });
+document.getElementById('attend-rule-modal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeRuleSelectorModal();
+});
+
+// ── COMPARTIR REGLAMENTO EN WHATSAPP ──
+function shareRulesWhatsApp() {
+    let text = `*📜 REGLAMENTO Y ACUERDOS — GRUPO DE ALABANZA*\n\n`;
+    text += `_${RULES_AGREEMENT.description}_\n\n`;
+    RULES_AGREEMENT.rules.forEach(r => {
+        text += `• *${r.number}. ${r.title}:* ${r.description}\n\n`;
+    });
+    text += `🙏 _¡Gracias por su puntualidad, responsabilidad y compromiso con el ministerio!_`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 
+function copyRulesToClipboard() {
+    let text = `REGLAMENTO Y ACUERDOS — GRUPO DE ALABANZA\n\n${RULES_AGREEMENT.description}\n\n`;
+    RULES_AGREEMENT.rules.forEach(r => {
+        text += `• ${r.number}. ${r.title}: ${r.description}\n\n`;
+    });
+    navigator.clipboard.writeText(text).then(() => {
+        toast('📋 Reglamento copiado al portapapeles');
+    }).catch(() => {
+        toast('⚠ No se pudo copiar');
+    });
+}
+
+// ── COMPARTIR HABILITACIÓN DOMINGO EN WHATSAPP ──
+function shareSundayEligibilityWhatsApp(sundayDate) {
+    if (!sundayDate) sundayDate = selectedEligibilitySunday || getNextSunday(todayStr());
+    const satDate = getSaturdayBefore(sundayDate);
+
+    const eligibleList = [];
+    const blockedList  = [];
+
+    members.forEach(m => {
+        const check = checkSundayEligibility(sundayDate, m.id);
+        const roleStr = m.instrument || roleLabel(m.role);
+        if (check.eligible) {
+            eligibleList.push(`• ${m.name} (${roleStr})`);
+        } else {
+            const reasonTxt = check.reasons.map(r => r.title).join(', ');
+            blockedList.push(`• ${m.name} (${roleStr}) — ${reasonTxt}`);
+        }
+    });
+
+    let text = `*📋 HABILITACIÓN PARA EL DOMINGO — ${fmtDate(sundayDate)}*\n`;
+    text += `_Ministerio de Alabanza — Cumplimiento de Acuerdos_\n`;
+    text += `🎸 *Repaso evaluado:* ${fmtDate(satDate)}\n\n`;
+
+    text += `🟢 *HABILITADOS PARA MINISTRAR:*\n`;
+    if (eligibleList.length) {
+        text += eligibleList.join('\n') + '\n\n';
+    } else {
+        text += '_(Ninguno habilitado)\n\n';
+    }
+
+    if (blockedList.length) {
+        text += `🚫 *NO HABILITADOS PARA ESTE DOMINGO:*\n`;
+        text += blockedList.join('\n') + '\n\n';
+    }
+
+    text += `ℹ️ _Recordatorio: Las justificaciones deben registrarse por escrito en este chat con anticipación._`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+
+// ══════════════════════════════════════════════
+//  VISTA PRINCIPAL: ASISTENCIA
+// ══════════════════════════════════════════════
 function renderAttendance(display) {
     display.className = '';
     display.style.cssText = 'padding:14px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;min-height:0';
 
-    // Date + type bar
+    if (!selectedEligibilitySunday) {
+        selectedEligibilitySunday = getNextSunday(attendDate);
+    }
+
+    // ── BARRA DE SUB-PESTAÑAS SUPERIOR ──
+    const subtabsBar = mkEl('div', 'attend-subtabs', '');
+    
+    // Contar sancionados para badge
+    let blockedCount = 0;
+    members.forEach(m => {
+        if (!checkSundayEligibility(selectedEligibilitySunday, m.id).eligible) blockedCount++;
+    });
+
+    const tabsData = [
+        { id: 'register',    label: '📋 Registro',             icon: '📋', badge: null },
+        { id: 'eligibility', label: '⚖️ Habilitación Domingo', icon: '⚖️', badge: blockedCount > 0 ? blockedCount : null },
+        { id: 'history',     label: '📅 Historial',            icon: '📅', badge: null },
+        { id: 'rules',       label: '📜 Acuerdos & Reglas',    icon: '📜', badge: null }
+    ];
+
+    tabsData.forEach(t => {
+        const btn = mkEl('button', `attend-subtab ${attendSubTab === t.id ? 'active' : ''}`, `
+            <span>${t.label}</span>
+            ${t.badge ? `<span class="attend-subtab-badge">${t.badge}</span>` : ''}
+        `);
+        btn.onclick = () => {
+            attendSubTab = t.id;
+            renderAttendance(display);
+            renderInspector();
+        };
+        subtabsBar.appendChild(btn);
+    });
+    display.appendChild(subtabsBar);
+
+    // ── RENDERIZAR SEGÚN SUBTAB ACTIVA ──
+    if (attendSubTab === 'register') {
+        renderAttendanceRegister(display);
+    } else if (attendSubTab === 'eligibility') {
+        renderAttendanceEligibility(display);
+    } else if (attendSubTab === 'history') {
+        renderAttendanceFullHistory(display);
+    } else if (attendSubTab === 'rules') {
+        renderAttendanceRules(display);
+    }
+}
+
+// ── 1. SUBTAB: REGISTRO DEL DÍA ──
+function renderAttendanceRegister(display) {
+    // Top date + type bar
     const topBar = mkEl('div','',`
         <div class="attend-topbar-inner" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -5835,6 +6535,7 @@ function renderAttendance(display) {
                 <button class="attend-tab ${attendType==='culto'?'active':''}" onclick="setAttendType('culto')">⛪ Culto</button>
                 <button class="attend-tab ${attendType==='ensayo'?'active':''}" onclick="setAttendType('ensayo')">🎸 Ensayo</button>
             </div>
+            <button class="inline-btn-ghost" style="font-size:11px;padding:4px 10px" onclick="attendSubTab='rules';renderMain()">📜 Ver Acuerdos</button>
         </div>
     `);
     const attendDateInput = topBar.querySelector('#attend-date-input');
@@ -5850,16 +6551,40 @@ function renderAttendance(display) {
     }
     display.appendChild(topBar);
 
+    // Aviso de reglas del sábado o del domingo
+    const dObj = new Date(attendDate + 'T12:00:00Z');
+    const dayOfWeek = dObj.getUTCDay(); // 0 Dom, 6 Sáb
+    if (dayOfWeek === 6 || attendType === 'ensayo') {
+        const satNotice = mkEl('div', 'rule-notice-bar', `
+            <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:14px">🎸</span>
+                <span><b>Reglas de Repaso Activas:</b> Atrasos válidos comunicados hasta la <b>1:00 p.m.</b> · Faltas debieron avisarse por WhatsApp hasta el <b>viernes</b>.</span>
+            </div>
+            <button class="inline-btn" style="font-size:10px;padding:2px 8px" onclick="attendSubTab='rules';renderMain()">Ver detalle</button>
+        `);
+        display.appendChild(satNotice);
+    } else if (dayOfWeek === 0 || attendType === 'culto') {
+        const sunNotice = mkEl('div', 'rule-notice-bar', `
+            <div style="display:flex;align-items:center;gap:8px">
+                <span style="font-size:14px">⛪</span>
+                <span><b>Culto de Domingo:</b> Revisa si todos los integrantes están habilitados para tocar según el repaso del sábado.</span>
+            </div>
+            <button class="inline-btn" style="font-size:10px;padding:2px 8px" onclick="attendSubTab='eligibility';renderMain()">Verificar Habilitados →</button>
+        `);
+        display.appendChild(sunNotice);
+    }
+
     const layout = mkEl('div','attend-layout','');
     layout.style.flex = '1'; layout.style.minHeight = '0';
 
-    // ── Panel izquierdo: Registro del día ──
+    // ── Panel izquierdo: Lista de Asistencia ──
     const left = mkEl('div','attend-panel','');
     const rec  = getAttendRecord(attendDate);
     const present = rec.records.filter(r=>r.status==='present').length;
     const late    = rec.records.filter(r=>r.status==='late').length;
     const lateEx  = rec.records.filter(r=>r.status==='late_excused').length;
     const absent  = rec.records.filter(r=>r.status==='absent').length;
+    const absLate = rec.records.filter(r=>r.status==='abs_late').length;
     const absEx   = rec.records.filter(r=>r.status==='abs_excused').length;
 
     left.appendChild(mkEl('div','attend-panel-header',`
@@ -5869,6 +6594,7 @@ function renderAttendance(display) {
             ${late   ? `<span class="status-pill late">${late} atraso</span>` : ''}
             ${lateEx ? `<span class="status-pill late-excused">${lateEx} at.just.</span>` : ''}
             ${absent ? `<span class="status-pill absent">${absent} falta</span>` : ''}
+            ${absLate? `<span class="status-pill abs-late">${absLate} f.tarde</span>` : ''}
             ${absEx  ? `<span class="status-pill excused">${absEx} f.just.</span>` : ''}
         </div>
     `));
@@ -5882,12 +6608,24 @@ function renderAttendance(display) {
             <p style="font-size:11px;color:var(--dim2)">Agrega miembros en la sección Equipo</p>
         `));
     } else {
-        const lbl = mkEl('div','',`<p style="font-size:10px;color:var(--dim2);margin-bottom:8px;font-family:'Syne',sans-serif;font-weight:700">Clic en el ícono para cambiar estado</p>`);
+        const lbl = mkEl('div','',`<p style="font-size:10px;color:var(--dim2);margin-bottom:8px;font-family:'Syne',sans-serif;font-weight:700">Clic en el ícono para ciclar estado · Clic en la etiqueta para abrir opciones de regla</p>`);
         lBody.appendChild(lbl);
 
         members.forEach(m => {
             const sr   = getMemberStatus(attendDate, m.id);
             const info = STATUS_INFO[sr.status] || STATUS_INFO.none;
+
+            // Revisar elegibilidad si es día de culto/domingo
+            let eligHtml = '';
+            if (dayOfWeek === 0 || attendType === 'culto') {
+                const eligCheck = checkSundayEligibility(attendDate, m.id);
+                if (!eligCheck.eligible) {
+                    const reason = eligCheck.reasons.map(r => r.title).join(' · ');
+                    eligHtml = `<span class="elig-badge blocked" title="${esc(reason)}" onclick="openRuleSelectorModal('${attendDate}', '${m.id}')" style="cursor:pointer">🚫 No toca</span>`;
+                } else {
+                    eligHtml = `<span class="elig-badge ok" title="Habilitado para tocar">🟢 Hab.</span>`;
+                }
+            }
 
             const row = mkEl('div','attend-row','');
             row.dataset.memberId = m.id;
@@ -5895,13 +6633,18 @@ function renderAttendance(display) {
                 <button class="attend-status-btn ${info.cls}" title="Clic para cambiar estado">${info.emoji}</button>
                 <div class="member-avatar" style="width:30px;height:30px;font-size:11px;flex-shrink:0">${memberInitials(m.name)}</div>
                 <div style="flex:1;min-width:0">
-                    <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.name)}</div>
+                    <div style="display:flex;align-items:center;gap:6px">
+                        <span style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(m.name)}</span>
+                        ${eligHtml}
+                    </div>
                     <div style="font-size:10px;color:var(--dim)">${roleLabel(m.role)}${m.instrument?' · '+esc(m.instrument):''}</div>
                 </div>
-                <span class="status-pill ${info.cls}">${info.label}</span>
+                <span class="status-pill ${info.cls}" style="cursor:pointer" title="Clic para elegir opción de regla">${info.label}</span>
+                <button class="btn-icon" style="font-size:11px;padding:3px 6px;color:var(--dim)" title="Opciones según reglamento" onclick="openRuleSelectorModal('${attendDate}', '${m.id}')">⚙️</button>
                 <input class="attend-obs-input" placeholder="Observación…" value="${esc(sr.obs||'')}" title="Observaciones">
             `;
             row.querySelector('.attend-status-btn').onclick = () => cycleStatus(attendDate, m.id);
+            row.querySelector('.status-pill').onclick = () => openRuleSelectorModal(attendDate, m.id);
             const obsInput = row.querySelector('.attend-obs-input');
             obsInput.addEventListener('change', () => setAttendObs(attendDate, m.id, obsInput.value));
             lBody.appendChild(row);
@@ -5910,11 +6653,16 @@ function renderAttendance(display) {
 
     left.appendChild(lBody);
 
-    // Footer: share
+    // Footer: share & actions
     const foot = mkEl('div','attend-summary-bar','');
     const waBtn = mkEl('button','inline-btn-green','📱 WhatsApp');
     waBtn.onclick = shareAttendWhatsApp;
     foot.appendChild(waBtn);
+
+    const eligBtn = mkEl('button','inline-btn-ghost','⚖️ Habilitación Domingo');
+    eligBtn.onclick = () => { attendSubTab = 'eligibility'; renderAttendance(display); renderInspector(); };
+    foot.appendChild(eligBtn);
+
     if (rec.records.length) {
         const clr = mkEl('button','inline-btn-ghost','🗑 Limpiar');
         clr.onclick = async () => {
@@ -5928,12 +6676,12 @@ function renderAttendance(display) {
     }
     left.appendChild(foot);
 
-    // ── Panel derecho: Historial ──
+    // ── Panel derecho: Historial resumido ──
     const right = mkEl('div','attend-panel mobile-hidden','');
     const dates = Object.keys(attendance).sort().reverse();
 
     right.appendChild(mkEl('div','attend-panel-header',`
-        <span class="reg-panel-title">📅 Historial de asistencia</span>
+        <span class="reg-panel-title">📅 Historial reciente</span>
         <span style="font-size:10px;color:var(--dim)">${dates.length} registros</span>
     `));
 
@@ -5945,16 +6693,16 @@ function renderAttendance(display) {
             <p style="font-size:12px">Sin registros aún</p>
         `));
     } else {
-        dates.forEach(date => {
+        dates.slice(0, 15).forEach(date => {
             const d = attendance[date];
             const total   = members.length;
             const pres    = d.records.filter(r=>r.status==='present').length;
             const lt      = d.records.filter(r=>r.status==='late').length;
             const ltEx    = d.records.filter(r=>r.status==='late_excused').length;
             const abs     = d.records.filter(r=>r.status==='absent').length;
+            const absLate = d.records.filter(r=>r.status==='abs_late').length;
             const absEx   = d.records.filter(r=>r.status==='abs_excused').length;
-            // Solo contar registros con estado real (no 'none')
-            const registered = pres + lt + ltEx + abs + absEx;
+            const registered = pres + lt + ltEx + abs + absLate + absEx;
             const sinReg  = total - registered;
 
             const row = mkEl('div','attend-history-row','');
@@ -5967,42 +6715,343 @@ function renderAttendance(display) {
                     <span style="font-size:10px;color:var(--dim)">${registered}/${total}</span>
                 </div>
                 <div style="display:flex;gap:5px;flex-wrap:wrap">
-                    ${pres?`<span class="status-pill present">✅ ${pres}</span>`:''}
-                    ${lt  ?`<span class="status-pill late">⏰ ${lt}</span>`:''}
-                    ${ltEx?`<span class="status-pill late-excused">🟡 ${ltEx}</span>`:''}
-                    ${abs ?`<span class="status-pill absent">❌ ${abs}</span>`:''}
-                    ${absEx?`<span class="status-pill excused">🔵 ${absEx}</span>`:''}
-                    ${sinReg > 0 ?`<span class="status-pill" style="background:rgba(255,255,255,0.05);color:var(--dim)">— ${sinReg} sin reg.</span>`:''}
+                    ${pres   ? `<span class="status-pill present">✅ ${pres}</span>` : ''}
+                    ${lt     ? `<span class="status-pill late">⏰ ${lt}</span>` : ''}
+                    ${ltEx   ? `<span class="status-pill late-excused">🟡 ${ltEx}</span>` : ''}
+                    ${abs    ? `<span class="status-pill absent">❌ ${abs}</span>` : ''}
+                    ${absLate? `<span class="status-pill abs-late">⚠️ ${absLate}</span>` : ''}
+                    ${absEx  ? `<span class="status-pill excused">🔵 ${absEx}</span>` : ''}
+                    ${sinReg > 0 ? `<span class="status-pill none">— ${sinReg}</span>` : ''}
                 </div>
             `;
             row.onclick = () => setAttendDate(date);
             rBody.appendChild(row);
         });
     }
-
     right.appendChild(rBody);
-
-    // ── TABS MÓVIL ──
-    const aTabs = mkEl('div','attend-mobile-tabs','');
-    const aTabReg  = mkEl('button','attend-mobile-tab active','📋 Registro');
-    const aTabHist = mkEl('button','attend-mobile-tab','📅 Historial');
-    aTabReg.onclick = () => {
-        aTabReg.classList.add('active'); aTabHist.classList.remove('active');
-        left.classList.remove('mobile-hidden'); right.classList.add('mobile-hidden');
-    };
-    aTabHist.onclick = () => {
-        aTabHist.classList.add('active'); aTabReg.classList.remove('active');
-        right.classList.remove('mobile-hidden'); left.classList.add('mobile-hidden');
-    };
-    aTabs.appendChild(aTabReg);
-    aTabs.appendChild(aTabHist);
-    display.appendChild(aTabs);
 
     layout.appendChild(left);
     layout.appendChild(right);
     display.appendChild(layout);
 }
 
+// ── 2. SUBTAB: HABILITACIÓN Y CUMPLIMIENTO DOMINGO ──
+function renderAttendanceEligibility(display) {
+    const sunDate = selectedEligibilitySunday || getNextSunday(todayStr());
+    const satDate = getSaturdayBefore(sunDate);
+    const satRec  = attendance[satDate];
+
+    // Controles superiores: Selección de Domingo
+    const topBar = mkEl('div', 'attend-panel-header', `
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--text)">DOMINGO EVALUADO:</span>
+            <input type="date" class="date-input-styled" id="elig-sunday-input" value="${sunDate}">
+            <button class="inline-btn" id="btn-elig-today">Próximo Domingo</button>
+            <span style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--accent)">${fmtDate(sunDate)}</span>
+        </div>
+        <div style="display:flex;gap:6px">
+            <button class="inline-btn-green" onclick="shareSundayEligibilityWhatsApp('${sunDate}')">📲 Compartir en WhatsApp</button>
+        </div>
+    `);
+    topBar.style.background = 'var(--panel)';
+    topBar.style.borderRadius = '10px';
+    topBar.style.border = '1px solid var(--border)';
+
+    const inpSun = topBar.querySelector('#elig-sunday-input');
+    inpSun.addEventListener('change', function() {
+        if (this.value) {
+            selectedEligibilitySunday = this.value;
+            renderAttendance(display);
+            renderInspector();
+        }
+    });
+    topBar.querySelector('#btn-elig-today').onclick = () => {
+        selectedEligibilitySunday = getNextSunday(todayStr());
+        renderAttendance(display);
+        renderInspector();
+    };
+    display.appendChild(topBar);
+
+    // Tarjeta del Repaso del Sábado Asociado
+    const satHasData = satRec && satRec.records.length > 0;
+    const satNotice = mkEl('div', 'rule-card', `
+        <div class="rule-card-header">
+            <div class="rule-card-title">
+                <span>🎸</span>
+                <span>Repaso de Sábado Evaluado: <b>${fmtDate(satDate)}</b></span>
+            </div>
+            <span class="rule-card-tag ${satHasData ? 'info' : 'warning'}">${satHasData ? 'Registrado (' + satRec.records.length + ' miembros)' : 'Sin pase de lista aún'}</span>
+        </div>
+        <div class="rule-card-body">
+            Las reglas estipulan que la inasistencia injustificada al repaso del sábado o justificar recién el sábado inhabilita automáticamente para participar tocando el domingo.
+        </div>
+        ${!satHasData ? `
+            <div class="rule-card-consequence warning" style="margin-top:8px">
+                <span>⚠ Aún no se ha registrado asistencia para el sábado ${fmtDate(satDate)}. Puedes pulsar "Pasar Lista del Repaso" para registrarla.</span>
+                <button class="inline-btn" style="margin-left:auto" onclick="setAttendDate('${satDate}');setAttendType('ensayo');attendSubTab='register';renderMain()">Pasar Lista del Repaso →</button>
+            </div>
+        ` : ''}
+    `);
+    display.appendChild(satNotice);
+
+    // Métricas globales de la fecha
+    let totalEligible = 0;
+    let totalBlocked  = 0;
+    let totalAtRisk   = 0;
+
+    members.forEach(m => {
+        const c = checkSundayEligibility(sunDate, m.id);
+        if (c.eligible) totalEligible++;
+        else totalBlocked++;
+        if (c.unexcusedCount === 2) totalAtRisk++;
+    });
+
+    const metricsGrid = mkEl('div', 'stat-grid', `
+        <div class="stat-box" style="border-color:rgba(62,207,142,0.3)">
+            <div class="stat-box-icon">🟢</div>
+            <div class="stat-box-val" style="color:var(--green)">${totalEligible}</div>
+            <div class="stat-box-label">Habilitados para ministrar</div>
+        </div>
+        <div class="stat-box" style="border-color:rgba(255,71,71,0.3)">
+            <div class="stat-box-icon">🔴</div>
+            <div class="stat-box-val" style="color:#ff6060">${totalBlocked}</div>
+            <div class="stat-box-label">Inhabilitados / Con Sanción</div>
+        </div>
+        <div class="stat-box" style="border-color:rgba(240,192,64,0.3)">
+            <div class="stat-box-icon">⚠️</div>
+            <div class="stat-box-val" style="color:var(--yellow)">${totalAtRisk}</div>
+            <div class="stat-box-label">En riesgo (2 atrasos sin justificar)</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-box-icon">👥</div>
+            <div class="stat-box-val">${members.length}</div>
+            <div class="stat-box-label">Total del Equipo</div>
+        </div>
+    `);
+    display.appendChild(metricsGrid);
+
+    // Listado de Integrantes con Diagnóstico de Reglas
+    const listWrap = mkEl('div', 'attend-panel', '');
+    listWrap.innerHTML = `
+        <div class="attend-panel-header">
+            <span class="reg-panel-title">Estado Individual por Integrante</span>
+            <span style="font-size:11px;color:var(--dim)">Reglamento de Alabanza</span>
+        </div>
+    `;
+
+    const lBody = mkEl('div', 'attend-panel-body', '');
+
+    if (!members.length) {
+        lBody.innerHTML = '<div class="empty-state"><p>Sin miembros</p></div>';
+    } else {
+        members.forEach(m => {
+            const check = checkSundayEligibility(sunDate, m.id);
+            const satInfo = STATUS_INFO[check.satStatus] || STATUS_INFO.none;
+            const unCount = check.unexcusedCount;
+
+            // Dots de atrasos acumulados
+            let dotsHtml = '';
+            for (let i = 1; i <= 3; i++) {
+                const filled = unCount >= i;
+                const danger = i === 3 && unCount >= 3;
+                dotsHtml += `<div class="late-dot ${filled ? (danger ? 'danger' : 'filled') : ''}" title="${i} de 3 atrasos"></div>`;
+            }
+
+            const card = mkEl('div', `elig-member-card ${!check.eligible ? 'sanctioned' : (unCount === 2 ? 'warning' : '')}`, '');
+            card.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <div class="member-avatar" style="width:34px;height:34px;font-size:12px;flex-shrink:0">${memberInitials(m.name)}</div>
+                        <div>
+                            <div style="font-size:13px;font-weight:700">${esc(m.name)}</div>
+                            <div style="font-size:11px;color:var(--dim)">${roleLabel(m.role)}${m.instrument ? ' · ' + esc(m.instrument) : ''}</div>
+                        </div>
+                    </div>
+                    <div>
+                        ${check.eligible 
+                            ? '<span class="elig-badge ok">🟢 HABILITADO PARA MINISTRAR</span>'
+                            : '<span class="elig-badge blocked">🔴 NO HABILITADO ESTE DOMINGO</span>'
+                        }
+                    </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:8px;margin-bottom:8px;font-size:11px">
+                    <div style="padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:6px;display:flex;align-items:center;justify-content:space-between">
+                        <span style="color:var(--dim)">Estado en Repaso (${fmtDate(satDate)}):</span>
+                        <div style="display:flex;align-items:center;gap:5px">
+                            <span class="status-pill ${satInfo.cls}">${satInfo.emoji} ${satInfo.label}</span>
+                            <button class="btn-icon" style="font-size:11px" title="Ajustar estado del sábado" onclick="openRuleSelectorModal('${satDate}', '${m.id}')">✏️</button>
+                        </div>
+                    </div>
+
+                    <div style="padding:6px 10px;background:rgba(255,255,255,0.03);border-radius:6px;display:flex;align-items:center;justify-content:space-between">
+                        <span style="color:var(--dim)">Atrasos sin justificar (Regla 6):</span>
+                        <div style="display:flex;align-items:center;gap:6px">
+                            <div class="late-meter">${dotsHtml}</div>
+                            <span style="font-family:'Syne',sans-serif;font-weight:800;color:${unCount>=3 ? '#ff6060' : unCount===2 ? 'var(--yellow)' : 'var(--text)'}">${unCount}/3</span>
+                        </div>
+                    </div>
+                </div>
+
+                ${check.reasons.length ? `
+                    <div class="rule-card-consequence danger" style="margin-bottom:8px">
+                        <span>🚫 <b>Sanción aplicada:</b> ${check.reasons.map(r => r.detail).join(' · ')}</span>
+                    </div>
+                ` : ''}
+
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;gap:8px;flex-wrap:wrap">
+                    <div style="font-size:10px;color:var(--dim2)">
+                        ${check.satObs ? 'Nota repaso: "' + esc(check.satObs) + '"' : ''}
+                    </div>
+                    <div style="display:flex;gap:6px">
+                        ${unCount >= 3 ? `
+                            <button class="inline-btn" style="font-size:10px;padding:3px 8px;border-color:var(--green);color:var(--green)" onclick="togglePenaltyServed('${m.id}', '${sunDate}')">
+                                🔄 Sanción cumplida (Resetear a 0/3)
+                            </button>
+                        ` : ''}
+                        <button class="inline-btn" style="font-size:10px;padding:3px 8px" onclick="openRuleSelectorModal('${satDate}', '${m.id}')">
+                            ✏️ Modificar justificación de repaso
+                        </button>
+                    </div>
+                </div>
+            `;
+            lBody.appendChild(card);
+        });
+    }
+
+    listWrap.appendChild(lBody);
+    display.appendChild(listWrap);
+}
+
+// ── 3. SUBTAB: HISTORIAL COMPLETO ──
+function renderAttendanceFullHistory(display) {
+    const wrap = mkEl('div', 'attend-panel', '');
+    const dates = Object.keys(attendance).sort().reverse();
+
+    wrap.innerHTML = `
+        <div class="attend-panel-header">
+            <span class="reg-panel-title">📅 Historial Completo de Asistencia</span>
+            <span style="font-size:11px;color:var(--dim)">${dates.length} sesiones registradas</span>
+        </div>
+    `;
+
+    const body = mkEl('div', 'attend-panel-body', '');
+
+    if (!dates.length) {
+        body.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><p>Sin sesiones registradas</p></div>';
+    } else {
+        dates.forEach(date => {
+            const d = attendance[date];
+            const total   = members.length;
+            const pres    = d.records.filter(r=>r.status==='present').length;
+            const lt      = d.records.filter(r=>r.status==='late').length;
+            const ltEx    = d.records.filter(r=>r.status==='late_excused').length;
+            const abs     = d.records.filter(r=>r.status==='absent').length;
+            const absLate = d.records.filter(r=>r.status==='abs_late').length;
+            const absEx   = d.records.filter(r=>r.status==='abs_excused').length;
+            const regCount = pres + lt + ltEx + abs + absLate + absEx;
+
+            const row = mkEl('div', 'attend-history-row', '');
+            row.style.padding = '12px 14px';
+            row.style.background = 'var(--panel2)';
+            row.style.marginBottom = '6px';
+            row.style.borderRadius = '8px';
+            row.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <span style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:${date===attendDate?'var(--accent)':'var(--text)'}">${fmtDate(date)}</span>
+                        <span class="status-pill ${d.type==='culto'?'excused':'present'}">${d.type==='culto'?'⛪ Culto':'🎸 Ensayo'}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <span style="font-size:11px;color:var(--dim)">${regCount}/${total} miembros</span>
+                        <button class="inline-btn" style="font-size:10px;padding:2px 8px">Cargar fecha →</button>
+                    </div>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    ${pres   ? `<span class="status-pill present">✅ ${pres} presentes</span>` : ''}
+                    ${lt     ? `<span class="status-pill late">⏰ ${lt} atrasos no just.</span>` : ''}
+                    ${ltEx   ? `<span class="status-pill late-excused">🟡 ${ltEx} atrasos just.</span>` : ''}
+                    ${abs    ? `<span class="status-pill absent">❌ ${abs} inasistencias</span>` : ''}
+                    ${absLate? `<span class="status-pill abs-late">⚠️ ${absLate} f. fuera tiempo</span>` : ''}
+                    ${absEx  ? `<span class="status-pill excused">🔵 ${absEx} faltas just.</span>` : ''}
+                </div>
+            `;
+            row.onclick = () => {
+                setAttendDate(date);
+                attendSubTab = 'register';
+                renderMain();
+            };
+            body.appendChild(row);
+        });
+    }
+
+    wrap.appendChild(body);
+    display.appendChild(wrap);
+}
+
+// ── 4. SUBTAB: ACUERDOS Y REGLAMENTO ──
+function renderAttendanceRules(display) {
+    // Encabezado institucional
+    const header = mkEl('div', 'rule-card', `
+        <div class="rule-card-header">
+            <div class="rule-card-title" style="font-size:16px">
+                <span>📜</span>
+                <span>${RULES_AGREEMENT.title}</span>
+            </div>
+            <div style="display:flex;gap:6px">
+                <button class="inline-btn-green" onclick="shareRulesWhatsApp()">📲 Enviar al WhatsApp</button>
+                <button class="inline-btn" onclick="copyRulesToClipboard()">📋 Copiar</button>
+            </div>
+        </div>
+        <div class="rule-card-body" style="font-size:13px;color:#e2e8f0;font-style:italic">
+            "${RULES_AGREEMENT.description}"
+        </div>
+    `);
+    header.style.background = 'linear-gradient(135deg, rgba(232,87,42,0.12) 0%, var(--panel) 100%)';
+    header.style.border = '1px solid rgba(232,87,42,0.3)';
+    display.appendChild(header);
+
+    // Listado de las 6 reglas
+    const grid = mkEl('div', '', '');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(320px, 1fr))';
+    grid.style.gap = '10px';
+
+    RULES_AGREEMENT.rules.forEach(r => {
+        const card = mkEl('div', 'rule-card', `
+            <div class="rule-card-header">
+                <div class="rule-card-title">
+                    <span>${r.icon}</span>
+                    <span>${r.number}. ${r.title}</span>
+                </div>
+                <span class="rule-card-tag ${r.tagType}">${r.tag}</span>
+            </div>
+            <div class="rule-card-body">
+                ${r.description}
+            </div>
+            <div class="rule-card-consequence ${r.consequenceType}">
+                <span>⚖️ <b>Consecuencia:</b> ${r.consequence}</span>
+            </div>
+        `);
+        grid.appendChild(card);
+    });
+
+    display.appendChild(grid);
+
+    // Banner inferior
+    const bottomCard = mkEl('div', 'rule-card', `
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
+            <div>
+                <div style="font-weight:700;font-size:13px">¿Deseas verificar si se cumplen estas reglas para este domingo?</div>
+                <div style="font-size:11px;color:var(--dim)">El sistema audita automáticamente los repasos del sábado y la acumulación de 3 atrasos.</div>
+            </div>
+            <button class="btn btn-primary" onclick="attendSubTab='eligibility';renderMain()">Verificar Habilitación Domingo →</button>
+        </div>
+    `);
+    display.appendChild(bottomCard);
+}
+
+// ── INSPECTOR LATERAL MEJORADO ──
 function renderAttendanceInspector(panel) {
     // Stats per member
     const sec = mkEl('div','ins-section','');
@@ -6013,8 +7062,10 @@ function renderAttendanceInspector(panel) {
         panel.appendChild(sec); return;
     }
 
+    const nextSun = selectedEligibilitySunday || getNextSunday(todayStr());
+
     members.forEach(m => {
-        let pr=0, lt=0, ltEx=0, ab=0, absEx=0, tot=0;
+        let pr=0, lt=0, ltEx=0, ab=0, absLate=0, absEx=0, tot=0;
         Object.values(attendance).forEach(d => {
             const r = d.records.find(x => x.memberId===m.id);
             if (r && r.status !== 'none') {
@@ -6023,24 +7074,39 @@ function renderAttendanceInspector(panel) {
                 else if(r.status==='late')         lt++;
                 else if(r.status==='late_excused') ltEx++;
                 else if(r.status==='absent')       ab++;
+                else if(r.status==='abs_late')     absLate++;
                 else if(r.status==='abs_excused')  absEx++;
             }
         });
         const pct = tot ? Math.round((pr+ltEx)/tot*100) : 0;
 
+        // Evaluación de domingo y atrasos
+        const eligCheck = checkSundayEligibility(nextSun, m.id);
+        const unCount = eligCheck.unexcusedCount;
+
         sec.innerHTML += `
-            <div style="padding:7px 0;border-bottom:1px solid var(--border)">
-                <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <div style="padding:8px 0;border-bottom:1px solid var(--border)">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
                     <span style="font-size:12px;font-weight:600">${esc(m.name)}</span>
-                    <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'}">${pct}%</span>
+                    <div style="display:flex;align-items:center;gap:6px">
+                        ${eligCheck.eligible 
+                            ? '<span class="elig-badge ok" style="font-size:9px;padding:1px 5px">🟢 Hab.</span>' 
+                            : '<span class="elig-badge blocked" style="font-size:9px;padding:1px 5px">🔴 No toca</span>'
+                        }
+                        <span style="font-family:'Syne',sans-serif;font-size:11px;font-weight:800;color:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'}">${pct}%</span>
+                    </div>
                 </div>
-                <div style="display:flex;gap:4px;flex-wrap:wrap">
-                    ${pr   ?`<span class="status-pill present">✅${pr}</span>`:''}
-                    ${lt   ?`<span class="status-pill late">⏰${lt}</span>`:''}
-                    ${ltEx ?`<span class="status-pill late-excused">🟡${ltEx}</span>`:''}
-                    ${ab   ?`<span class="status-pill absent">❌${ab}</span>`:''}
-                    ${absEx?`<span class="status-pill excused">🔵${absEx}</span>`:''}
-                    ${!tot ?`<span class="status-pill none">Sin datos</span>`:''}
+                <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+                    ${pr     ? `<span class="status-pill present">✅${pr}</span>` : ''}
+                    ${lt     ? `<span class="status-pill late">⏰${lt}</span>` : ''}
+                    ${ltEx   ? `<span class="status-pill late-excused">🟡${ltEx}</span>` : ''}
+                    ${ab     ? `<span class="status-pill absent">❌${ab}</span>` : ''}
+                    ${absLate? `<span class="status-pill abs-late">⚠️${absLate}</span>` : ''}
+                    ${absEx  ? `<span class="status-pill excused">🔵${absEx}</span>` : ''}
+                    ${!tot   ? `<span class="status-pill none">Sin datos</span>` : ''}
+                    <span style="margin-left:auto;font-size:10px;color:${unCount>=3?'#ff6060':unCount===2?'var(--yellow)':'var(--dim2)'}">
+                        Atrasos: <b>${unCount}/3</b>
+                    </span>
                 </div>
                 <div style="margin-top:5px;background:var(--panel2);border-radius:4px;height:4px;overflow:hidden">
                     <div style="height:100%;width:${pct}%;background:${pct>=80?'var(--green)':pct>=50?'var(--yellow)':'#ff6060'};border-radius:4px;transition:width 0.4s"></div>
@@ -6052,21 +7118,30 @@ function renderAttendanceInspector(panel) {
     // Global totals
     const allRec = Object.values(attendance).flatMap(d=>d.records);
     const statSec = mkEl('div','ins-section','');
-    statSec.innerHTML = `<div class="ins-header">Totales</div>`;
+    statSec.innerHTML = `<div class="ins-header">Totales y Sanciones</div>`;
     const grid = mkEl('div','stat-grid','');
+
+    let totalBlocked = 0;
+    members.forEach(m => {
+        if (!checkSundayEligibility(nextSun, m.id).eligible) totalBlocked++;
+    });
+
     [
         ['📅', Object.keys(attendance).length, 'sesiones'],
         ['✅', allRec.filter(r=>r.status==='present').length, 'presentes'],
-        ['⏰', allRec.filter(r=>r.status==='late').length, 'atrasos'],
-        ['🟡', allRec.filter(r=>r.status==='late_excused').length, 'atr.just.'],
-        ['❌', allRec.filter(r=>r.status==='absent').length, 'ausencias'],
-        ['🔵', allRec.filter(r=>r.status==='abs_excused').length, 'f.just.'],
+        ['⏰', allRec.filter(r=>r.status==='late').length, 'atrasos no just.'],
+        ['🟡', allRec.filter(r=>r.status==='late_excused').length, 'atr. just.'],
+        ['❌', allRec.filter(r=>r.status==='absent').length, 'inasistencias'],
+        ['⚠️', allRec.filter(r=>r.status==='abs_late').length, 'faltas tardías'],
+        ['🔵', allRec.filter(r=>r.status==='abs_excused').length, 'f. just.'],
+        ['🚫', totalBlocked, 'sancionados dom.']
     ].forEach(([icon,val,label]) => {
         grid.appendChild(mkEl('div','stat-box',`<div class="stat-box-icon">${icon}</div><div class="stat-box-val">${val}</div><div class="stat-box-label">${label}</div>`));
     });
     statSec.appendChild(grid);
     panel.appendChild(statSec);
 }
+
 
 function setAttendDate(date) {
     if (!date || date === attendDate) return;
@@ -6864,11 +7939,67 @@ window.assignSinger = function(songId, memberId) {
     refreshUI();
 };
 
-// Patch cycleStatus (attendance)
+// Helper para asignar estado directo desde selector modal
+window.setMemberStatusDirect = function(date, memberId, newStatus, newObs) {
+    if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
+    let rec = attendance[date].records.find(r => r.memberId === memberId);
+    if (!rec) {
+        rec = { memberId, status: newStatus, obs: newObs || '' };
+        attendance[date].records.push(rec);
+    } else {
+        rec.status = newStatus;
+        if (newObs !== undefined && newObs !== null) rec.obs = newObs;
+    }
+
+    const info = STATUS_INFO[newStatus] || STATUS_INFO.none;
+    const row  = document.querySelector('.attend-row[data-member-id="' + memberId + '"]');
+
+    if (row) {
+        const btn = row.querySelector('.attend-status-btn');
+        if (btn) {
+            btn.className = 'attend-status-btn ' + info.cls;
+            btn.textContent = info.emoji;
+        }
+        const pill = row.querySelector('.status-pill');
+        if (pill) {
+            pill.className = 'status-pill ' + info.cls;
+            pill.textContent = info.label;
+        }
+        if (newObs !== undefined && newObs !== null) {
+            const obsInp = row.querySelector('.attend-obs-input');
+            if (obsInp) obsInp.value = newObs;
+        }
+        const statsBar = document.getElementById('attend-stats-bar');
+        if (statsBar) {
+            const r2      = attendance[date] || { records: [] };
+            const pres    = r2.records.filter(r => r.status === 'present').length;
+            const lt      = r2.records.filter(r => r.status === 'late').length;
+            const ltEx    = r2.records.filter(r => r.status === 'late_excused').length;
+            const absLate = r2.records.filter(r => r.status === 'abs_late').length;
+            const ab      = r2.records.filter(r => r.status === 'absent').length;
+            const abEx    = r2.records.filter(r => r.status === 'abs_excused').length;
+            statsBar.innerHTML =
+                '<span class="status-pill present">' + pres + ' pres.</span>' +
+                (lt      ? '<span class="status-pill late">' + lt + ' atraso</span>' : '') +
+                (ltEx    ? '<span class="status-pill late-excused">' + ltEx + ' at.just.</span>' : '') +
+                (ab      ? '<span class="status-pill absent">' + ab + ' falta</span>' : '') +
+                (absLate ? '<span class="status-pill abs-late">' + absLate + ' f.tarde</span>' : '') +
+                (abEx    ? '<span class="status-pill excused">' + abEx + ' f.just.</span>' : '');
+        }
+    } else {
+        renderMain();
+    }
+
+    renderInspector();
+    const typeVal = attendance[date].type || attendType;
+    dbSaveAttendance(date, memberId, newStatus, rec.obs || '', typeVal);
+};
+
+// Patch cycleStatus (attendance con nuevas reglas)
 const _origCycleStatus = cycleStatus;
 window.cycleStatus = function(date, memberId) {
     if (!attendance[date]) attendance[date] = { type: attendType, records: [] };
-    const order = ['present','late','late_excused','absent','abs_excused','none'];
+    const order = ['present','late_excused','late','abs_excused','abs_late','absent','none'];
     const rec   = attendance[date].records.find(r => r.memberId === memberId);
     let newStatus;
     if (!rec) {
